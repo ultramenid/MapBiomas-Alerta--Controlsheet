@@ -30,6 +30,7 @@
                     <option value="error">Error</option>
                     <option value="reexportimage">Re-export image</option>
                     <option value="reclassification">Re-classification</option>
+                    <option value="pending">Pending</option>
                 </select>
             </div>
         </div>
@@ -138,13 +139,15 @@
                                     @if($item->auditorStatus == 'pre-approved') bg-blue-100 text-gray-700 cursor-pointer
                                     @elseif($item->auditorStatus == 'refined') bg-[#87bed3] text-white cursor-pointer
                                     @elseif($item->auditorStatus == 'error') bg-merah-alerta text-white cursor-pointer
+                                    @elseif($item->auditorStatus == 'pending') bg-black text-white cursor-pointer
                                     @else bg-gray-100 text-black @endif"
-                                @if(!in_array($item->auditorStatus, ['pre-approved', 'refined', 'error'])) disabled @endif
+                                @if(!in_array($item->auditorStatus, ['pre-approved', 'refined', 'error', 'pending'])) disabled @endif
                                 style="-webkit-text-align-last: center; text-align-last: center;"
                                 >
                                 <option value="pre-approved" {{ $item->auditorStatus == 'pre-approved' ? 'selected' : '' }}>Pre-Approved</option>
                                 <option value="refined" {{ $item->auditorStatus == 'refined' ? 'selected' : '' }}>Refined</option>
                                 <option value="error" {{ $item->auditorStatus == 'error' ? 'selected' : '' }}>Error</option>
+                                <option value="pending" {{ $item->auditorStatus == 'pending' ? 'selected' : '' }}>Pending</option>
                                 </select>
 
                                 {{-- SVG icon (visible when enabled) --}}
@@ -158,6 +161,12 @@
                                 <svg xmlns="http://www.w3.org/2000/svg"
                                     fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
                                     class="absolute right-2 h-4 w-4 text-yellow-400 pointer-events-none">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 15 12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9" />
+                                </svg>
+                                @elseif ($item->auditorStatus == 'pending')
+                                <svg xmlns="http://www.w3.org/2000/svg"
+                                    fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+                                    class="absolute right-2 h-4 w-4 bg-white pointer-events-none">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 15 12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9" />
                                 </svg>
                                 @endif

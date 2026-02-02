@@ -16,6 +16,7 @@
                     <option value="error">Error</option>
                     <option value="reexportimage">Re-export image</option>
                     <option value="reclassification">Re-classification</option>
+                    <option value="pending">Pending</option>
                 </select>
             </div>
         </div>
@@ -122,6 +123,8 @@
                             </a>
                         @elseif ($item->auditorStatus == 'approved')
                             <a  class="rounded-xs inline-block text-center  w-28 appearance-none bg-green-alerta px-2 py-1 text-gray-100">{{$item->auditorStatus}}</a>
+                        @elseif ($item->auditorStatus == 'pending')
+                            <a  class="rounded-xs inline-block text-center  w-28 appearance-none bg-black px-2 py-1 text-gray-100">{{$item->auditorStatus}}</a>
                         @elseif ($item->auditorStatus == 'duplicate' or $item->auditorStatus == 'rejected')
                             <a  class="rounded-xs inline-block text-center w-28 appearance-none bg-merah-alerta px-2 py-1 text-gray-100">{{$item->auditorStatus}}</a>
                         @else

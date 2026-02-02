@@ -1,4 +1,4 @@
-<div class="max-w-3xl mx-auto py-12 px-4 relative z-20">
+<div class="max-w-3xl mx-auto py-12 px-4 relative z-20 bg-gray-50 mt-4">
     <div class="flex justify-between">
         <h1 class="font-semibold text-3xl mt-10 mb-6 text-gray-700">Add alert</h1>
         <div class="flex justify-end items-center mt-4">

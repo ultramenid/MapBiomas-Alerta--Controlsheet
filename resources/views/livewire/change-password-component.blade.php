@@ -1,4 +1,4 @@
-<div class="w-full border border-gray-300 dark:border-opacity-20 rounded px-6 py-6">
+<div class="w-full border border-gray-300 dark:border-opacity-20 rounded px-6 py-6 ">
     <h1 class="text-2xl font-semibold  text-newbg-newgray-900 dark:text-gray-300"></h1>
 
     <div class="w-full gap-4 flex sm:flex-row flex-col mt-6">

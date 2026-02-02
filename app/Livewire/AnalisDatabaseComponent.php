@@ -130,6 +130,7 @@ class AnalisDatabaseComponent extends Component
                 $query->whereYear('alerts.detectionDate', $this->yearAlert);
             }
 
+
             return $query->paginate($this->paginate);
 
         } catch (\Throwable $th) {
