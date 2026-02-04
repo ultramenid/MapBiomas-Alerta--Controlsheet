@@ -27,7 +27,7 @@ class ValidatorExport implements FromCollection, WithHeadings
     {
          return DB::table('alerts')
         ->join('users', 'alerts.analisId', '=', 'users.id')
-        ->select('alerts.alertId as alertId', 'users.name as validator','alerts.alertStatus as alertStatus', 'alerts.detectionDate as detectionDate', 'alerts.observation as observation', 'alerts.region as region', 'alerts.province as province','alerts.auditorStatus as auditorStatus', 'alerts.alertNote as alertNote', 'alerts.created_at as inputDate' )
+        ->select('alerts.alertId as alertId', 'users.name as validator','alerts.alertStatus as alertStatus', 'alerts.detectionDate as detectionDate', 'alerts.observation as observation', 'alerts.region as region', 'alerts.province as province','alerts.auditorStatus as auditorStatus', 'alerts.created_at as inputDate' )
         ->when($this->status != 'all', function ($query) {
             return $query->where('auditorStatus', $this->status);
         })
@@ -49,7 +49,6 @@ class ValidatorExport implements FromCollection, WithHeadings
             "Region",
             "Province",
             "Auditor Status",
-            "Alert Note",
             "Input Date"
         ];
     }
