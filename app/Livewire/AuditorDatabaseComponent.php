@@ -127,21 +127,21 @@ class AuditorDatabaseComponent extends Component
         event(new UpdateAnalis);
         if ($this->manualValidation()) {
             DB::table('alerts')
-            ->where('isActive', 1)
-            ->where('alertId', $alertId)
-            ->update([
-                'alertStatus' => $this->checkAlertStatus(),
-                'auditorStatus' => $this->alertStatus,
-                'auditorReason' => $this->alertReason,
-                'updated_at' => Carbon::now('Asia/Jakarta'),
-            ]);
+                ->where('isActive', 1)
+                ->where('alertId', $alertId)
+                ->update([
+                    'alertStatus' => $this->checkAlertStatus(),
+                    'auditorStatus' => $this->alertStatus,
+                    'auditorReason' => $this->alertReason,
+                    'updated_at' => Carbon::now('Asia/Jakarta'),
+                ]);
             DB::table('auditorlog')->insert([
                 'auditorId' => session('id'),
                 'alertId' => $alertId,
                 'ngapain' => 'auditing',
                 'created_at' => Carbon::now('Asia/Jakarta'),
             ]);
-            redirect()->to(url()->previous());
+            // Jangan redirect, biarkan AlpineJS yang close modal
         }
 
     }

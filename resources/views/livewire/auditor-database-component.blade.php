@@ -114,7 +114,9 @@
                     </td>
                     <td class="px-6 py-1 break-words text-xs  text-gray-700 dark:text-slate-400" wire:key="alert-{{ $item->alertId }}">
                         @if (in_array($item->auditorStatus, ['pre-approved', 'refined', 'error']))
-                            <a  onclick="window.dispatchEvent(
+                            <button
+                                wire:loading.attr='disabled'
+                                onclick="window.dispatchEvent(
                                 new CustomEvent('open-audit-modal',
                                 { detail: { id: {{ $item->id }} } })
                                 )" @click.away="open = false" class="inline-block text-center w-28 appearance-none rounded-xs
@@ -123,7 +125,7 @@
                                 @elseif($item->auditorStatus == 'error') bg-merah-alerta  text-white cursor-pointer
                                 @endif
                                 px-2 py-1">{{ $item->auditorStatus }}
-                            </a>
+                    </button>
                         @elseif ($item->auditorStatus == 'approved')
                             <a  class="rounded-xs inline-block text-center  w-28 appearance-none bg-green-alerta px-2 py-1 text-gray-100">{{$item->auditorStatus}}</a>
                         @elseif ($item->auditorStatus == 'pending')
