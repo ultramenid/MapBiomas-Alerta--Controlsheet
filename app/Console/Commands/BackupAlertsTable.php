@@ -56,6 +56,8 @@ class BackupAlertsTable extends Command
             return self::SUCCESS;
         }
 
+        set_time_limit(0);
+
         $sourceTable = $this->option('table');
         $backupName  = $this->option('name') ?: $sourceTable . '_backup_' . Carbon::now()->format('Ymd');
         $drop        = $this->option('drop');
@@ -67,18 +69,25 @@ class BackupAlertsTable extends Command
         $this->log("Chunk   : {$chunkSize} records/batch");
         $this->separator();
 
-        // Cek tabel sumber
+        // Cek total rows — query ringan, tidak load data ke PHP
         $this->log("Menghitung total records...");
-        $totalRows = DB::table($sourceTable)->count();
+        $totalRows = (int) DB::selectOne("SELECT COUNT(*) as total FROM `{$sourceTable}`")->total;
         $this->log("Total   : {$totalRows} records");
         $this->separator();
 
         // Cek apakah tabel backup sudah ada
-        $exists = DB::select("SHOW TABLES LIKE '{$backupName}'");
+        $dbName = DB::connection()->getDatabaseName();
+        $exists = DB::selectOne(
+            "SELECT COUNT(*) as cnt FROM information_schema.tables WHERE table_schema = ? AND table_name = ?",
+            [$dbName, $backupName]
+        )->cnt;
+
         if ($exists) {
             if ($drop) {
                 $this->log("⚠  Tabel {$backupName} sudah ada — menghapus...");
-                DB::statement("DROP TABLE `{$backupName}`");
+                // TRUNCATE dulu (kosongkan .ibd — instan meski 2GB), baru DROP
+                DB::unprepared("TRUNCATE TABLE `{$backupName}`");
+                DB::unprepared("DROP TABLE `{$backupName}`");
                 $this->log("✔  Tabel lama dihapus");
             } else {
                 $this->log("✘  Tabel {$backupName} sudah ada! Gunakan --drop untuk menimpa.");
@@ -86,46 +95,41 @@ class BackupAlertsTable extends Command
             }
         }
 
-        // Buat struktur tabel
+        // Buat struktur tabel (LIKE — copy semua kolom, index, constraints)
         $this->log("Membuat struktur tabel backup...");
-        DB::statement("CREATE TABLE `{$backupName}` LIKE `{$sourceTable}`");
+        DB::unprepared("CREATE TABLE `{$backupName}` LIKE `{$sourceTable}`");
         $this->log("✔  Struktur tabel dibuat");
         $this->separator();
 
-        // Copy data chunk by chunk dengan output setiap batch
+        // Copy data bertahap: INSERT INTO backup SELECT * FROM source WHERE id > lastId LIMIT chunk
+        // Data TIDAK masuk ke PHP memory — semua diproses di sisi MySQL
         $this->log("Mulai menyalin data...");
 
-        $copied    = 0;
         $batch     = 0;
-        $startTime = microtime(true);
         $lastId    = 0;
+        $startTime = microtime(true);
 
         while (true) {
-            $rows = DB::table($sourceTable)
-                ->where('id', '>', $lastId)
-                ->orderBy('id')
-                ->limit($chunkSize)
-                ->get();
+            // Satu query INSERT ... SELECT — murni di MySQL, tidak tarik data ke PHP
+            DB::unprepared(
+                "INSERT INTO `{$backupName}` SELECT * FROM `{$sourceTable}` WHERE id > {$lastId} ORDER BY id LIMIT {$chunkSize}"
+            );
 
-            if ($rows->isEmpty()) {
-                break;
+            // Cek posisi cursor terbaru
+            $newLastId = DB::selectOne("SELECT MAX(id) as max_id FROM `{$backupName}`")->max_id ?? 0;
+
+            if ((int) $newLastId === (int) $lastId) {
+                break; // Tidak ada data baru — selesai
             }
 
+            $lastId  = (int) $newLastId;
             $batch++;
-            $data   = $rows->map(fn($r) => (array) $r)->toArray();
-            $lastId = $rows->last()->id;
+            $copied  = DB::selectOne("SELECT COUNT(*) as total FROM `{$backupName}`")->total;
+            $elapsed = round(microtime(true) - $startTime, 1);
+            $percent = $totalRows > 0 ? round(($copied / $totalRows) * 100, 1) : 0;
+            $bar     = $this->makeBar($percent);
 
-            DB::table($backupName)->insert($data);
-
-            $copied  += count($data);
-            $elapsed  = round(microtime(true) - $startTime, 1);
-            $percent  = $totalRows > 0 ? round(($copied / $totalRows) * 100, 1) : 0;
-            $mem      = round(memory_get_usage(true) / 1024 / 1024, 1);
-            $bar      = $this->makeBar($percent);
-
-            $this->log(
-                "Batch #{$batch} | {$bar} {$percent}% | {$copied}/{$totalRows} records | {$elapsed}s | mem: {$mem}MB"
-            );
+            $this->log("Batch #{$batch} | {$bar} {$percent}% | {$copied}/{$totalRows} records | {$elapsed}s");
         }
 
         $elapsed = round(microtime(true) - $startTime, 1);
@@ -133,7 +137,7 @@ class BackupAlertsTable extends Command
 
         // Verifikasi
         $this->log("Verifikasi...");
-        $backupCount = DB::table($backupName)->count();
+        $backupCount = (int) DB::selectOne("SELECT COUNT(*) as total FROM `{$backupName}`")->total;
 
         if ($backupCount === $totalRows) {
             $this->log("✔  Backup selesai: {$backupCount} records → {$backupName} ({$elapsed}s)");
