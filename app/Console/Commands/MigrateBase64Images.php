@@ -28,6 +28,12 @@ class MigrateBase64Images extends Command
     private bool $dryRun = false;
     private string $table = 'alerts';
 
+    /** @var string[] File path yang sudah disimpan ke storage (untuk rollback) */
+    private array $savedFiles = [];
+
+    /** @var array<int, array{table: string, id: mixed, col: string, original: string}> Record yang sudah diupdate (untuk rollback) */
+    private array $updatedRecords = [];
+
     public function handle(): int
     {
         // Gambar base64 bisa sangat besar — hapus batas memory untuk command ini
@@ -91,19 +97,27 @@ class MigrateBase64Images extends Command
         $this->info("Memulai migrasi kolom: " . implode(', ', $columns));
         $this->newLine();
 
-        foreach ($columns as $col) {
-            $this->info("▶  Memproses kolom: <comment>{$col}</comment>");
+        try {
+            foreach ($columns as $col) {
+                $this->info("▶  Memproses kolom: <comment>{$col}</comment>");
 
-            DB::table($this->table)
-                ->whereNotNull($col)
-                ->where($col, '!=', '')
-                ->where($col, 'LIKE', '%data:image/%')
-                ->orderBy('id')
-                ->chunk($chunkSize, function ($rows) use ($col) {
-                    foreach ($rows as $row) {
-                        $this->processRow($row, $col);
-                    }
-                });
+                DB::table($this->table)
+                    ->whereNotNull($col)
+                    ->where($col, '!=', '')
+                    ->where($col, 'LIKE', '%data:image/%')
+                    ->orderBy('id')
+                    ->chunk($chunkSize, function ($rows) use ($col) {
+                        foreach ($rows as $row) {
+                            $this->processRow($row, $col);
+                        }
+                    });
+            }
+        } catch (\Throwable $e) {
+            $this->newLine();
+            $this->error("💥  Error fatal: " . $e->getMessage());
+            $this->warn("↩️   Menjalankan rollback...");
+            $this->rollback();
+            return self::FAILURE;
         }
 
         $this->newLine();
@@ -147,6 +161,7 @@ class MigrateBase64Images extends Command
 
         // Kumpulkan semua img src base64 terlebih dahulu (karena DOMNodeList adalah live)
         $srcs = [];
+        $rowFiles = []; // file yang disimpan untuk row ini (untuk rollback lokal)
         foreach ($imgTags as $img) {
             $src = $img->getAttribute('src');
             if (str_starts_with($src, self::BASE64_PREFIX)) {
@@ -193,6 +208,7 @@ class MigrateBase64Images extends Command
 
                 Storage::disk('public')->put($filename, $decoded);
                 $replacements[$src] = $publicUrl;
+                $rowFiles[]         = $filename; // catat untuk rollback lokal
                 $imagesFound++;
                 $this->totalImages++;
                 $this->line("   ✔  ID={$row->id} → <info>{$filename}</info>");
@@ -215,11 +231,74 @@ class MigrateBase64Images extends Command
             }
 
             if (! $this->dryRun) {
-                DB::table($this->table)
-                    ->where('id', $row->id)
-                    ->update([$col => $newContent]);
+                try {
+                    DB::table($this->table)
+                        ->where('id', $row->id)
+                        ->update([$col => $newContent]);
+
+                    // Catat untuk full rollback jika proses berikutnya gagal
+                    $this->savedFiles    = array_merge($this->savedFiles, $rowFiles);
+                    $this->updatedRecords[] = [
+                        'table'    => $this->table,
+                        'id'       => $row->id,
+                        'col'      => $col,
+                        'original' => $content,
+                    ];
+                } catch (\Throwable $e) {
+                    // DB update gagal — hapus file yang sudah disimpan untuk row ini
+                    $this->warn("   ✘  DB update gagal ID={$row->id}: " . $e->getMessage());
+                    $this->warn("   ↩️  Menghapus " . count($rowFiles) . " file untuk row ini...");
+                    foreach ($rowFiles as $f) {
+                        Storage::disk('public')->delete($f);
+                    }
+                    $this->failedImages += count($rowFiles);
+                    $this->totalImages  -= count($rowFiles);
+                }
             }
         }
+    }
+
+    private function rollback(): void
+    {
+        $fileCount   = count($this->savedFiles);
+        $recordCount = count($this->updatedRecords);
+
+        if ($fileCount === 0 && $recordCount === 0) {
+            $this->line('   Tidak ada perubahan untuk di-rollback.');
+            return;
+        }
+
+        // 1. Hapus semua file yang sudah disimpan ke storage
+        if ($fileCount > 0) {
+            $this->line("   Menghapus {$fileCount} file dari storage...");
+            foreach ($this->savedFiles as $file) {
+                try {
+                    Storage::disk('public')->delete($file);
+                } catch (\Throwable) {
+                    $this->warn("   Gagal hapus file: {$file}");
+                }
+            }
+            $this->line("   ✔  {$fileCount} file dihapus.");
+        }
+
+        // 2. Kembalikan konten DB ke nilai asli
+        if ($recordCount > 0) {
+            $this->line("   Memulihkan {$recordCount} record di database...");
+            $restored = 0;
+            foreach ($this->updatedRecords as $entry) {
+                try {
+                    DB::table($entry['table'])
+                        ->where('id', $entry['id'])
+                        ->update([$entry['col'] => $entry['original']]);
+                    $restored++;
+                } catch (\Throwable $e) {
+                    $this->warn("   Gagal restore ID={$entry['id']}: " . $e->getMessage());
+                }
+            }
+            $this->line("   ✔  {$restored}/{$recordCount} record dipulihkan.");
+        }
+
+        $this->warn("⚠️   Rollback selesai.");
     }
 
     private function hasBase64Image(string $content): bool
