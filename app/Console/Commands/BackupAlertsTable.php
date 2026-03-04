@@ -12,13 +12,39 @@ class BackupAlertsTable extends Command
                             {--table=alerts : Nama tabel sumber}
                             {--name= : Nama tabel backup (default: alerts_backup_YYYYMMDD)}
                             {--drop : Drop tabel backup lama jika sudah ada}
-                            {--chunk=200 : Jumlah record per batch}';
+                            {--chunk=200 : Jumlah record per batch}
+                            {--background : Jalankan di background (aman meski koneksi SSH putus)}
+                            {--log= : Path file log (default: storage/logs/backup-YYYYMMDD-HHmmss.log)}';
 
     protected $description = 'Backup tabel alerts ke tabel baru dengan progress real-time';
 
     public function handle(): int
     {
         ini_set('memory_limit', '-1');
+
+        // Jika --background, spawn ulang dengan nohup lalu keluar
+        if ($this->option('background')) {
+            $logFile = $this->option('log')
+                ?: storage_path('logs/backup-' . Carbon::now()->format('Ymd-His') . '.log');
+
+            // Bangun ulang command tanpa --background
+            $artisan = base_path('artisan');
+            $php     = PHP_BINARY;
+            $args    = collect([
+                '--table='  . $this->option('table'),
+                '--chunk='  . $this->option('chunk'),
+                $this->option('drop') ? '--drop' : null,
+                $this->option('name') ? '--name=' . $this->option('name') : null,
+            ])->filter()->implode(' ');
+
+            $cmd = "nohup \"{$php}\" \"{$artisan}\" alerts:backup {$args} >> \"{$logFile}\" 2>&1 &";
+            shell_exec($cmd);
+
+            $this->line("✔  Backup berjalan di background.");
+            $this->line("   Log : {$logFile}");
+            $this->line("   Pantau: tail -f {$logFile}");
+            return self::SUCCESS;
+        }
 
         $sourceTable = $this->option('table');
         $backupName  = $this->option('name') ?: $sourceTable . '_backup_' . Carbon::now()->format('Ymd');
