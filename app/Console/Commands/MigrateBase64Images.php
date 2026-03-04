@@ -13,7 +13,9 @@ class MigrateBase64Images extends Command
                             {--dry-run : Jalankan tanpa menyimpan perubahan}
                             {--column=all : Kolom yang akan diproses (all, auditorReason, alertNote)}
                             {--chunk=100 : Jumlah record per batch}
-                            {--table=alerts : Nama tabel yang akan diproses (default: alerts)}';
+                            {--table=alerts : Nama tabel yang akan diproses (default: alerts)}
+                            {--background : Jalankan di background (aman meski koneksi SSH putus)}
+                            {--log= : Path file log (default: storage/logs/migrate-base64-YYYYMMDD-HHmmss.log)}';
 
     protected $description = 'Migrasi base64 images dari database ke file system dan update URL di database';
 
@@ -30,6 +32,40 @@ class MigrateBase64Images extends Command
     {
         // Gambar base64 bisa sangat besar — hapus batas memory untuk command ini
         ini_set('memory_limit', '-1');
+        set_time_limit(0);
+
+        // Jika --background, spawn ulang dengan nohup lalu keluar
+        if ($this->option('background')) {
+            $logFile = $this->option('log')
+                ?: storage_path('logs/migrate-base64-' . \Carbon\Carbon::now()->format('Ymd-His') . '.log');
+
+            $php     = PHP_BINARY;
+            $artisan = base_path('artisan');
+            $args    = collect([
+                'alerts:migrate-base64-images',
+                '--column='  . $this->option('column'),
+                '--chunk='   . $this->option('chunk'),
+                '--table='   . $this->option('table'),
+                $this->option('dry-run') ? '--dry-run' : null,
+            ])->filter()->values()->toArray();
+
+            $scriptFile = storage_path('logs/migrate-runner-' . \Carbon\Carbon::now()->format('Ymd-His') . '.sh');
+            $phpEsc     = escapeshellarg($php);
+            $artisanEsc = escapeshellarg($artisan);
+            $argsEsc    = implode(' ', array_map('escapeshellarg', $args));
+            $logEsc     = escapeshellarg($logFile);
+
+            file_put_contents($scriptFile, "#!/bin/sh\n{$phpEsc} {$artisanEsc} {$argsEsc} >> {$logEsc} 2>&1\nrm -f " . escapeshellarg($scriptFile) . "\n");
+            chmod($scriptFile, 0755);
+
+            $scriptEsc = escapeshellarg($scriptFile);
+            shell_exec("nohup sh {$scriptEsc} > /dev/null 2>&1 &");
+
+            $this->line("✔  Migrasi berjalan di background.");
+            $this->line("   Log    : {$logFile}");
+            $this->line("   Pantau : tail -f {$logFile}");
+            return self::SUCCESS;
+        }
 
         $this->dryRun = $this->option('dry-run');
         $column     = $this->option('column');
