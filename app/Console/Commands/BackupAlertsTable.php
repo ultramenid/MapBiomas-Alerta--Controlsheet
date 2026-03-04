@@ -27,22 +27,32 @@ class BackupAlertsTable extends Command
             $logFile = $this->option('log')
                 ?: storage_path('logs/backup-' . Carbon::now()->format('Ymd-His') . '.log');
 
-            // Bangun ulang command tanpa --background
-            $artisan = base_path('artisan');
             $php     = PHP_BINARY;
+            $artisan = base_path('artisan');
             $args    = collect([
+                'alerts:backup',
                 '--table='  . $this->option('table'),
                 '--chunk='  . $this->option('chunk'),
                 $this->option('drop') ? '--drop' : null,
                 $this->option('name') ? '--name=' . $this->option('name') : null,
-            ])->filter()->implode(' ');
+            ])->filter()->values()->toArray();
 
-            $cmd = "nohup \"{$php}\" \"{$artisan}\" alerts:backup {$args} >> \"{$logFile}\" 2>&1 &";
-            shell_exec($cmd);
+            // Tulis shell script ke file temp — hindari masalah quoting path dengan spasi
+            $scriptFile = storage_path('logs/backup-runner-' . Carbon::now()->format('Ymd-His') . '.sh');
+            $phpEsc     = escapeshellarg($php);
+            $artisanEsc = escapeshellarg($artisan);
+            $argsEsc    = implode(' ', array_map('escapeshellarg', $args));
+            $logEsc     = escapeshellarg($logFile);
+
+            file_put_contents($scriptFile, "#!/bin/sh\n{$phpEsc} {$artisanEsc} {$argsEsc} >> {$logEsc} 2>&1\nrm -f " . escapeshellarg($scriptFile) . "\n");
+            chmod($scriptFile, 0755);
+
+            $scriptEsc = escapeshellarg($scriptFile);
+            shell_exec("nohup sh {$scriptEsc} > /dev/null 2>&1 &");
 
             $this->line("✔  Backup berjalan di background.");
-            $this->line("   Log : {$logFile}");
-            $this->line("   Pantau: tail -f {$logFile}");
+            $this->line("   Log    : {$logFile}");
+            $this->line("   Pantau : tail -f {$logFile}");
             return self::SUCCESS;
         }
 
