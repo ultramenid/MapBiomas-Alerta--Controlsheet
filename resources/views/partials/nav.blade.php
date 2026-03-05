@@ -9,15 +9,20 @@
                 <div class=" dark:hover:bg-newgray-700 py-3 px-2 rounded @if($nav == 'alerts' )border-b-2   border-gray-900 dark:border-slate-600 @endif ">
                     <a href="{{url('/alerts')}}" class=" px-0.5  @if($nav == 'alerts' )   text-newgray-900 dark:text-gray-300 @endif   hover:text-newgray-900 dark:hover:text-gray-300 cursor-pointer" >alerts</a>
                 </div>
-            @if (session('role_id') == 0)
-                <div class=" dark:hover:bg-newgray-700 py-3 px-2 rounded @if($nav == 'users' )border-b-2   border-gray-900 dark:border-slate-600 @endif ">
-                    <a href="{{url('/users')}}" class=" px-0.5  @if($nav == 'users' )   text-newgray-900 dark:text-gray-300 @endif   hover:text-newgray-900 dark:hover:text-gray-300 cursor-pointer" >users</a>
+                @if (in_array(session('role_id'), [0, 1]))
+                <div class=" dark:hover:bg-newgray-700 py-3 px-2 rounded @if($nav == 'alerts-test' )border-b-2   border-gray-900 dark:border-slate-600 @endif ">
+                        <a href="{{url('/alerts-test')}}" class=" px-0.5  @if($nav == 'alerts-test' )   text-newgray-900 dark:text-gray-300 @endif   hover:text-newgray-900 dark:hover:text-gray-300 cursor-pointer" >alert test</a>
                 </div>
+                @endif
+                @if (session('role_id') == 0)
+                    <div class=" dark:hover:bg-newgray-700 py-3 px-2 rounded @if($nav == 'users' )border-b-2   border-gray-900 dark:border-slate-600 @endif ">
+                        <a href="{{url('/users')}}" class=" px-0.5  @if($nav == 'users' )   text-newgray-900 dark:text-gray-300 @endif   hover:text-newgray-900 dark:hover:text-gray-300 cursor-pointer" >users</a>
+                    </div>
 
-            @endif
-            <div class=" dark:hover:bg-newgray-700 py-3 px-2 rounded @if($nav == 'settings' )border-b-2   border-gray-900 dark:border-slate-600 @endif ">
-                <a href="{{url('/settings')}}" class=" px-0.5  @if($nav == 'settings' )   text-newgray-900 dark:text-gray-300 @endif   hover:text-newgray-900 dark:hover:text-gray-300 cursor-pointer" >settings</a>
-            </div>
+                @endif
+                <div class=" dark:hover:bg-newgray-700 py-3 px-2 rounded @if($nav == 'settings' )border-b-2   border-gray-900 dark:border-slate-600 @endif ">
+                    <a href="{{url('/settings')}}" class=" px-0.5  @if($nav == 'settings' )   text-newgray-900 dark:text-gray-300 @endif   hover:text-newgray-900 dark:hover:text-gray-300 cursor-pointer" >settings</a>
+                </div>
 
 
         </nav>

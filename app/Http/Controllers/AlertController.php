@@ -88,4 +88,10 @@ class AlertController extends Controller
         return $data;
 
     }
+
+    public function alertsTest(){
+        $title = 'Auditor alert - Mapbiomas Indonesia';
+        $nav = 'alerts-test';
+        return view('alerts-test', compact('title', 'nav'));
+    }
 }
