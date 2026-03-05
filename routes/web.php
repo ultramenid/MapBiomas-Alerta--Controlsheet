@@ -20,6 +20,7 @@ Route::middleware([checkSession::class])->group(function () {
     Route::get('/editalert/{id}', [AlertController::class, 'editalert']);
     route::get('/rest/fix/{id}', [AlertController::class, 'fix']);
     route::get('/rest/audit/{id}', [AlertController::class, 'audit']);
+    route::get('/rest/audit-test/{id}', [AlertController::class, 'auditTest']);
     route::get('/alerts-test', [AlertController::class, 'alertsTest']);
 
     Route::middleware([checkLevel::class])->group(function(){

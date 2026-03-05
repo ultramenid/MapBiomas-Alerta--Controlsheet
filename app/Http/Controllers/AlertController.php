@@ -89,6 +89,29 @@ class AlertController extends Controller
 
     }
 
+
+    public function auditTest($id){
+
+        $data = DB::table('alerts_backup_terbaru')
+        ->join('users', 'alerts_backup_terbaru.analisId', '=', 'users.id')
+        ->select([
+            'alerts_backup_terbaru.alertId',
+            'alerts_backup_terbaru.auditorStatus',
+            'alerts_backup_terbaru.alertStatus',
+            'alerts_backup_terbaru.auditorReason',
+            'alerts_backup_terbaru.observation',
+            'alerts_backup_terbaru.alertNote',
+            'users.name as name',
+        ])
+        ->where('alerts_backup_terbaru.isActive', 1)
+        ->where('alerts_backup_terbaru.id', $id)
+        ->first();
+        // dd($data);
+
+        return $data;
+
+    }
+
     public function alertsTest(){
         $title = 'Auditor alert - Mapbiomas Indonesia';
         $nav = 'alerts-test';

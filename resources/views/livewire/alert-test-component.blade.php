@@ -41,7 +41,7 @@
 
     </div>
     <div x-data="{ open: @entangle('isAudit') }">
-        @include('partials.auditing')
+        @include('partials.auditing-test')
     </div>
     <div x-data="{ open: @entangle('deleter') }">
         @include('partials.deleterAlert')

@@ -215,7 +215,7 @@ function auditModal()
 
                 this.loading = true;
 
-                fetch(`/rest/audit/${id}`)
+                fetch(`/rest/audit-test/${id}`)
                     .then(res => res.json())
                     .then(data => {
 
