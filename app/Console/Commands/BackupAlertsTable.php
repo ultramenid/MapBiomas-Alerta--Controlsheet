@@ -91,12 +91,15 @@ class BackupAlertsTable extends Command
         if ($b64Where) $this->log("Filter  : hanya baris dengan base64 image");
         $this->separator();
 
-        $this->log("Menghitung total records...");
-        $countQuery = $b64Where
-            ? "SELECT COUNT(*) as total FROM `{$sourceTable}` WHERE {$b64Where}"
-            : "SELECT COUNT(*) as total FROM `{$sourceTable}`";
-        $totalRows = (int) DB::selectOne($countQuery)->total;
-        $this->log("Total   : {$totalRows} records" . ($b64Where ? ' (dengan base64 image)' : ''));
+        // COUNT(*) dengan LIKE sangat lambat di tabel besar — skip jika filter base64
+        if (! $b64Where) {
+            $this->log("Menghitung total records...");
+            $totalRows = (int) DB::selectOne("SELECT COUNT(*) as total FROM `{$sourceTable}`")->total;
+            $this->log("Total   : {$totalRows} records");
+        } else {
+            $totalRows = null;
+            $this->log("Total   : (skip COUNT — filter base64 aktif)");
+        }
         $this->separator();
 
         // Cek jika tabel backup sudah ada
@@ -279,13 +282,15 @@ class BackupAlertsTable extends Command
         if ($b64Where) $this->log("Filter  : hanya baris dengan base64 image");
         $this->separator();
 
-        // Hitung total
-        $this->log("Menghitung total records...");
-        $countQuery = $b64Where
-            ? "SELECT COUNT(*) as total FROM `{$sourceTable}` WHERE {$b64Where}"
-            : "SELECT COUNT(*) as total FROM `{$sourceTable}`";
-        $totalRows = (int) DB::selectOne($countQuery)->total;
-        $this->log("Total   : {$totalRows} records" . ($b64Where ? ' (dengan base64 image)' : ''));
+        // COUNT(*) dengan LIKE sangat lambat di tabel besar — skip jika filter base64
+        if (! $b64Where) {
+            $this->log("Menghitung total records...");
+            $totalRows = (int) DB::selectOne("SELECT COUNT(*) as total FROM `{$sourceTable}`")->total;
+            $this->log("Total   : {$totalRows} records");
+        } else {
+            $totalRows = null;
+            $this->log("Total   : (skip COUNT — filter base64 aktif)");
+        }
         $this->separator();
 
         // Buka gzip stream — tulis langsung ke file terkompresi
@@ -298,7 +303,7 @@ class BackupAlertsTable extends Command
         // --- Header ---
         gzwrite($gz, "-- Backup: {$sourceTable}\n");
         gzwrite($gz, "-- Date  : " . Carbon::now()->toDateTimeString() . "\n");
-        gzwrite($gz, "-- Rows  : {$totalRows}\n\n");
+        gzwrite($gz, "-- Rows  : " . ($totalRows ?? '?') . "\n\n");
 
         // --- Header restore optimization ---
         gzwrite($gz, "SET FOREIGN_KEY_CHECKS=0;\n");
@@ -363,9 +368,12 @@ class BackupAlertsTable extends Command
             $lastId  = end($rows)->id;
             $batch++;
             $elapsed = round(microtime(true) - $startTime, 1);
-            $percent = $totalRows > 0 ? round(($copied / $totalRows) * 100, 1) : 0;
-
-            $this->log("Batch #{$batch} | " . $this->makeBar($percent) . " {$percent}% | {$copied}/{$totalRows} records | {$elapsed}s");
+            if ($totalRows !== null) {
+                $percent = round(($copied / $totalRows) * 100, 1);
+                $this->log("Batch #{$batch} | " . $this->makeBar($percent) . " {$percent}% | {$copied}/{$totalRows} records | {$elapsed}s");
+            } else {
+                $this->log("Batch #{$batch} | {$copied} records | {$elapsed}s");
+            }
 
             // Simpan checkpoint — resume jika proses terputus
             file_put_contents($checkpointFile, $lastId);
