@@ -10,9 +10,9 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
-// Jalankan setiap hari tengah malam — bersihkan base64 yang mungkin masih masuk dari user
-Schedule::command('alerts:migrate-base64-images')
-    ->daily()
+// Jalankan perjam untuk migrate base64 images di tabel alerts
+Schedule::command('alerts:migrate-base64-images --table=alerts')
+    ->hourly()
     ->withoutOverlapping()
     ->runInBackground()
     ->appendOutputTo(storage_path('logs/migrate-base64.log'));
