@@ -10,7 +10,9 @@ class MarkBase64Rows extends Command
 {
     protected $signature = 'alerts:mark-base64
                             {--table=alerts : Nama tabel}
-                            {--chunk=1000 : Jumlah record per batch scan}
+                            {--chunk=200 : Jumlah record per batch scan}
+                            {--sleep=200 : Jeda antar batch dalam milidetik (kurangi lock contention)}
+                            {--lock-timeout=30 : innodb_lock_wait_timeout per sesi (detik)}
                             {--reset : Reset semua has_base64 ke 0 dulu sebelum scan ulang}
                             {--background : Jalankan di background (aman meski koneksi SSH putus)}
                             {--log= : Path file log}';
@@ -30,8 +32,10 @@ class MarkBase64Rows extends Command
             $artisan = base_path('artisan');
             $args    = collect([
                 'alerts:mark-base64',
-                '--table=' . $this->option('table'),
-                '--chunk=' . $this->option('chunk'),
+                '--table='        . $this->option('table'),
+                '--chunk='        . $this->option('chunk'),
+                '--sleep='        . $this->option('sleep'),
+                '--lock-timeout=' . $this->option('lock-timeout'),
                 $this->option('reset') ? '--reset' : null,
             ])->filter()->values()->toArray();
 
@@ -52,8 +56,13 @@ class MarkBase64Rows extends Command
             return self::SUCCESS;
         }
 
-        $table     = $this->option('table');
-        $chunkSize = (int) $this->option('chunk');
+        $table       = $this->option('table');
+        $chunkSize   = (int) $this->option('chunk');
+        $sleepMs     = (int) $this->option('sleep');
+        $lockTimeout = (int) $this->option('lock-timeout');
+
+        // Set session lock wait timeout — hindari error 1205 saat ada query lain
+        DB::unprepared("SET SESSION innodb_lock_wait_timeout = {$lockTimeout}");
 
         // Cek kolom has_base64 ada
         $dbName    = DB::connection()->getDatabaseName();
@@ -80,6 +89,8 @@ class MarkBase64Rows extends Command
         $this->log("Tabel   : {$table}");
         $this->log("Max ID  : {$maxId}");
         $this->log("Chunk   : {$chunkSize} records/batch");
+        $this->log("Sleep   : {$sleepMs}ms antar batch");
+        $this->log("Lock TO : {$lockTimeout}s");
         $this->log("Memulai scan — progress berdasarkan id range...");
         $this->separator();
 
@@ -101,7 +112,22 @@ class MarkBase64Rows extends Command
 
             if (! empty($ids)) {
                 $idList = implode(',', array_column($ids, 'id'));
-                DB::unprepared("UPDATE `{$table}` SET has_base64 = 1 WHERE id IN ({$idList})");
+                // Retry jika kena lock timeout (max 3x dengan jeda 3 detik)
+                $retries = 0;
+                while (true) {
+                    try {
+                        DB::unprepared("UPDATE `{$table}` SET has_base64 = 1 WHERE id IN ({$idList})");
+                        break;
+                    } catch (\Illuminate\Database\QueryException $e) {
+                        if ($retries < 3 && str_contains($e->getMessage(), '1205')) {
+                            $retries++;
+                            $this->log("⚠  Lock timeout — retry #{$retries} dalam 3 detik...");
+                            sleep(3);
+                        } else {
+                            throw $e;
+                        }
+                    }
+                }
                 $marked += count($ids);
             }
 
@@ -112,6 +138,11 @@ class MarkBase64Rows extends Command
             $percent = $maxId > 0 ? min(round(($lastId / $maxId) * 100, 1), 100) : 100;
 
             $this->log("Batch #{$batch} | " . $this->makeBar($percent) . " {$percent}% | ditandai={$marked} | {$elapsed}s");
+
+            // Jeda antar batch — beri kesempatan query lain (write) untuk masuk
+            if ($sleepMs > 0 && $lastId < $maxId) {
+                usleep($sleepMs * 1000);
+            }
         }
 
         $elapsed = round(microtime(true) - $start, 1);
