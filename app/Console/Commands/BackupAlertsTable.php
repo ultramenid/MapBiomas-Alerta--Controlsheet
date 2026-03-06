@@ -145,6 +145,7 @@ class BackupAlertsTable extends Command
         $this->log("Mulai menyalin data...");
         $batch     = 0;
         $lastId    = 0;
+        $copied    = 0;
         $startTime = microtime(true);
 
         while (true) {
@@ -157,11 +158,12 @@ class BackupAlertsTable extends Command
 
             $lastId  = (int) $newLastId;
             $batch++;
-            $copied  = DB::selectOne("SELECT COUNT(*) as total FROM `{$backupName}`")->total;
+            $copied += $chunkSize; // estimasi lokal — hindari COUNT(*) per batch
+            $copied  = min($copied, $totalRows);
             $elapsed = round(microtime(true) - $startTime, 1);
             $percent = $totalRows > 0 ? round(($copied / $totalRows) * 100, 1) : 0;
 
-            $this->log("Batch #{$batch} | " . $this->makeBar($percent) . " {$percent}% | {$copied}/{$totalRows} | {$elapsed}s");
+            $this->log("Batch #{$batch} | " . $this->makeBar($percent) . " {$percent}% | ~{$copied}/{$totalRows} | {$elapsed}s");
         }
 
         $elapsed     = round(microtime(true) - $startTime, 1);
@@ -232,17 +234,22 @@ class BackupAlertsTable extends Command
         gzwrite($gz, "-- Date  : " . Carbon::now()->toDateTimeString() . "\n");
         gzwrite($gz, "-- Rows  : {$totalRows}\n\n");
 
+        // --- Header restore optimization ---
+        gzwrite($gz, "SET FOREIGN_KEY_CHECKS=0;\n");
+        gzwrite($gz, "SET UNIQUE_CHECKS=0;\n");
+        gzwrite($gz, "SET AUTOCOMMIT=0;\n\n");
+
         // --- CREATE TABLE ---
         $this->log("Menulis struktur tabel...");
         $createRow = DB::selectOne("SHOW CREATE TABLE `{$sourceTable}`");
         $createSql = $createRow->{'Create Table'};
-        // Rename tabel di CREATE TABLE agar bisa restore dengan nama berbeda
         $createSql = preg_replace(
             '/CREATE TABLE `' . preg_quote($sourceTable, '/') . '`/',
             "CREATE TABLE `{$backupName}`",
             $createSql,
             1
         );
+        gzwrite($gz, "DROP TABLE IF EXISTS `{$backupName}`;\n");
         gzwrite($gz, $createSql . ";\n\n");
 
         // --- Data ---
@@ -262,37 +269,45 @@ class BackupAlertsTable extends Command
         $colList = implode(', ', $columns);
 
         while (true) {
-            // Ambil satu batch — hanya id dulu untuk cursor
             $rows = DB::select(
                 "SELECT * FROM `{$sourceTable}` WHERE id > ? ORDER BY id LIMIT ?",
                 [$lastId, $chunkSize]
             );
 
-            if (empty($rows)) {
-                break;
-            }
+            if (empty($rows)) break;
 
-            // Tulis INSERT statements
+            // Multi-row INSERT — jauh lebih cepat saat restore vs INSERT per baris
+            $valueGroups = [];
             foreach ($rows as $row) {
                 $values = array_map(function ($val) {
                     if ($val === null) return 'NULL';
                     return "'" . addslashes((string) $val) . "'";
                 }, (array) $row);
-
-                gzwrite($gz, "INSERT INTO `{$backupName}` ({$colList}) VALUES (" . implode(', ', $values) . ");\n");
+                $valueGroups[] = '(' . implode(', ', $values) . ')';
                 $copied++;
             }
+
+            // Buffer per batch — satu gzwrite per INSERT statement
+            $buffer  = "INSERT INTO `{$backupName}` ({$colList}) VALUES\n";
+            $buffer .= implode(",\n", $valueGroups) . ";\n";
+            gzwrite($gz, $buffer);
+            unset($buffer, $valueGroups);
 
             $lastId  = end($rows)->id;
             $batch++;
             $elapsed = round(microtime(true) - $startTime, 1);
             $percent = $totalRows > 0 ? round(($copied / $totalRows) * 100, 1) : 0;
-            $bar     = $this->makeBar($percent);
 
-            $this->log("Batch #{$batch} | {$bar} {$percent}% | {$copied}/{$totalRows} records | {$elapsed}s");
+            $this->log("Batch #{$batch} | " . $this->makeBar($percent) . " {$percent}% | {$copied}/{$totalRows} records | {$elapsed}s");
 
-            unset($rows); // bebaskan memory
+            unset($rows);
         }
+
+        // Commit dan restore flags
+        gzwrite($gz, "\nCOMMIT;\n");
+        gzwrite($gz, "SET FOREIGN_KEY_CHECKS=1;\n");
+        gzwrite($gz, "SET UNIQUE_CHECKS=1;\n");
+        gzwrite($gz, "SET AUTOCOMMIT=1;\n");
 
         gzclose($gz);
 

@@ -101,11 +101,32 @@ class MigrateBase64Images extends Command
             foreach ($columns as $col) {
                 $this->info("▶  Memproses kolom: <comment>{$col}</comment>");
 
-                DB::table($this->table)
+                // Cek apakah FULLTEXT index tersedia untuk kolom ini
+                $hasFt = DB::selectOne(
+                    "SELECT COUNT(*) as cnt FROM information_schema.STATISTICS
+                     WHERE table_schema = DATABASE()
+                       AND table_name = ?
+                       AND column_name = ?
+                       AND index_type = 'FULLTEXT'",
+                    [$this->table, $col]
+                )->cnt > 0;
+
+                $query = DB::table($this->table)
                     ->whereNotNull($col)
-                    ->where($col, '!=', '')
-                    ->where($col, 'LIKE', '%data:image/%')
-                    ->orderBy('id')
+                    ->where($col, '!=', '');
+
+                if ($hasFt) {
+                    // FULLTEXT: 'base64' sebagai keyword cepat via index,
+                    // LIKE sebagai filter presisi (hanya rows yang lolos MATCH yang di-LIKE)
+                    $query->whereRaw("MATCH(`{$col}`) AGAINST(? IN BOOLEAN MODE)", ['base64'])
+                          ->where($col, 'LIKE', '%data:image/%');
+                    $this->line("   <info>✔ FULLTEXT index terdeteksi — menggunakan MATCH...AGAINST</info>");
+                } else {
+                    $query->where($col, 'LIKE', '%data:image/%');
+                    $this->line("   <comment>⚠ FULLTEXT index tidak ada — fallback ke LIKE (lambat pada tabel besar)</comment>");
+                }
+
+                $query->orderBy('id')
                     ->chunk($chunkSize, function ($rows) use ($col) {
                         foreach ($rows as $row) {
                             $this->processRow($row, $col);
