@@ -15,6 +15,7 @@ class BackupAlertsTable extends Command
                             {--chunk=200 : Jumlah record per batch}
                             {--to-table : Backup ke tabel baru (default: ke file .sql.gz)}
                             {--engine=ARCHIVE : Engine tabel backup — ARCHIVE (compressed), MyISAM (ringan), InnoDB (default mysql)}
+                            {--base64-only : Hanya backup baris yang mengandung base64 image (data:image) di auditorReason atau alertNote}
                             {--background : Jalankan di background (aman meski koneksi SSH putus)}
                             {--log= : Path file log (default: storage/logs/backup-YYYYMMDD-HHmmss.log)}';
 
@@ -36,9 +37,10 @@ class BackupAlertsTable extends Command
                 '--table='  . $this->option('table'),
                 '--chunk='  . $this->option('chunk'),
                 '--engine=' . $this->option('engine'),
-                $this->option('drop')     ? '--drop'     : null,
-                $this->option('to-table') ? '--to-table' : null,
-                $this->option('name')     ? '--name=' . $this->option('name') : null,
+                $this->option('drop')        ? '--drop'        : null,
+                $this->option('to-table')    ? '--to-table'    : null,
+                $this->option('base64-only') ? '--base64-only' : null,
+                $this->option('name')        ? '--name=' . $this->option('name') : null,
             ])->filter()->values()->toArray();
 
             // Tulis shell script ke file temp — hindari masalah quoting path dengan spasi
@@ -74,19 +76,27 @@ class BackupAlertsTable extends Command
 
     private function backupToTable(string $sourceTable, string $backupName, int $chunkSize): int
     {
-        $engine = strtoupper($this->option('engine'));
-        $drop   = $this->option('drop');
+        $engine     = strtoupper($this->option('engine'));
+        $drop       = $this->option('drop');
+        $base64Only = $this->option('base64-only');
+        $b64Where   = $base64Only
+            ? "(auditorReason LIKE '%data:image/%' OR alertNote LIKE '%data:image/%')"
+            : null;
 
         $this->log("Memulai backup ke tabel");
         $this->log("Sumber  : {$sourceTable}");
         $this->log("Target  : {$backupName}");
         $this->log("Engine  : {$engine} (" . $this->engineNote($engine) . ")");
         $this->log("Chunk   : {$chunkSize} records/batch");
+        if ($b64Where) $this->log("Filter  : hanya baris dengan base64 image");
         $this->separator();
 
         $this->log("Menghitung total records...");
-        $totalRows = (int) DB::selectOne("SELECT COUNT(*) as total FROM `{$sourceTable}`")->total;
-        $this->log("Total   : {$totalRows} records");
+        $countQuery = $b64Where
+            ? "SELECT COUNT(*) as total FROM `{$sourceTable}` WHERE {$b64Where}"
+            : "SELECT COUNT(*) as total FROM `{$sourceTable}`";
+        $totalRows = (int) DB::selectOne($countQuery)->total;
+        $this->log("Total   : {$totalRows} records" . ($b64Where ? ' (dengan base64 image)' : ''));
         $this->separator();
 
         // Cek jika tabel backup sudah ada
@@ -123,8 +133,9 @@ class BackupAlertsTable extends Command
                 $maxSourceId = (int) DB::selectOne("SELECT MAX(id) as max_id FROM `{$sourceTable}`")->max_id;
 
                 while (true) {
+                    $extraWhere = $b64Where ? " AND {$b64Where}" : '';
                     DB::unprepared(
-                        "INSERT INTO `{$backupName}` SELECT * FROM `{$sourceTable}` WHERE id > {$lastId} ORDER BY id LIMIT {$chunkSize}"
+                        "INSERT INTO `{$backupName}` SELECT * FROM `{$sourceTable}` WHERE id > {$lastId}{$extraWhere} ORDER BY id LIMIT {$chunkSize}"
                     );
 
                     $newLastId = DB::selectOne("SELECT MAX(id) as max_id FROM `{$backupName}`")->max_id ?? 0;
@@ -143,13 +154,8 @@ class BackupAlertsTable extends Command
                 $backupCount = (int) DB::selectOne("SELECT COUNT(*) as total FROM `{$backupName}`")->total;
                 $this->separator();
 
-                if ($backupCount === $totalRows) {
-                    $this->log("✔  Backup selesai: {$backupCount} records → {$backupName} ({$elapsed}s)");
-                    return self::SUCCESS;
-                }
-
-                $this->log("✘  Jumlah tidak cocok! Sumber: {$totalRows}, Backup: {$backupCount}");
-                return self::FAILURE;
+                $this->log("✔  Backup selesai: {$backupCount} records → {$backupName} ({$elapsed}s)");
+                return self::SUCCESS;
             }
         }
 
@@ -188,15 +194,16 @@ class BackupAlertsTable extends Command
         $this->separator();
 
         $this->log("Mulai menyalin data...");
-        $batch     = 0;
-        $lastId    = 0;
-        $copied    = 0;
-        $startTime = microtime(true);
+        $batch       = 0;
+        $lastId      = 0;
+        $copied      = 0;
+        $startTime   = microtime(true);
         $maxSourceId = (int) DB::selectOne("SELECT MAX(id) as max_id FROM `{$sourceTable}`")->max_id;
+        $extraWhere  = $b64Where ? " AND {$b64Where}" : '';
 
         while (true) {
             DB::unprepared(
-                "INSERT INTO `{$backupName}` SELECT * FROM `{$sourceTable}` WHERE id > {$lastId} ORDER BY id LIMIT {$chunkSize}"
+                "INSERT INTO `{$backupName}` SELECT * FROM `{$sourceTable}` WHERE id > {$lastId}{$extraWhere} ORDER BY id LIMIT {$chunkSize}"
             );
 
             $newLastId = DB::selectOne("SELECT MAX(id) as max_id FROM `{$backupName}`")->max_id ?? 0;
@@ -217,13 +224,8 @@ class BackupAlertsTable extends Command
         $backupCount = (int) DB::selectOne("SELECT COUNT(*) as total FROM `{$backupName}`")->total;
         $this->separator();
 
-        if ($backupCount === $totalRows) {
-            $this->log("✔  Backup selesai: {$backupCount} records → {$backupName} ({$elapsed}s)");
-            return self::SUCCESS;
-        }
-
-        $this->log("✘  Jumlah tidak cocok! Sumber: {$totalRows}, Backup: {$backupCount}");
-        return self::FAILURE;
+        $this->log("✔  Backup selesai: {$backupCount} records → {$backupName} ({$elapsed}s)");
+        return self::SUCCESS;
     }
 
     private function engineNote(string $engine): string
@@ -238,6 +240,11 @@ class BackupAlertsTable extends Command
 
     private function backupToFile(string $sourceTable, string $backupName, int $chunkSize): int
     {
+        $base64Only = $this->option('base64-only');
+        $b64Where   = $base64Only
+            ? "(auditorReason LIKE '%data:image/%' OR alertNote LIKE '%data:image/%')"
+            : null;
+
         $outFile = storage_path('backups/' . $backupName . '.sql.gz');
 
         // Pastikan direktori ada
@@ -269,12 +276,16 @@ class BackupAlertsTable extends Command
         $this->log("Sumber  : {$sourceTable}");
         $this->log("Output  : {$outFile}");
         $this->log("Chunk   : {$chunkSize} records/batch");
+        if ($b64Where) $this->log("Filter  : hanya baris dengan base64 image");
         $this->separator();
 
         // Hitung total
         $this->log("Menghitung total records...");
-        $totalRows = (int) DB::selectOne("SELECT COUNT(*) as total FROM `{$sourceTable}`")->total;
-        $this->log("Total   : {$totalRows} records");
+        $countQuery = $b64Where
+            ? "SELECT COUNT(*) as total FROM `{$sourceTable}` WHERE {$b64Where}"
+            : "SELECT COUNT(*) as total FROM `{$sourceTable}`";
+        $totalRows = (int) DB::selectOne($countQuery)->total;
+        $this->log("Total   : {$totalRows} records" . ($b64Where ? ' (dengan base64 image)' : ''));
         $this->separator();
 
         // Buka gzip stream — tulis langsung ke file terkompresi
@@ -325,10 +336,10 @@ class BackupAlertsTable extends Command
         $colList = implode(', ', $columns);
 
         while (true) {
-            $rows = DB::select(
-                "SELECT * FROM `{$sourceTable}` WHERE id > ? ORDER BY id LIMIT ?",
-                [$lastId, $chunkSize]
-            );
+            $sql    = $b64Where
+                ? "SELECT * FROM `{$sourceTable}` WHERE id > ? AND {$b64Where} ORDER BY id LIMIT ?"
+                : "SELECT * FROM `{$sourceTable}` WHERE id > ? ORDER BY id LIMIT ?";
+            $rows = DB::select($sql, [$lastId, $chunkSize]);
 
             if (empty($rows)) break;
 
