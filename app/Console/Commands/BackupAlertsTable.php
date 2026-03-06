@@ -117,45 +117,23 @@ class BackupAlertsTable extends Command
                 $this->separator();
                 $this->log("Mulai menyalin data...");
 
-                $batch     = 0;
-                $startTime = microtime(true);
+                $batch       = 0;
+                $startTime   = microtime(true);
+                $maxSourceId = (int) DB::selectOne("SELECT MAX(id) as max_id FROM `{$sourceTable}`")->max_id;
+                $lastId      = $resumeFrom;
+                $extraWhere  = $b64Where ? "AND {$b64Where}" : '';
 
-                if ($b64Where) {
-                    $this->log("Mengumpulkan ID baris dengan base64 (1x full scan)...");
-                    $matchingIds = DB::table($sourceTable)
-                        ->whereRaw($b64Where)
-                        ->where('id', '>', $resumeFrom)
-                        ->orderBy('id')
-                        ->pluck('id')
-                        ->toArray();
-                    $total = count($matchingIds);
-                    $this->log("Ditemukan: {$total} baris baru dengan base64 image");
-                    $this->separator();
-                    $copied = 0;
-                    foreach (array_chunk($matchingIds, $chunkSize) as $idBatch) {
-                        $ids = implode(',', $idBatch);
-                        DB::unprepared("INSERT INTO `{$backupName}` SELECT * FROM `{$sourceTable}` WHERE id IN ({$ids})");
-                        $copied += count($idBatch);
-                        $batch++;
-                        $elapsed = round(microtime(true) - $startTime, 1);
-                        $percent = round(($copied / $total) * 100, 1);
-                        $this->log("Batch #{$batch} | " . $this->makeBar($percent) . " {$percent}% | {$copied}/{$total} records | {$elapsed}s");
-                    }
-                } else {
-                    $maxSourceId = (int) DB::selectOne("SELECT MAX(id) as max_id FROM `{$sourceTable}`")->max_id;
-                    $lastId = $resumeFrom;
-                    while (true) {
-                        DB::unprepared(
-                            "INSERT INTO `{$backupName}` SELECT * FROM `{$sourceTable}` WHERE id > {$lastId} ORDER BY id LIMIT {$chunkSize}"
-                        );
-                        $newLastId = DB::selectOne("SELECT MAX(id) as max_id FROM `{$backupName}`")->max_id ?? 0;
-                        if ((int) $newLastId === (int) $lastId) break;
-                        $lastId  = (int) $newLastId;
-                        $batch++;
-                        $elapsed = round(microtime(true) - $startTime, 1);
-                        $percent = $maxSourceId > 0 ? round(($lastId / $maxSourceId) * 100, 1) : 0;
-                        $this->log("Batch #{$batch} | " . $this->makeBar($percent) . " {$percent}% | lastId={$lastId}/{$maxSourceId} | {$elapsed}s");
-                    }
+                while (true) {
+                    DB::unprepared(
+                        "INSERT INTO `{$backupName}` SELECT * FROM `{$sourceTable}` WHERE id > {$lastId} {$extraWhere} ORDER BY id LIMIT {$chunkSize}"
+                    );
+                    $newLastId = DB::selectOne("SELECT MAX(id) as max_id FROM `{$backupName}`")->max_id ?? 0;
+                    if ((int) $newLastId === (int) $lastId) break;
+                    $lastId = (int) $newLastId;
+                    $batch++;
+                    $elapsed = round(microtime(true) - $startTime, 1);
+                    $percent = $maxSourceId > 0 ? min(round(($lastId / $maxSourceId) * 100, 1), 100) : 100;
+                    $this->log("Batch #{$batch} | " . $this->makeBar($percent) . " {$percent}% | lastId={$lastId}/{$maxSourceId} | {$elapsed}s");
                 }
 
                 $elapsed     = round(microtime(true) - $startTime, 1);
@@ -204,52 +182,21 @@ class BackupAlertsTable extends Command
         $this->log("Mulai menyalin data...");
         $batch       = 0;
         $lastId      = 0;
-        $copied      = 0;
         $startTime   = microtime(true);
         $maxSourceId = (int) DB::selectOne("SELECT MAX(id) as max_id FROM `{$sourceTable}`")->max_id;
-        $extraWhere  = $b64Where ? " AND {$b64Where}" : '';
+        $extraWhere  = $b64Where ? "AND {$b64Where}" : '';
 
-        // Jika filter base64: kumpulkan semua ID yang cocok sekali saja (1x full scan)
-        // lalu batch dengan IN() — jauh lebih cepat dari LIKE per chunk
-        if ($b64Where) {
-            $this->log("Mengumpulkan ID baris dengan base64 (1x full scan)...");
-            $matchingIds = DB::table($sourceTable)
-                ->whereRaw($b64Where)
-                ->where('id', '>', $lastId)
-                ->orderBy('id')
-                ->pluck('id')
-                ->toArray();
-            $totalRows = count($matchingIds);
-            $this->log("Ditemukan: {$totalRows} baris dengan base64 image");
-            $this->separator();
-
-            foreach (array_chunk($matchingIds, $chunkSize) as $idBatch) {
-                $ids = implode(',', $idBatch);
-                DB::unprepared("INSERT INTO `{$backupName}` SELECT * FROM `{$sourceTable}` WHERE id IN ({$ids})");
-                $copied  += count($idBatch);
-                $batch++;
-                $elapsed  = round(microtime(true) - $startTime, 1);
-                $percent  = round(($copied / $totalRows) * 100, 1);
-                $this->log("Batch #{$batch} | " . $this->makeBar($percent) . " {$percent}% | {$copied}/{$totalRows} records | {$elapsed}s");
-            }
-        } else {
-            while (true) {
-                DB::unprepared(
-                    "INSERT INTO `{$backupName}` SELECT * FROM `{$sourceTable}` WHERE id > {$lastId} ORDER BY id LIMIT {$chunkSize}"
-                );
-
-                $newLastId = DB::selectOne("SELECT MAX(id) as max_id FROM `{$backupName}`")->max_id ?? 0;
-                if ((int) $newLastId === (int) $lastId) break;
-
-                $lastId  = (int) $newLastId;
-                $batch++;
-                $copied += $chunkSize;
-                $elapsed = round(microtime(true) - $startTime, 1);
-                $percent = $maxSourceId > 0 ? round(($lastId / $maxSourceId) * 100, 1) : 0;
-                $percent = min($percent, 100);
-
-                $this->log("Batch #{$batch} | " . $this->makeBar($percent) . " {$percent}% | lastId={$lastId}/{$maxSourceId} | {$elapsed}s");
-            }
+        while (true) {
+            DB::unprepared(
+                "INSERT INTO `{$backupName}` SELECT * FROM `{$sourceTable}` WHERE id > {$lastId} {$extraWhere} ORDER BY id LIMIT {$chunkSize}"
+            );
+            $newLastId = DB::selectOne("SELECT MAX(id) as max_id FROM `{$backupName}`")->max_id ?? 0;
+            if ((int) $newLastId === (int) $lastId) break;
+            $lastId  = (int) $newLastId;
+            $batch++;
+            $elapsed = round(microtime(true) - $startTime, 1);
+            $percent = $maxSourceId > 0 ? min(round(($lastId / $maxSourceId) * 100, 1), 100) : 100;
+            $this->log("Batch #{$batch} | " . $this->makeBar($percent) . " {$percent}% | lastId={$lastId}/{$maxSourceId} | {$elapsed}s");
         }
 
         $elapsed     = round(microtime(true) - $startTime, 1);
@@ -385,85 +332,42 @@ class BackupAlertsTable extends Command
         );
         $colList = implode(', ', $columns);
 
-        // Jika filter base64: kumpulkan semua ID yang cocok sekali saja (1x full scan)
-        // lalu batch dengan IN() — index lookup per batch, jauh lebih cepat dari LIKE per chunk
-        if ($b64Where) {
-            $this->log("Mengumpulkan ID baris dengan base64 (1x full scan)...");
-            $matchingIds = DB::table($sourceTable)
-                ->whereRaw($b64Where)
-                ->where('id', '>', $lastId)
-                ->orderBy('id')
-                ->pluck('id')
-                ->toArray();
-            $totalRows = count($matchingIds);
-            $this->log("Ditemukan: {$totalRows} baris dengan base64 image");
-            $this->separator();
+        // Jika filter base64 aktif: WHERE has_base64=1 (index) atau LIKE (fallback)
+        // Chunk loop sederhana — tidak perlu kumpulkan semua ID ke memory
+        $maxSourceId = (int) DB::selectOne("SELECT MAX(id) as max_id FROM `{$sourceTable}`")->max_id;
+        $whereClause = $b64Where ? "AND {$b64Where}" : '';
 
-            foreach (array_chunk($matchingIds, $chunkSize) as $idBatch) {
-                $rows = DB::select(
-                    "SELECT * FROM `{$sourceTable}` WHERE id IN (" . implode(',', $idBatch) . ") ORDER BY id"
-                );
+        while (true) {
+            $rows = DB::select(
+                "SELECT * FROM `{$sourceTable}` WHERE id > ? {$whereClause} ORDER BY id LIMIT ?",
+                [$lastId, $chunkSize]
+            );
 
-                $valueGroups = [];
-                foreach ($rows as $row) {
-                    $values = array_map(function ($val) {
-                        if ($val === null) return 'NULL';
-                        return "'" . addslashes((string) $val) . "'";
-                    }, (array) $row);
-                    $valueGroups[] = '(' . implode(', ', $values) . ')';
-                    $copied++;
-                }
+            if (empty($rows)) break;
 
-                $buffer  = "INSERT INTO `{$backupName}` ({$colList}) VALUES\n";
-                $buffer .= implode(",\n", $valueGroups) . ";\n";
-                gzwrite($gz, $buffer);
-                unset($buffer, $valueGroups, $rows);
-
-                $batch++;
-                $elapsed = round(microtime(true) - $startTime, 1);
-                $percent = $totalRows > 0 ? round(($copied / $totalRows) * 100, 1) : 0;
-                $this->log("Batch #{$batch} | " . $this->makeBar($percent) . " {$percent}% | {$copied}/{$totalRows} records | {$elapsed}s");
-
-                // Checkpoint: simpan ID terakhir yang diproses
-                file_put_contents($checkpointFile, end($idBatch));
+            $valueGroups = [];
+            foreach ($rows as $row) {
+                $values = array_map(function ($val) {
+                    if ($val === null) return 'NULL';
+                    return "'" . addslashes((string) $val) . "'";
+                }, (array) $row);
+                $valueGroups[] = '(' . implode(', ', $values) . ')';
+                $copied++;
             }
-        } else {
-            while (true) {
-                $rows = DB::select(
-                    "SELECT * FROM `{$sourceTable}` WHERE id > ? ORDER BY id LIMIT ?",
-                    [$lastId, $chunkSize]
-                );
 
-                if (empty($rows)) break;
+            $buffer  = "INSERT INTO `{$backupName}` ({$colList}) VALUES\n";
+            $buffer .= implode(",\n", $valueGroups) . ";\n";
+            gzwrite($gz, $buffer);
+            unset($buffer, $valueGroups);
 
-                $valueGroups = [];
-                foreach ($rows as $row) {
-                    $values = array_map(function ($val) {
-                        if ($val === null) return 'NULL';
-                        return "'" . addslashes((string) $val) . "'";
-                    }, (array) $row);
-                    $valueGroups[] = '(' . implode(', ', $values) . ')';
-                    $copied++;
-                }
+            $lastId  = end($rows)->id;
+            unset($rows);
+            $batch++;
+            $elapsed = round(microtime(true) - $startTime, 1);
+            $percent = $maxSourceId > 0 ? min(round(($lastId / $maxSourceId) * 100, 1), 100) : 100;
+            $this->log("Batch #{$batch} | " . $this->makeBar($percent) . " {$percent}% | {$copied} records | {$elapsed}s");
 
-                $buffer  = "INSERT INTO `{$backupName}` ({$colList}) VALUES\n";
-                $buffer .= implode(",\n", $valueGroups) . ";\n";
-                gzwrite($gz, $buffer);
-                unset($buffer, $valueGroups);
-
-                $lastId  = end($rows)->id;
-                $batch++;
-                $elapsed = round(microtime(true) - $startTime, 1);
-                if ($totalRows !== null) {
-                    $percent = round(($copied / $totalRows) * 100, 1);
-                    $this->log("Batch #{$batch} | " . $this->makeBar($percent) . " {$percent}% | {$copied}/{$totalRows} records | {$elapsed}s");
-                } else {
-                    $this->log("Batch #{$batch} | {$copied} records | {$elapsed}s");
-                }
-
-                file_put_contents($checkpointFile, $lastId);
-                unset($rows);
-            }
+            file_put_contents($checkpointFile, $lastId);
         }
 
         // Commit dan restore flags
