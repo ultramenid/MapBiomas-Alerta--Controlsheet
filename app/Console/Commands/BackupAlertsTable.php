@@ -106,7 +106,49 @@ class BackupAlertsTable extends Command
                 DB::unprepared("DROP TABLE `{$backupName}`");
                 $this->log("✔  Tabel lama dihapus");
             } else {
-                $this->log("✘  Tabel {$backupName} sudah ada! Gunakan --drop untuk menimpa.");
+                // Resume: lanjut dari ID terakhir yang sudah ada
+                $resumeFrom = (int) (DB::selectOne("SELECT MAX(id) as max_id FROM `{$backupName}`")->max_id ?? 0);
+                $alreadyCopied = (int) DB::selectOne("SELECT COUNT(*) as total FROM `{$backupName}`")->total;
+                $this->log("▶  Resume dari ID {$resumeFrom} ({$alreadyCopied} records sudah ada)");
+
+                // Langsung ke loop copy dengan lastId yang sudah diset
+                $this->log("Membuat struktur tabel backup (ENGINE={$engine})...");
+                $this->log("✔  Tabel sudah ada — skip CREATE");
+                $this->separator();
+                $this->log("Mulai menyalin data...");
+
+                $batch       = 0;
+                $lastId      = $resumeFrom;
+                $startTime   = microtime(true);
+                $maxSourceId = (int) DB::selectOne("SELECT MAX(id) as max_id FROM `{$sourceTable}`")->max_id;
+
+                while (true) {
+                    DB::unprepared(
+                        "INSERT INTO `{$backupName}` SELECT * FROM `{$sourceTable}` WHERE id > {$lastId} ORDER BY id LIMIT {$chunkSize}"
+                    );
+
+                    $newLastId = DB::selectOne("SELECT MAX(id) as max_id FROM `{$backupName}`")->max_id ?? 0;
+                    if ((int) $newLastId === (int) $lastId) break;
+
+                    $lastId  = (int) $newLastId;
+                    $batch++;
+                    $elapsed = round(microtime(true) - $startTime, 1);
+                    $percent = $maxSourceId > 0 ? round(($lastId / $maxSourceId) * 100, 1) : 0;
+                    $percent = min($percent, 100);
+
+                    $this->log("Batch #{$batch} | " . $this->makeBar($percent) . " {$percent}% | lastId={$lastId}/{$maxSourceId} | {$elapsed}s");
+                }
+
+                $elapsed     = round(microtime(true) - $startTime, 1);
+                $backupCount = (int) DB::selectOne("SELECT COUNT(*) as total FROM `{$backupName}`")->total;
+                $this->separator();
+
+                if ($backupCount === $totalRows) {
+                    $this->log("✔  Backup selesai: {$backupCount} records → {$backupName} ({$elapsed}s)");
+                    return self::SUCCESS;
+                }
+
+                $this->log("✘  Jumlah tidak cocok! Sumber: {$totalRows}, Backup: {$backupCount}");
                 return self::FAILURE;
             }
         }
@@ -150,6 +192,7 @@ class BackupAlertsTable extends Command
         $lastId    = 0;
         $copied    = 0;
         $startTime = microtime(true);
+        $maxSourceId = (int) DB::selectOne("SELECT MAX(id) as max_id FROM `{$sourceTable}`")->max_id;
 
         while (true) {
             DB::unprepared(
@@ -161,12 +204,13 @@ class BackupAlertsTable extends Command
 
             $lastId  = (int) $newLastId;
             $batch++;
-            $copied += $chunkSize; // estimasi lokal — hindari COUNT(*) per batch
-            $copied  = min($copied, $totalRows);
+            $copied += $chunkSize;
             $elapsed = round(microtime(true) - $startTime, 1);
-            $percent = $totalRows > 0 ? round(($copied / $totalRows) * 100, 1) : 0;
+            // Gunakan lastId/maxSourceId untuk progress akurat — tanpa COUNT(*) per batch
+            $percent = $maxSourceId > 0 ? round(($lastId / $maxSourceId) * 100, 1) : 0;
+            $percent = min($percent, 100);
 
-            $this->log("Batch #{$batch} | " . $this->makeBar($percent) . " {$percent}% | ~{$copied}/{$totalRows} | {$elapsed}s");
+            $this->log("Batch #{$batch} | " . $this->makeBar($percent) . " {$percent}% | lastId={$lastId}/{$maxSourceId} | {$elapsed}s");
         }
 
         $elapsed     = round(microtime(true) - $startTime, 1);
@@ -205,11 +249,19 @@ class BackupAlertsTable extends Command
         if (file_exists($outFile)) {
             if ($this->option('drop')) {
                 unlink($outFile);
+                if (file_exists($outFile . '.checkpoint')) unlink($outFile . '.checkpoint');
                 $this->log("⚠  File lama dihapus: {$outFile}");
             } else {
-                $this->log("✘  File sudah ada: {$outFile}");
-                $this->log("   Gunakan --drop untuk menimpa.");
-                return self::FAILURE;
+                // Resume dari checkpoint jika ada
+                $checkpointFile = $outFile . '.checkpoint';
+                if (file_exists($checkpointFile)) {
+                    $lastId = (int) file_get_contents($checkpointFile);
+                    $this->log("▶  Resume dari checkpoint ID={$lastId}");
+                } else {
+                    $this->log("✘  File sudah ada: {$outFile}");
+                    $this->log("   Gunakan --drop untuk menimpa, atau hapus file checkpoint jika ingin mulai ulang.");
+                    return self::FAILURE;
+                }
             }
         }
 
@@ -259,10 +311,11 @@ class BackupAlertsTable extends Command
         $this->log("Mulai menyalin data...");
         gzwrite($gz, "-- Data\n");
 
-        $batch     = 0;
-        $copied    = 0;
-        $lastId    = 0;
-        $startTime = microtime(true);
+        $batch      = 0;
+        $copied     = 0;
+        $lastId     = $lastId ?? 0; // bisa dari checkpoint resume
+        $startTime  = microtime(true);
+        $checkpointFile = $outFile . '.checkpoint';
 
         // Ambil nama kolom
         $columns = array_map(
@@ -303,6 +356,9 @@ class BackupAlertsTable extends Command
 
             $this->log("Batch #{$batch} | " . $this->makeBar($percent) . " {$percent}% | {$copied}/{$totalRows} records | {$elapsed}s");
 
+            // Simpan checkpoint — resume jika proses terputus
+            file_put_contents($checkpointFile, $lastId);
+
             unset($rows);
         }
 
@@ -316,6 +372,8 @@ class BackupAlertsTable extends Command
 
         $elapsed  = round(microtime(true) - $startTime, 1);
         $fileSize = round(filesize($outFile) / 1024 / 1024, 2);
+        // Hapus checkpoint — backup selesai sempurna
+        if (file_exists($checkpointFile)) unlink($checkpointFile);
         $this->separator();
         $this->log("✔  Backup selesai: {$copied} records → {$outFile} ({$fileSize} MB, {$elapsed}s)");
         $this->log("   Restore : gunakan 'zcat {$outFile} | mysql -u[user] -p [database}'");
