@@ -99,7 +99,10 @@ class BackupAlertsTable extends Command
         if ($exists) {
             if ($drop) {
                 $this->log("⚠  Tabel {$backupName} sudah ada — menghapus...");
-                DB::unprepared("TRUNCATE TABLE `{$backupName}`");
+                // ARCHIVE tidak support TRUNCATE — cukup DROP langsung
+                if ($engine !== 'ARCHIVE') {
+                    DB::unprepared("TRUNCATE TABLE `{$backupName}`");
+                }
                 DB::unprepared("DROP TABLE `{$backupName}`");
                 $this->log("✔  Tabel lama dihapus");
             } else {
