@@ -79,17 +79,16 @@ class BackupAlertsTable extends Command
         $engine     = strtoupper($this->option('engine'));
         $drop       = $this->option('drop');
         $base64Only = $this->option('base64-only');
-        $b64Where   = $base64Only ? $this->detectB64Clause($sourceTable) : null;
+        $b64Where   = $base64Only
+            ? "(auditorReason LIKE '%data:image/%' OR alertNote LIKE '%data:image/%')"
+            : null;
 
         $this->log("Memulai backup ke tabel");
         $this->log("Sumber  : {$sourceTable}");
         $this->log("Target  : {$backupName}");
         $this->log("Engine  : {$engine} (" . $this->engineNote($engine) . ")");
         $this->log("Chunk   : {$chunkSize} records/batch");
-        if ($b64Where) {
-            $method = str_contains($b64Where, 'has_base64') ? 'index (has_base64)' : 'LIKE (lambat)';
-            $this->log("Filter  : hanya baris dengan base64 image [{$method}]");
-        }
+        if ($b64Where) $this->log("Filter  : hanya baris dengan base64 image");
         $dbName = DB::connection()->getDatabaseName();
         $exists = DB::selectOne(
             "SELECT COUNT(*) as cnt FROM information_schema.tables WHERE table_schema = ? AND table_name = ?",
@@ -207,21 +206,6 @@ class BackupAlertsTable extends Command
         return self::SUCCESS;
     }
 
-    private function detectB64Clause(string $table): string
-    {
-        // Pakai kolom has_base64 jika ada — index TINYINT, jauh lebih cepat dari LIKE
-        $dbName    = DB::connection()->getDatabaseName();
-        $colExists = DB::selectOne(
-            "SELECT COUNT(*) as cnt FROM information_schema.COLUMNS
-             WHERE table_schema = ? AND table_name = ? AND column_name = 'has_base64'",
-            [$dbName, $table]
-        )->cnt > 0;
-
-        return $colExists
-            ? 'has_base64 = 1'
-            : "(auditorReason LIKE '%data:image/%' OR alertNote LIKE '%data:image/%')";
-    }
-
     private function engineNote(string $engine): string
     {
         return match ($engine) {
@@ -235,7 +219,9 @@ class BackupAlertsTable extends Command
     private function backupToFile(string $sourceTable, string $backupName, int $chunkSize): int
     {
         $base64Only = $this->option('base64-only');
-        $b64Where   = $base64Only ? $this->detectB64Clause($sourceTable) : null;
+        $b64Where   = $base64Only
+            ? "(auditorReason LIKE '%data:image/%' OR alertNote LIKE '%data:image/%')"
+            : null;
 
         $outFile = storage_path('backups/' . $backupName . '.sql.gz');
 
@@ -268,10 +254,7 @@ class BackupAlertsTable extends Command
         $this->log("Sumber  : {$sourceTable}");
         $this->log("Output  : {$outFile}");
         $this->log("Chunk   : {$chunkSize} records/batch");
-        if ($b64Where) {
-            $method = str_contains($b64Where, 'has_base64') ? 'index (has_base64)' : 'LIKE (lambat)';
-            $this->log("Filter  : hanya baris dengan base64 image [{$method}]");
-        }
+        if ($b64Where) $this->log("Filter  : hanya baris dengan base64 image");
         $this->separator();
 
         // COUNT(*) dengan LIKE sangat lambat di tabel besar — skip jika filter base64
@@ -332,8 +315,7 @@ class BackupAlertsTable extends Command
         );
         $colList = implode(', ', $columns);
 
-        // Jika filter base64 aktif: WHERE has_base64=1 (index) atau LIKE (fallback)
-        // Chunk loop sederhana — tidak perlu kumpulkan semua ID ke memory
+        // Chunk loop — WHERE id > lastId, filter base64 jika aktif
         $maxSourceId = (int) DB::selectOne("SELECT MAX(id) as max_id FROM `{$sourceTable}`")->max_id;
         $whereClause = $b64Where ? "AND {$b64Where}" : '';
 
