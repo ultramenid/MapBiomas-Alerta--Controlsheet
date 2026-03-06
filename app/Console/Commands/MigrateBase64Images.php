@@ -27,6 +27,7 @@ class MigrateBase64Images extends Command
     private int $failedImages = 0;
     private bool $dryRun = false;
     private string $table = 'alerts';
+    private bool $hasBase64Flag = false; // true jika kolom has_base64 ada di tabel
 
     /** @var string[] File path yang sudah disimpan ke storage (untuk rollback) */
     private array $savedFiles = [];
@@ -78,6 +79,14 @@ class MigrateBase64Images extends Command
         $chunkSize  = (int) $this->option('chunk');
         $this->table = $this->option('table');
 
+        // Deteksi kolom has_base64 sekali saja
+        $dbName = DB::connection()->getDatabaseName();
+        $this->hasBase64Flag = DB::selectOne(
+            "SELECT COUNT(*) as cnt FROM information_schema.COLUMNS
+             WHERE table_schema = ? AND table_name = ? AND column_name = 'has_base64'",
+            [$dbName, $this->table]
+        )->cnt > 0;
+
         $columns = match ($column) {
             'auditorReason' => ['auditorReason'],
             'alertNote'     => ['alertNote'],
@@ -101,8 +110,8 @@ class MigrateBase64Images extends Command
             foreach ($columns as $col) {
                 $this->info("▶  Memproses kolom: <comment>{$col}</comment>");
 
-                // Cek apakah FULLTEXT index tersedia untuk kolom ini
-                $hasFt = DB::selectOne(
+                // Cek apakah kolom has_base64 ada (lebih cepat dari LIKE)
+                $hasFt = ! $this->hasBase64Flag && DB::selectOne(
                     "SELECT COUNT(*) as cnt FROM information_schema.STATISTICS
                      WHERE table_schema = DATABASE()
                        AND table_name = ?
@@ -115,7 +124,10 @@ class MigrateBase64Images extends Command
                     ->whereNotNull($col)
                     ->where($col, '!=', '');
 
-                if ($hasFt) {
+                if ($this->hasBase64Flag) {
+                    $query->where('has_base64', 1);
+                    $this->line("   <info>✔ has_base64 index terdeteksi — query secepat kilat</info>");
+                } elseif ($hasFt) {
                     // FULLTEXT: 'base64' sebagai keyword cepat via index,
                     // LIKE sebagai filter presisi (hanya rows yang lolos MATCH yang di-LIKE)
                     $query->whereRaw("MATCH(`{$col}`) AGAINST(? IN BOOLEAN MODE)", ['base64'])
@@ -256,6 +268,11 @@ class MigrateBase64Images extends Command
                     DB::table($this->table)
                         ->where('id', $row->id)
                         ->update([$col => $newContent]);
+
+                    // Setelah berhasil, reset has_base64=0 agar baris tidak diproses ulang
+                    if ($this->hasBase64Flag) {
+                        DB::table($this->table)->where('id', $row->id)->update(['has_base64' => 0]);
+                    }
 
                     // Catat untuk full rollback jika proses berikutnya gagal
                     $this->savedFiles    = array_merge($this->savedFiles, $rowFiles);
