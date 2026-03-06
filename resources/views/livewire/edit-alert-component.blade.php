@@ -2,7 +2,13 @@
     <div class="flex justify-between">
         <h1 class="font-semibold text-3xl mt-10 mb-6 text-gray-700 dark:text-slate-200">Edit alert</h1>
         <div class="flex justify-end items-center mt-4">
-            <button wire:click='storeAlert' class="bg-black dark:bg-slate-600 py-2 px-4 text-white w-32 cursor-pointer h-10 hover:opacity-80 transition">Update</button>
+            <button wire:click='storeAlert' wire:loading.attr='disabled' class="relative bg-black dark:bg-slate-600 py-2 px-4 text-white w-full cursor-pointer h-10 hover:opacity-80 transition disabled:opacity-60 disabled:cursor-not-allowed">
+                <span wire:loading.remove wire:target='storeAlert'>Update</span>
+                <span wire:loading wire:target='storeAlert' class="flex items-center justify-center gap-2">
+
+                    Updating alert...
+                </span>
+            </button>
         </div>
     </div>
 
