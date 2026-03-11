@@ -12,16 +12,14 @@ Artisan::command('inspire', function () {
 
 // Jalankan perjam untuk migrate base64 images di tabel alerts
 Schedule::command('alerts:migrate-base64-images --table=alerts --column=auditorReason')
-    ->hourly()
-    ->at(':30')
+    ->everyTwoHours()
     ->withoutOverlapping()
     ->runInBackground()
     ->appendOutputTo(storage_path('logs/auditorReason.log'));
 
 
 Schedule::command('alerts:migrate-base64-images --table=alerts --column=alertNote')
-    ->hourly()
-    ->at(':00')
+    ->everyTwoHours()
     ->withoutOverlapping()
     ->runInBackground()
     ->appendOutputTo(storage_path('logs/alertNote.log'));

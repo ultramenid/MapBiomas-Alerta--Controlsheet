@@ -111,17 +111,17 @@ class CleanupOrphanedImages extends Command
             ->get()
             ->map(function ($row) {
                 $urls = [];
-                
+
                 // Extract semua /storage/alert-images/* URLs dari auditorReason
                 if (preg_match_all('/\/storage\/alert-images\/[^\s"\'<>]+/i', $row->auditorReason, $m)) {
                     $urls = array_merge($urls, $m[0]);
                 }
-                
+
                 // Extract semua /storage/alert-images/* URLs dari alertNote
                 if (preg_match_all('/\/storage\/alert-images\/[^\s"\'<>]+/i', $row->alertNote, $m)) {
                     $urls = array_merge($urls, $m[0]);
                 }
-                
+
                 return $urls;
             })
             ->flatten()
