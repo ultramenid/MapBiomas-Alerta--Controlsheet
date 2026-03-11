@@ -102,28 +102,49 @@ class CleanupOrphanedImages extends Command
 
         $this->totalFiles = count($files);
         $this->info("▶  Memeriksa {$this->totalFiles} file...");
+        $this->info("▶  Mengambil referensi dari database...");
+
+        // OPTIMIZE: Ambil semua URL yang ada di database dalam satu query
+        // Jangan cek per-file (77 queries) — cek semua sekaligus
+        $referencedUrls = DB::table($this->table)
+            ->select('auditorReason', 'alertNote')
+            ->get()
+            ->map(function ($row) {
+                $urls = [];
+                
+                // Extract semua /storage/alert-images/* URLs dari auditorReason
+                if (preg_match_all('/\/storage\/alert-images\/[^\s"\'<>]+/i', $row->auditorReason, $m)) {
+                    $urls = array_merge($urls, $m[0]);
+                }
+                
+                // Extract semua /storage/alert-images/* URLs dari alertNote
+                if (preg_match_all('/\/storage\/alert-images\/[^\s"\'<>]+/i', $row->alertNote, $m)) {
+                    $urls = array_merge($urls, $m[0]);
+                }
+                
+                return $urls;
+            })
+            ->flatten()
+            ->unique()
+            ->values()
+            ->all();
+
+        $this->line("   ✔ Ditemukan " . count($referencedUrls) . " URL di database");
         $this->newLine();
+
+        // Konversi ke key-value untuk lookup O(1)
+        $referencedSet = array_flip(array_map(fn($url) => '/storage/' . str_replace('/storage/', '', $url), $referencedUrls));
 
         $bar = $this->output->createProgressBar($this->totalFiles);
         $bar->start();
 
         foreach ($files as $relativePath) {
             $bar->advance();
-
-            // Ambil nama file (tanpa path)
-            $filename = basename($relativePath);
             $fullPath = '/storage/' . $relativePath;
+            $filename = basename($relativePath);
 
-            // Cek apakah file ini direferensi di database
-            $exists = DB::table($this->table)
-                ->where(function ($query) use ($fullPath) {
-                    $query->where('auditorReason', 'LIKE', '%' . $fullPath . '%')
-                          ->orWhere('alertNote', 'LIKE', '%' . $fullPath . '%');
-                })
-                ->exists();
-
-            if (! $exists) {
-                // File orphaned — tidak ada referensi
+            // Cek apakah file ini ada di URL list yang direferensi
+            if (! isset($referencedSet[$fullPath])) {
                 $this->orphanedFiles++;
 
                 if (! $this->dryRun) {
