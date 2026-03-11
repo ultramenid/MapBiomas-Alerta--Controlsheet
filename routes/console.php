@@ -26,7 +26,7 @@ Schedule::command('alerts:migrate-base64-images --table=alerts --column=alertNot
 
 // Cleanup orphaned images setiap hari jam 2 AM (setelah migration malam)
 Schedule::command('alerts:cleanup-orphaned-images')
-    ->everyTwoMinutes()
+    ->everyTwoHours()
     ->withoutOverlapping()
     ->runInBackground()
     ->appendOutputTo(storage_path('logs/cleanup-orphaned.log'));
