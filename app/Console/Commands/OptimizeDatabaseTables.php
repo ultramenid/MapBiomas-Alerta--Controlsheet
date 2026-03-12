@@ -87,9 +87,12 @@ class OptimizeDatabaseTables extends Command
     {
         $placeholders = implode(',', array_fill(0, count($tableNames), '?'));
         return DB::select(
-            "SELECT table_name, data_length, index_length, data_free
-             FROM information_schema.tables
-             WHERE table_schema = ? AND table_name IN ({$placeholders})",
+            "SELECT TABLE_NAME as table_name,
+                    DATA_LENGTH as data_length,
+                    INDEX_LENGTH as index_length,
+                    DATA_FREE as data_free
+             FROM information_schema.TABLES
+             WHERE TABLE_SCHEMA = ? AND TABLE_NAME IN ({$placeholders})",
             array_merge([$dbName], $tableNames)
         );
     }
