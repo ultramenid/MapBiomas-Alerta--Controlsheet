@@ -37,11 +37,12 @@ class OptimizeDatabaseTables extends Command
         $this->info('Ukuran tabel sebelum OPTIMIZE:');
         $sizeBefore = $this->getTableSizes($dbName, $tableNames);
         $totalBefore = 0;
-        foreach ($sizeBefore as $row) {
-            $sizeMB = round(($row->data_length + $row->index_length) / 1024 / 1024, 2);
-            $freeMB = round($row->data_free / 1024 / 1024, 2);
-            $totalBefore += ($row->data_length + $row->index_length);
-            $this->line("  <comment>{$row->table_name}</comment>: {$sizeMB} MB (free/fragmented: {$freeMB} MB)");
+        foreach ($sizeBefore as $rawRow) {
+            $row = array_change_key_case((array) $rawRow, CASE_LOWER);
+            $sizeMB = round(($row['data_length'] + $row['index_length']) / 1024 / 1024, 2);
+            $freeMB = round($row['data_free'] / 1024 / 1024, 2);
+            $totalBefore += ($row['data_length'] + $row['index_length']);
+            $this->line("  <comment>{$row['table_name']}</comment>: {$sizeMB} MB (free/fragmented: {$freeMB} MB)");
         }
         $this->newLine();
 
@@ -65,11 +66,12 @@ class OptimizeDatabaseTables extends Command
         $this->info('Ukuran tabel setelah OPTIMIZE:');
         $sizeAfter = $this->getTableSizes($dbName, $tableNames);
         $totalAfter = 0;
-        foreach ($sizeAfter as $row) {
-            $sizeMB = round(($row->data_length + $row->index_length) / 1024 / 1024, 2);
-            $freeMB = round($row->data_free / 1024 / 1024, 2);
-            $totalAfter += ($row->data_length + $row->index_length);
-            $this->line("  <comment>{$row->table_name}</comment>: {$sizeMB} MB (free/fragmented: {$freeMB} MB)");
+        foreach ($sizeAfter as $rawRow) {
+            $row = array_change_key_case((array) $rawRow, CASE_LOWER);
+            $sizeMB = round(($row['data_length'] + $row['index_length']) / 1024 / 1024, 2);
+            $freeMB = round($row['data_free'] / 1024 / 1024, 2);
+            $totalAfter += ($row['data_length'] + $row['index_length']);
+            $this->line("  <comment>{$row['table_name']}</comment>: {$sizeMB} MB (free/fragmented: {$freeMB} MB)");
         }
 
         $this->newLine();
@@ -87,10 +89,7 @@ class OptimizeDatabaseTables extends Command
     {
         $placeholders = implode(',', array_fill(0, count($tableNames), '?'));
         return DB::select(
-            "SELECT TABLE_NAME as table_name,
-                    DATA_LENGTH as data_length,
-                    INDEX_LENGTH as index_length,
-                    DATA_FREE as data_free
+            "SELECT TABLE_NAME, DATA_LENGTH, INDEX_LENGTH, DATA_FREE
              FROM information_schema.TABLES
              WHERE TABLE_SCHEMA = ? AND TABLE_NAME IN ({$placeholders})",
             array_merge([$dbName], $tableNames)
