@@ -30,3 +30,10 @@ Schedule::command('alerts:cleanup-orphaned-images')
     ->withoutOverlapping()
     ->runInBackground()
     ->appendOutputTo(storage_path('logs/cleanup-orphaned.log'));
+
+// Optimize tabel alerts setiap hari jam 3 pagi untuk reclaim ruang setelah migrasi base64
+Schedule::command('db:optimize-tables --tables=alerts')
+    ->dailyAt('03:00')
+    ->withoutOverlapping()
+    ->runInBackground()
+    ->appendOutputTo(storage_path('logs/optimize-tables.log'));
