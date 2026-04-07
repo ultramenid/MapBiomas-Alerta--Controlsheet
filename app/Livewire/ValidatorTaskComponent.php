@@ -141,9 +141,11 @@ class ValidatorTaskComponent extends Component
         */
         $approved = $approvedMap[$row->auditorId][$row->d] ?? 0;
 
+        $taskTotal = $row->total_Insert + $row->total_Reject + $row->total_reclassification + $row->total_reexportimage + $row->total_refined;
+
         $results[$row->auditorId]['dates'][$row->d] = [
 
-            'task'     => $row->total,
+            'task'     => $taskTotal,
             'approved' => $approved
 
         ];
@@ -167,7 +169,7 @@ class ValidatorTaskComponent extends Component
         | GRAND TOTAL
         |--------------------------------------------------------------------------
         */
-        $results[$row->auditorId]['grandTotal'] += $row->total;
+        $results[$row->auditorId]['grandTotal'] += $taskTotal;
         $results[$row->auditorId]['grandApproved'] += $approved;
 
     }
