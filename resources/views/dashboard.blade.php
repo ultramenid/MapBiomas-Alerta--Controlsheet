@@ -26,6 +26,7 @@
         @if (session('role_id') == 2)
             <livewire:filter-dashboard-component>
             <livewire:sumary-alert-analis />
+            <livewire:validator-task-component />
             <livewire:table-analisis />
         @endif
     </div>
