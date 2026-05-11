@@ -40,12 +40,12 @@
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/airbnb.css">
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 </head>
-<body class="dark:selection-bg selection-bg font-sans dark:bg-gray-900 ">
+<body class="dot-pattern dark:selection-bg selection-bg font-sans dark:bg-slate-900 bg-stone-50">
     @yield('content')
 
     <x-toaster-hub />
 
-    <img src="{{ asset('assets/logo.png') }}" alt="" class="fixed sm:block hidden sm:-bottom-1/6 sm:-left-1/6 rotate-90  z-10  ">
+    <img src="{{ asset('assets/logo.png') }}" alt="" class="fixed sm:block hidden sm:bottom-6 sm:left-6 rotate-90 z-10 w-32 opacity-60">
     @stack('scripts')
 
 </body>
