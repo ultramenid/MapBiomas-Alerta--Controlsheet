@@ -10,7 +10,7 @@ use Masmerise\Toaster\Toaster;
 
 class EditUserComponent extends Component
 {
-    public $email, $name, $password, $contact, $level, $idUser;
+    public $email, $name, $password, $contact, $level, $idUser, $is_active;
     public $userPassword;
 
     public function mount($id){
@@ -21,6 +21,7 @@ class EditUserComponent extends Component
         $this->userPassword = $data->password;
         $this->contact = $data->contact;
         $this->level = $data->role_id;
+        $this->is_active = $data->is_active;
     }
     public function render()
     {
@@ -37,6 +38,7 @@ class EditUserComponent extends Component
                     'email' => $this->email,
                     'contact' => $this->contact,
                     'role_id' => $this->level,
+                    'is_active' => $this->is_active,
                     'updated_at' => Carbon::now('Asia/Jakarta')
             ]);
             }else{
@@ -48,6 +50,7 @@ class EditUserComponent extends Component
                     'contact' => $this->contact,
                     'password' => Hash::make($this->password),
                     'role_id' => $this->level,
+                    'is_active' => $this->is_active,
                     'updated_at' => Carbon::now('Asia/Jakarta')
             ]);
             }
