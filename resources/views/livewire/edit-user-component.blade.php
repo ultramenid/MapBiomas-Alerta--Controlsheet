@@ -29,7 +29,7 @@
 
     </div>
 
-    <div class="mt-6">
+    <div class="mt-6 flex sm:flex-row flex-col gap-4">
         <div class="sm:w-6/12 w-full">
             <label class="w-full"  >
                 <div class="relative flex w-full flex-col  text-neutral-600 dark:text-neutral-300">
@@ -43,6 +43,20 @@
                         <option value="1">Auditor</option>
                         <option value="0">Admin</option>
 
+                    </select>
+                </div>
+            </label>
+        </div>
+        <div class="sm:w-6/12 w-full">
+            <label class="w-full"  >
+                <div class="relative flex w-full flex-col  text-neutral-600 dark:text-neutral-300">
+                    <label for="status" class="w-fit pl-0.5 text-stone-700 dark:text-slate-300 mb-1">Status</label>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="absolute pointer-events-none right-4 top-9 size-5">
+                        <path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" />
+                    </svg>
+                    <select wire:model='is_active' class="w-full appearance-none bg-white dark:bg-slate-900 border border-stone-300 dark:border-slate-600 text-stone-900 dark:text-slate-100 px-3 py-2 text-sm rounded-sm focus:outline-none cursor-pointer transition-none">
+                        <option value="1">Active</option>
+                        <option value="0">Inactive</option>
                     </select>
                 </div>
             </label>
