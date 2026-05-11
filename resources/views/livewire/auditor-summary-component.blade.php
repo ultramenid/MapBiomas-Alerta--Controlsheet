@@ -1,132 +1,105 @@
-<div class="py-6 px-4 border border-gray-100 z-20 relative  bg-gray-50 mt-4 dark:bg-slate-800 dark:border-slate-800">
-    <div class="flex sm:flex-row flex-col sm:gap-6 gap-2 mb-6 items-start">
-        <div class="text-sm ">
-            <a class="text-base mb-1 font-semibold dark:text-slate-400">Alert by Auditor</a>
-            <div class="w-full mt-1 flex gap-2" wire:ignore x-init="
-            flatpickr('#rangeAuditor', {
-                mode:'range',
-                dateFormat: 'Y-m-d',
-                {{-- locale: 'id', // ✅ Indonesian calendar labels, optional --}}
-                onChange: function(selectedDates) {
-                    if (selectedDates.length === 2) {
-                        // Jakarta timezone formatter
-                        let options = { timeZone: 'Asia/Jakarta', year: 'numeric', month: '2-digit', day: '2-digit' };
-
-                        function formatDate(d) {
-                            let parts = new Intl.DateTimeFormat('id-ID', options).formatToParts(d);
-                            let y = parts.find(p => p.type === 'year').value;
-                            let m = parts.find(p => p.type === 'month').value;
-                            let day = parts.find(p => p.type === 'day').value;
-                            return `${y}-${m}-${day}`;
+<div class="glass rounded-sm p-5 mb-5">
+    <div class="flex flex-col sm:flex-row sm:gap-6 gap-3 mb-5 items-start">
+        <div>
+            <div class="text-label text-stone-600 dark:text-slate-400 mb-3">Alert by Auditor</div>
+            <div wire:ignore x-init="
+                flatpickr('#rangeAuditor', {
+                    mode:'range',
+                    dateFormat: 'Y-m-d',
+                    onChange: function(selectedDates) {
+                        if (selectedDates.length === 2) {
+                            let options = { timeZone: 'Asia/Jakarta', year: 'numeric', month: '2-digit', day: '2-digit' };
+                            function formatDate(d) {
+                                let parts = new Intl.DateTimeFormat('id-ID', options).formatToParts(d);
+                                let y = parts.find(p => p.type === 'year').value;
+                                let m = parts.find(p => p.type === 'month').value;
+                                let day = parts.find(p => p.type === 'day').value;
+                                return `${y}-${m}-${day}`;
+                            }
+                            let startDate = formatDate(selectedDates[0]);
+                            let endDate = formatDate(selectedDates[1]);
+                            $wire.set('startDate', startDate);
+                            $wire.set('endDate', endDate);
+                            $wire.call('filter');
                         }
-
-                        let startDate = formatDate(selectedDates[0]);
-                        let endDate   = formatDate(selectedDates[1]);
-
-                        console.log(['Start:', startDate, 'End:', endDate]);
-
-                        $wire.set('startDate', startDate);
-                        $wire.set('endDate', endDate);
-                        $wire.call('filter');
-
                     }
-                }
-            });
-        "
+                });
             ">
-            <input id="rangeAuditor" type="text" class="bg-white dark:bg-slate-700 dark:text-slate-400 dark:border-slate-700   w-52 border border-gray-200  py-2 px-4 focus:outline-none  text-xs"  wire:model.defer='rangeAuditor' placeholder="Please select">
-
-        </div>
-        </div>
-        <div class="flex gap-2 mb-6 ">
-            <div class="flex flex-col gap-1">
-                <a class="text-sm dark:text-slate-400">Find who is <b>auditing</b> the alert</a>
-                <input wire:keydown.enter="find"  type="text" class="bg-white dark:bg-slate-700 dark:text-slate-400 dark:border-slate-700  text-gray-00 mt-1  w-52 border border-gray-200  py-2 px-4 focus:outline-none  text-xs"  wire:model.defer='alertCode' placeholder="type alert ID">
+                <input 
+                    id="rangeAuditor" 
+                    type="text" 
+                    class="bg-white dark:bg-slate-800 border border-stone-300 dark:border-slate-600 text-stone-900 dark:text-slate-100 w-52 rounded-sm px-3 py-2 text-sm focus:outline-none transition-none" 
+                    wire:model.defer='rangeAuditor' 
+                    placeholder="Select date range"
+                >
             </div>
-
         </div>
-        <div class="flex gap-2 mb-6 ">
-            <div class="flex flex-col gap-1">
-                <a class="text-sm dark:text-slate-400">Find who is <b>validating</b> the alert</a>
-                <input wire:keydown.enter="findValidator"  type="text" class="bg-white dark:bg-slate-700 dark:text-slate-400 dark:border-slate-700  text-gray-00 mt-1  w-52 border border-gray-200  py-2 px-4 focus:outline-none  text-xs"  wire:model.defer='alertCodeValidator' placeholder="type alert ID">
-            </div>
-
+        
+        <div>
+            <div class="text-label text-stone-600 dark:text-slate-400 mb-3">Find Auditor</div>
+            <input 
+                wire:keydown.enter="find" 
+                type="text" 
+                class="bg-white dark:bg-slate-800 border border-stone-300 dark:border-slate-600 text-stone-900 dark:text-slate-100 w-52 rounded-sm px-3 py-2 text-sm focus:outline-none transition-none" 
+                wire:model.defer='alertCode' 
+                placeholder="Type alert ID"
+            >
         </div>
-
+        
+        <div>
+            <div class="text-label text-stone-600 dark:text-slate-400 mb-3">Find Validator</div>
+            <input 
+                wire:keydown.enter="findValidator" 
+                type="text" 
+                class="bg-white dark:bg-slate-800 border border-stone-300 dark:border-slate-600 text-stone-900 dark:text-slate-100 w-52 rounded-sm px-3 py-2 text-sm focus:outline-none transition-none" 
+                wire:model.defer='alertCodeValidator' 
+                placeholder="Type alert ID"
+            >
+        </div>
     </div>
 
-    {{-- <pre>{{ json_encode($results, JSON_PRETTY_PRINT) }}</pre> --}}
-
-    <div class="max-w-7xl mx-auto">
-        <div class="">
-            <div class="w-full overflow-x-auto">
-                <table class="w-full min-w-max border-collapse border-b border-gray-300">
-                    <thead class="bg-gray-100 dark:bg-slate-700 dark:text-slate-400 dark:border-slate-700 text-gray-700">
-                        <tr>
-                            {{-- Sticky first column --}}
-                            <th class="sticky left-0 bg-gray-100 border-b border-gray-300 dark:bg-slate-700 dark:text-slate-400 dark:border-slate-700 px-4 py-2 text-xs text-left z-10">
-                                Auditor
-                            </th>
-
-                            {{-- Loop dynamic date columns --}}
-                            @if (!empty($results))
-                                @foreach (array_keys($results[array_key_first($results)]) as $key)
-                                    @if ($key !== 'auditorName' and $key !== 'auditorId' and $key !== 'Total')
-                                        <th
-                                            class="border-b border-gray-400 dark:bg-slate-600 dark:text-slate-400 dark:border-slate-700 px-4 py-2 text-xs text-center whitespace-nowrap cursor-pointer select-none"
-                                            wire:click="sortBy('{{ $key }}')"
-                                            title="Sort by {{ $key }}"
-                                        >
-                                            {{ $key }}
-                                            @if ($dataField === $key)
-                                            <span class="">{{ $dataOrder === 'asc' ? '▲' : '▼' }}</span>
-                                            @endif
-                                        </th>
+    <div class="overflow-x-auto">
+        <table class="w-full border-collapse">
+            <thead>
+                <tr class="border-b border-stone-300 dark:border-slate-700">
+                    <th class="sticky left-0 bg-stone-100 dark:bg-slate-800 text-left px-3 py-2.5 text-label text-stone-500 dark:text-slate-400 z-10">Auditor</th>
+                    @if (!empty($results))
+                        @foreach (array_keys($results[array_key_first($results)]) as $key)
+                            @if ($key !== 'auditorName' && $key !== 'auditorId' && $key !== 'Total')
+                                <th class="text-center px-3 py-2.5 text-label text-stone-500 dark:text-slate-400 cursor-pointer" wire:click="sortBy('{{ $key }}')">
+                                    {{ $key }}
+                                    @if ($dataField === $key)
+                                        <span>{{ $dataOrder === 'asc' ? '▲' : '▼' }}</span>
                                     @endif
-                                @endforeach
-                                {{-- Sticky Total column --}}
-                                <th class="sticky right-0 dark:bg-slate-700 dark:text-slate-400 dark:border-slate-700 bg-gray-100 border-b border-gray-300 px-4 py-2 text-xs text-center z-10 font-semibold cursor-pointer select-none"
-                                    wire:click="sortBy('Total')">
-                                Total
-                                @if ($dataField === 'Total')
-                                    <span class="text-xs">{{ $dataOrder === 'asc' ? '▲' : '▼' }}</span>
-                                @endif
-
-
                                 </th>
-
-
                             @endif
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach ($results as $row)
-                            <tr class="hover:bg-gray-50">
-                                {{-- Sticky first column --}}
-                                <td class="sticky left-0 bg-gray-50 border-b dark:bg-slate-700 dark:text-slate-400 dark:border-slate-700 border-gray-300 px-4 py-2 text-xs z-10 whitespace-nowrap">
-                                    <a href="{{ url('/auditor-alert/'.$row['auditorId']) }}">{{ $row['auditorName'] }}</a>
-                                </td>
-
-                                {{-- Show counts per date (exclude Total for now) --}}
-                                @foreach ($row as $key => $val)
-                                    @if ($key !== 'auditorName' and $key !== 'auditorId' and $key !== 'Total')
-                                        <td class="border-b border-gray-400 dark:bg-slate-600 dark:text-slate-400 dark:border-slate-700 px-4 py-2 text-xs text-center">
-                                            {{ $val }}
-                                        </td>
-                                    @endif
-                                @endforeach
-
-                                {{-- Sticky Total column --}}
-                                <td class="sticky right-0 bg-gray-50 border-b dark:bg-slate-700 dark:text-slate-400 dark:border-slate-700 border-gray-300 px-4 py-2 text-xs text-center z-10 font-semibold">
-                                    {{ $row['Total'] }}
-                                </td>
-                            </tr>
                         @endforeach
-                    </tbody>
-                </table>
-
-            </div>
-        </div>
+                        <th class="sticky right-0 bg-stone-100 dark:bg-slate-800 text-center px-3 py-2.5 text-label text-stone-500 dark:text-slate-400 z-10 cursor-pointer" wire:click="sortBy('Total')">
+                            Total
+                            @if ($dataField === 'Total')
+                                <span>{{ $dataOrder === 'asc' ? '▲' : '▼' }}</span>
+                            @endif
+                        </th>
+                    @endif
+                </tr>
+            </thead>
+            <tbody class="text-sm">
+                @foreach ($results as $row)
+                    <tr class="border-b border-stone-200 dark:border-slate-800">
+                        <td class="sticky left-0 bg-white dark:bg-slate-900 px-3 py-2.5 z-10">
+                            <a href="{{ url('/auditor-alert/'.$row['auditorId']) }}" class="text-green-700 dark:text-green-400 hover:underline transition-none">
+                                {{ $row['auditorName'] }}
+                            </a>
+                        </td>
+                        @foreach ($row as $key => $val)
+                            @if ($key !== 'auditorName' && $key !== 'auditorId' && $key !== 'Total')
+                                <td class="text-center px-3 py-2.5 text-stone-700 dark:text-slate-300">{{ $val }}</td>
+                            @endif
+                        @endforeach
+                        <td class="sticky right-0 bg-white dark:bg-slate-900 text-center px-3 py-2.5 font-bold text-stone-900 dark:text-slate-200 z-10">{{ $row['Total'] }}</td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
     </div>
-
 </div>
