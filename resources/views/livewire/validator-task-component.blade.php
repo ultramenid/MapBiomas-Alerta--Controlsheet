@@ -1,6 +1,6 @@
-<div class="py-6 px-4 border border-gray-100 z-20 relative  bg-gray-50 dark:bg-slate-800 dark:border-slate-800 mt-4">
+<div class="py-6 px-4 border border-stone-200 dark:border-slate-700 z-20 relative  bg-stone-50 dark:bg-slate-800 dark:bg-slate-800 dark:border-slate-800 mt-4">
     <div class="text-sm mb-6">
-        <a class="text-base mb-1 font-semibold dark:text-slate-400">Alert by Validator</a>
+        <a class="text-label text-stone-600 dark:text-slate-400 mb-1">Alert by Validator</a>
         <div class="w-full mt-1 flex gap-2" wire:ignore x-init="
         flatpickr('#rangeValidator', {
             mode:'range',
@@ -31,7 +31,7 @@
         });
      "
         ">
-            <input id="rangeValidator" type="text" class="bg-white dark:bg-slate-700 dark:border-slate-700 dark:text-slate-400  text-gray-00   w-52 border border-gray-200  py-2 px-4 focus:outline-none  text-xs"  wire:model.defer='rangeValidator' placeholder="Please select">
+            <input id="rangeValidator" type="text" class="bg-white dark:bg-slate-900 border border-stone-300 dark:border-slate-600 text-stone-900 dark:text-slate-100 w-52 rounded-sm px-3 py-2 text-sm focus:outline-none transition-none"  wire:model.defer='rangeValidator' placeholder="Please select">
 
         </div>
     </div>
@@ -39,33 +39,33 @@
     <div>
 
 
-    <div class="bg-white dark:bg-slate-600 shadow overflow-hidden">
-        <div class="w-full overflow-x-auto">
+    <div class="overflow-hidden">
+        <div class="overflow-x-auto">
 
-            <table class="w-full min-w-max border-collapse border-b border-gray-300 dark:border-slate-800 text-xs">
+            <table class="w-full min-w-max border-collapse border-b border-stone-300 dark:border-slate-700 dark:border-slate-800 text-xs">
 
-                <thead class="bg-gray-100 dark:bg-slate-600 dark:text-slate-400">
+                <thead class="text-xs">
 
                     <!-- HEADER ROW 1 -->
                     <tr>
 
                         <!-- Validator -->
                         <th rowspan="2 "
-                            class="sticky left-0 bg-gray-100 dark:bg-slate-700 dark:text-slate-400 border-b dark:border-slate-700 border-gray-300 px-4 py-2 text-left z-20">
+                            class="sticky left-0 bg-stone-100 dark:bg-slate-800 text-left px-3 py-2.5 text-label text-stone-500 dark:text-slate-400 z-10 border-b border-stone-200 dark:border-slate-700">
                             Validator
                         </th>
 
                         <!-- Loop tanggal -->
                         @foreach($report['dates'] as $date)
                             <th colspan="2"
-                                class=" px-4 py-2 text-center whitespace-nowrap bg-gray-200 dark:bg-slate-600 dark:text-slate-400 dark:border-slate-500 border-r border-gray-300 border-l border-b border-t">
+                                class=" px-4 py-2 text-center whitespace-nowrap bg-stone-200 dark:bg-slate-700 dark:bg-slate-600 dark:text-slate-400 dark:border-slate-500 border-r border-stone-300 dark:border-slate-700 border-l border-b border-t">
                                 {{ $date }}
                             </th>
                         @endforeach
 
                         <!-- Total -->
                         <th colspan="2"
-                            class="sticky right-0 bg-gray-300 border-b border-gray-300 dark:bg-slate-700 dark:text-slate-400 dark:border-slate-600 px-4 py-2 text-center z-20">
+                            class="sticky right-0 bg-stone-100 dark:bg-slate-800 text-center px-3 py-2.5 text-label text-stone-500 dark:text-slate-400 z-10 border-b border-stone-200 dark:border-slate-700">
                             Total
                         </th>
 
@@ -75,16 +75,16 @@
                     <tr>
 
                         @foreach($report['dates'] as $date)
-                            <th class="w-24 bg-gray-200 dark:bg-slate-500 dark:text-slate-300 dark:border-slate-500 border-gray-300 px-4 py-2 text-center border-l">
+                            <th class="w-24 bg-stone-200 dark:bg-slate-700 dark:bg-slate-500 dark:text-slate-300 dark:border-slate-500 border-stone-300 dark:border-slate-700 px-4 py-2 text-center border-l">
                                 task
                             </th>
 
-                            <th class="w-24  border-gray-300 px-4 py-2 text-center bg-[#bfcec3] dark:bg-[#617c6a] dark:text-slate-300 dark:border-slate-500 border-r">
+                            <th class="w-24  border-stone-300 dark:border-slate-700 px-4 py-2 text-center bg-[#bfcec3] dark:bg-[#617c6a] dark:text-slate-300 dark:border-slate-500 border-r">
                                 approved
                             </th>
                         @endforeach
 
-                        <th colspan="1" class="w-28  sticky right-[112px] bg-gray-300 border-b border-gray-300 px-4 py-2 text-center z-20 dark:bg-slate-600 dark:text-slate-300 dark:border-slate-600">
+                        <th colspan="1" class="sticky right-[112px] bg-stone-100 dark:bg-slate-800 text-center px-3 py-2.5 text-stone-700 dark:text-slate-300 z-10 border-b border-stone-200 dark:border-slate-700">
                             task
                         </th>
 
@@ -107,13 +107,13 @@
                                 class=" cursor-pointer">
 
                                 <!-- Validator name (sticky left, collapse tetap) -->
-                                <td class="sticky left-0 bg-white border-b border-gray-300 px-4 py-2 z-10 whitespace-nowrap font-medium dark:bg-slate-700 dark:text-slate-400 dark:border-slate-700">
+                                <td class="sticky left-0 bg-white dark:bg-slate-900 px-3 py-2.5 z-10 whitespace-nowrap font-medium border-b border-stone-200 dark:border-slate-700">
 
                                     <div class="flex items-center gap-2">
 
                                         {{ $row['validatorName'] }}
 
-                                        <svg class="w-3 h-3 text-gray-400 transition-transform duration-200"
+                                        <svg class="w-3 h-3 text-stone-400 dark:text-slate-500 transition-none"
                                             :class="{ 'rotate-90': open }"
                                             fill="none"
                                             stroke="currentColor"
@@ -128,7 +128,7 @@
                                     </div>
 
                                     <!-- collapse content tetap -->
-                                    <div x-show="open" style="display: none;" class="mt-2 w-full bg-gray-100 dark:bg-slate-400 dark:text-slate-700   px-2 py-2">
+                                    <div x-show="open" style="display: none;" class="mt-2 w-full bg-stone-100 dark:bg-slate-700 dark:text-slate-300 px-3 py-2 rounded-sm">
 
                                         Insert: {{ $row['category']['Insert'] ?? 0 }} <br>
                                         Reject: {{ $row['category']['Reject'] ?? 0 }} <br>
@@ -145,12 +145,12 @@
                                 <!-- Loop tanggal -->
                                 @foreach($report['dates'] as $date)
 
-                                    <td class="border-b border-gray-300 px-4 py-2 text-center bg-gray-200 dark:bg-slate-500 dark:text-slate-300 dark:border-slate-500 border-l">
+                                    <td class="border-b border-stone-300 dark:border-slate-700 px-4 py-2 text-center bg-stone-200 dark:bg-slate-700 dark:bg-slate-500 dark:text-slate-300 dark:border-slate-500 border-l">
                                         {{ $row['dates'][$date]['task'] ?? 0 }}
 
                                     </td>
 
-                                    <td class="border-b border-gray-300 px-4 py-2 text-center bg-[#bfcec3] dark:bg-[#617c6a] dark:text-slate-300 dark:border-slate-500 border-r ">
+                                    <td class="border-b border-stone-300 dark:border-slate-700 px-4 py-2 text-center bg-[#bfcec3] dark:bg-[#617c6a] dark:text-slate-300 dark:border-slate-500 border-r ">
                                         {{ $row['dates'][$date]['approved'] ?? 0 }}
                                     </td>
 
@@ -158,7 +158,7 @@
 
 
                                 <!-- total task -->
-                                <td class="w-28 sticky right-[112px] bg-gray-300 border-b border-gray-300 px-4 py-2 text-center font-semibold z-10 dark:bg-slate-600 dark:text-slate-300 dark:border-slate-600">
+                                <td class="w-28 sticky right-[112px] bg-stone-300 dark:bg-slate-600 border-b border-stone-300 dark:border-slate-700 px-4 py-2 text-center font-semibold z-10 dark:bg-slate-600 dark:text-slate-300 dark:border-slate-600">
                                     {{ $row['grandTotal'] ?? 0 }}
                                 </td>
 

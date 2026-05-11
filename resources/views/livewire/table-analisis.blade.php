@@ -1,22 +1,22 @@
-<div class="mt-2  py-6 px-4 border border-gray-100 z-20 relative  bg-gray-50 dark:bg-slate-800 dark:border-slate-800 dark:text-slate-400">
-    <a class="text-base mb-1 font-semibold">Alert Need to Fix</a>
+<div class="glass rounded-sm p-5 mb-5 z-20 relative dark:text-slate-400">
+    <a class="text-label text-stone-600 dark:text-slate-400 mb-1">Alert Need to Fix</a>
     <div x-data="{ open: @entangle('isReason') }">
         @include('partials.auditorReason')
     </div>
-    <input class="sm:w-52 w-full py-1 bg-white border-gray-500 border px-2 focus:outline-none mt-2 text-xs dark:bg-slate-700 dark:border-slate-600 dark:text-slate-300" wire:model.live='search' placeholder="alert ID">
+    <input class="bg-white dark:bg-slate-900 border border-stone-300 dark:border-slate-600 text-stone-900 dark:text-slate-100 w-52 rounded-sm px-3 py-2 text-sm focus:outline-none transition-none mt-2" wire:model.live='search' placeholder="alert ID">
     <div class="mt-4">
-        <table class="w-full divide-y divide-gray-200  rounded-sm  border border-gray-100 dark:border-slate-700">
+        <table class="w-full border-collapse">
             <thead class=" text-xs">
                 <tr class="">
-                    <th wire:click='sortingField("alertId")'  class="bg-gray-50 dark:bg-slate-700 dark:text-slate-400 px-6 py-4  cursor-pointer   text-left  text-gray-700 uppercase tracking-wider  sm:w-2/12 w-4/12">
+                    <th wire:click='sortingField("alertId")'  class="text-left px-3 py-2.5 text-label text-stone-500 dark:text-slate-400 cursor-pointer">
                         <div class=" space-x-1 flex" >
-                            <a class="text-xs">Alert ID</a>
+                            <a class="text-label text-stone-500 dark:text-slate-400">Alert ID</a>
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 my-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4" />
                                 </svg>
                          </div>
                      </th>
-                    <th wire:click='sortingField("created_at")' class="bg-gray-50 dark:bg-slate-700 dark:text-slate-400 px-6 py-4    text-left   text-gray-700 uppercase tracking-wider cursor-pointer sm:w-3/12 w-4/12 hidden sm:table-cell ">
+                    <th wire:click='sortingField("created_at")' class="text-left px-3 py-2.5 text-label text-stone-500 dark:text-slate-400 cursor-pointer hidden sm:table-cell">
                        <div class="flex space-x-1">
                            <a>Input date</a>
                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 my-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -24,18 +24,18 @@
                             </svg>
                         </div>
                     </th>
-                    <th  class="bg-gray-50 dark:bg-slate-700 dark:text-slate-400 px-6 py-4    text-left   text-gray-700 uppercase tracking-wider  sm:w-2/12 w-4/12 hidden sm:table-cell">
+                    <th  class="text-left px-3 py-2.5 text-label text-stone-500 dark:text-slate-400 hidden sm:table-cell">
                         <div class="flex space-x-1">
                             <a>Region/Island</a>
                          </div>
                      </th>
-                     <th  class="bg-gray-50 dark:bg-slate-700 dark:text-slate-400 px-6 py-4   text-left   text-gray-700 uppercase tracking-wider  sm:w-3/12 w-11/12 hidden sm:table-cell">
+                     <th  class="text-left px-3 py-2.5 text-label text-stone-500 dark:text-slate-400 hidden sm:table-cell">
                         <div class=" space-x-1 " >
                             <a >Province</a>
 
                          </div>
                      </th>
-                     <th wire:click='sortingField("auditorStatus")' class="bg-gray-50 dark:bg-slate-700 dark:text-slate-400 px-6 py-4   text-left   text-gray-700 uppercase tracking-wider cursor-pointer sm:w-4/12 w-4/12">
+                     <th wire:click='sortingField("auditorStatus")' class="text-left px-3 py-2.5 text-label text-stone-500 dark:text-slate-400 cursor-pointer">
                         <div class="flex space-x-1">
                             <a>Auditor Status</a>
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 my-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -49,18 +49,18 @@
 
 
 
-                    <th class=" text-right bg-gray-50 dark:bg-slate-700 dark:text-slate-400   text-gray-700 uppercase tracking-wider w-1/12 hidden sm:table-cell">
+                    <th class="text-right px-3 py-2.5 text-label text-stone-500 dark:text-slate-400 hidden sm:table-cell">
 
                     </th>
                 </tr>
             </thead>
-            <tbody class="bg-white dark:bg-slate-800 divide-y divide-gray-200 dark:divide-slate-700 dark:border-slate-700">
+            <tbody class="text-sm">
                 @forelse ($databases as $item)
                 <tr>
-                    <td class="px-6 py-4 break-words text-xs  text-gray-700 dark:text-slate-400 ">
+                    <td class="px-3 py-2.5 text-stone-700 dark:text-slate-300">
                         <a>{{$item->alertId}}</a>
                     </td>
-                    <td class="px-6 py-4 break-words text-xs  text-gray-700 dark:text-slate-400 hidden sm:table-cell">
+                    <td class="px-3 py-2.5 text-stone-700 dark:text-slate-300 hidden sm:table-cell">
                         @php
                             $date = \Carbon\Carbon::parse($item->created_at)->locale(App::getLocale());
                             $date->settings(['formatFunction' => 'translatedFormat']);
@@ -68,29 +68,29 @@
                         <a>{{ $date->format('d-m-Y')  }}</a>
                     </td>
 
-                    <td class="px-6 py-4 break-words text-xs  text-gray-700 dark:text-slate-400 hidden sm:table-cell">
+                    <td class="px-3 py-2.5 text-stone-700 dark:text-slate-300 hidden sm:table-cell">
                         <a >{{$item->region}}</a>
                     </td>
-                    <td class="px-6 py-4 break-words text-xs  text-gray-700 dark:text-slate-400 hidden sm:table-cell">
+                    <td class="px-3 py-2.5 text-stone-700 dark:text-slate-300 hidden sm:table-cell">
                         <a >{{$item->province}}</a>
                     </td>
-                    <td class="px-6 py-4 break-words text-xs  text-gray-700 dark:text-slate-400">
+                    <td class="px-6 py-4 break-words text-xs  text-stone-700 dark:text-slate-300">
                         @if (!$item->auditorStatus)
-                            <a class="rounded-xs  bg-gray-300 px-2 py-1">Pending</a>
+                            <a class="rounded-sm px-2 py-1 bg-stone-300 text-stone-700 dark:bg-slate-700 dark:text-slate-300">Pending</a>
                         @elseif ($item->auditorStatus == 'approved')
-                            <a  class="rounded-xs  bg-green-alerta px-2 py-1 text-gray-100">{{$item->auditorStatus}}</a>
+                            <a  class="rounded-sm px-2 py-1 bg-green-alerta text-white">{{$item->auditorStatus}}</a>
                         @elseif ($item->auditorStatus == 'duplicate' or $item->auditorStatus == 'rejected')
-                            <a  class="rounded-xs  bg-merah-alerta px-2 py-1 text-gray-100">{{$item->auditorStatus}}</a>
+                            <a  class="rounded-sm px-2 py-1 bg-merah-alerta text-white">{{$item->auditorStatus}}</a>
                         @else
                             <a  onclick="window.dispatchEvent(
                                 new CustomEvent('open-reason-modal', {
                                     detail: { id: {{ $item->alertId}} }
                                 })
-                            )" @click.away="open = false" class="rounded-xs cursor-pointer  bg-yellow-alerta px-2 py-1 text-gray-100">{{$item->auditorStatus}}</a>
+                            )" @click.away="open = false" class="rounded-sm px-2 py-1 bg-yellow-alerta text-white cursor-pointer transition-none">{{$item->auditorStatus}}</a>
                         @endif
                     </td>
 
-                    <td class="text-xs px-4">
+                    <td class="px-3 py-2.5 text-stone-700 dark:text-slate-300">
                         <div class="relative flex justify-end" x-data="{ open: false }">
 
                             <a href="{{ url('/editalert/'.$item->alertId) }}" class=" focus:outline-none cursor-pointer" @click="open = true">
@@ -106,7 +106,7 @@
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="5" class="whitespace-nowrap text-xs text-gray-700 px-6 py-3">
+                    <td colspan="5" class="px-3 py-2.5 text-stone-700 dark:text-slate-300">
                         No data found
                     </td>
                 </tr>

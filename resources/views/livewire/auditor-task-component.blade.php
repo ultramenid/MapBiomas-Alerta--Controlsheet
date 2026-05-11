@@ -1,6 +1,6 @@
-<div class="py-6 px-4 border border-gray-100 z-20 relative  bg-gray-100 dark:bg-slate-800 dark:border-slate-800 dark:text-slate-400 mt-4">
+<div class="glass rounded-sm p-5 mb-5 z-20 relative dark:text-slate-400">
     <div class="text-sm mb-6">
-        <a class="text-base mb-1 font-semibold">Alert by Auditor</a>
+        <a class="text-label text-stone-600 dark:text-slate-400 mb-1">Alert by Auditor</a>
         <div class="w-full mt-1 flex gap-2" wire:ignore x-init="
         flatpickr('#rangeAuditor', {
             mode:'range',
@@ -31,19 +31,19 @@
         });
      "
         ">
-            <input id="rangeAuditor" type="text" class="bg-gray-100 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-300 text-gray-800   w-52 border border-gray-200  py-2 px-4 focus:outline-none  text-xs"  wire:model.defer='rangeAuditor' placeholder="Please select">
+            <input id="rangeAuditor" type="text" class="bg-white dark:bg-slate-900 border border-stone-300 dark:border-slate-600 text-stone-900 dark:text-slate-100 w-52 rounded-sm px-3 py-2 text-sm focus:outline-none transition-none"  wire:model.defer='rangeAuditor' placeholder="Please select">
 
         </div>
     </div>
 
     <div class="max-w-7xl mx-auto">
         <div class="">
-            <div class="w-full overflow-x-auto">
-    <table class="w-full min-w-max border-collapse border-b border-gray-300">
-        <thead class="bg-gray-100 dark:bg-slate-600 border-b border-gray-300 dark:border-slate-700 dark:text-slate-400 text-gray-700">
+            <div class="overflow-x-auto">
+    <table class="w-full border-collapse">
+        <thead class="text-xs">
             <tr>
                 {{-- Sticky first column --}}
-                <th class="sticky left-0 bg-gray-100 dark:bg-slate-600 border-b border-gray-300 dark:border-slate-700 dark:text-slate-400 px-4 py-2 text-xs text-left z-10">
+                <th class="sticky left-0 bg-stone-100 dark:bg-slate-800 text-left px-3 py-2.5 text-label text-stone-500 dark:text-slate-400 z-10 border-b border-stone-200 dark:border-slate-700">
                     Auditor
                 </th>
 
@@ -51,7 +51,7 @@
                 @if (!empty($results))
                     @foreach (array_keys($results[array_key_first($results)]) as $key)
                         @if ($key !== 'auditorName' and $key !== 'auditorId')
-                            <th class="border-b border-gray-300 px-4 py-2 text-xs text-center whitespace-nowrap">
+                            <th class="border-b border-stone-300 dark:border-slate-700 px-4 py-2 text-xs text-center whitespace-nowrap">
                                 {{ $key }}
                             </th>
                         @endif
@@ -61,9 +61,9 @@
         </thead>
         <tbody>
             @foreach ($results as $row)
-                <tr class="hover:bg-gray-50">
+                <tr class="hover:bg-stone-50 dark:hover:bg-slate-800 transition-none">
                     {{-- Sticky first column --}}
-                    <td class="sticky left-0 bg-white dark:bg-slate-700 border-b border-gray-300 dark:border-slate-800 px-4 py-2 text-xs z-10 whitespace-nowrap">
+                    <td class="sticky left-0 bg-white dark:bg-slate-900 px-3 py-2.5 z-10 whitespace-nowrap border-b border-stone-200 dark:border-slate-700">
                         <a href="{{ url('/auditor-alert/'.$row['auditorId']) }}">{{ $row['auditorName'] }}</a>
                     </td>
 
@@ -71,7 +71,7 @@
                     @foreach ($row as $key => $val)
                         @if ($key !== 'auditorName' and $key !== 'auditorId')
                             {{-- Display 0 if no data for that date --}}
-                            <td class="border-b dark:bg-slate-700 border-b border-gray-300 dark:border-slate-800 border-gray-300 px-4 py-2 text-xs text-center">
+                            <td class="border-b dark:bg-slate-700 border-b border-stone-300 dark:border-slate-700 dark:border-slate-800 border-stone-300 dark:border-slate-700 px-4 py-2 text-xs text-center">
                                 {{ $val }}
                             </td>
                         @endif
