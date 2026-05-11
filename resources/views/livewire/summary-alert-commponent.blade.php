@@ -1,4 +1,4 @@
-<div class="glass rounded-sm p-5 mb-5">
+<div class="glass rounded-sm p-5 mb-5 z-20 relative dark:text-slate-400">
     <div class="text-label text-stone-600 dark:text-slate-400 mb-4">Alert Status by Region</div>
 
     <div class="overflow-x-auto">

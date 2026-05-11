@@ -31,7 +31,7 @@
         });
      "
         ">
-            <input id="rangeAuditor" type="text" class="bg-white dark:bg-slate-900 border border-stone-300 dark:border-slate-600 text-stone-900 dark:text-slate-100 w-52 rounded-sm px-3 py-2 text-sm focus:outline-none transition-none"  wire:model.defer='rangeAuditor' placeholder="Please select">
+            <input id="rangeAuditor" type="text" class="bg-white dark:bg-slate-800 border border-stone-300 dark:border-slate-600 text-stone-900 dark:text-slate-100 w-52 rounded-sm px-3 py-2 text-sm focus:outline-none transition-none"  wire:model.defer='rangeAuditor' placeholder="Please select">
 
         </div>
     </div>

@@ -9,11 +9,11 @@
     <div class="mt-12 flex sm:flex-row flex-col gap-4">
         <div class="sm:w-6/12 w-full">
             <h1 class="text-label text-stone-600 dark:text-slate-400 mb-1">Alert ID</h1>
-            <input placeholder="0000000"  type="number"  class="bg-white dark:bg-slate-900 border border-stone-300 dark:border-slate-600 text-stone-900 dark:text-slate-100 w-full rounded-sm px-3 py-2 text-sm focus:outline-none transition-none"  wire:model.defer='alertId' placeholder="">
+            <input placeholder="0000000"  type="number"  class="bg-white dark:bg-slate-800 border border-stone-300 dark:border-slate-600 text-stone-900 dark:text-slate-100 w-full rounded-sm px-3 py-2 text-sm focus:outline-none transition-none"  wire:model.defer='alertId' placeholder="">
         </div>
         <div class="sm:w-6/12 w-full">
             <h1 class="text-label text-stone-600 dark:text-slate-400 mb-1">Observation</h1>
-            <input placeholder="observation"  type="text" class="bg-white dark:bg-slate-900 border border-stone-300 dark:border-slate-600 text-stone-900 dark:text-slate-100 w-full rounded-sm px-3 py-2 text-sm focus:outline-none transition-none"  wire:model.defer='observation' placeholder="">
+            <input placeholder="observation"  type="text" class="bg-white dark:bg-slate-800 border border-stone-300 dark:border-slate-600 text-stone-900 dark:text-slate-100 w-full rounded-sm px-3 py-2 text-sm focus:outline-none transition-none"  wire:model.defer='observation' placeholder="">
         </div>
 
     </div>
@@ -44,12 +44,12 @@
         <div class="sm:w-6/12 w-full" x-data="{open:false}" @click.away="open=false" @region.window="open = false">
             <h1 class="text-label text-stone-600 dark:text-slate-400 mb-1">Region</h1>
             <label class="w-full">
-                <div  @click="open=true"   class="bg-white dark:bg-slate-900 border border-stone-300 dark:border-slate-600 text-stone-900 dark:text-slate-100 w-full rounded-sm px-3 py-2 text-sm focus:outline-none transition-none cursor-pointer truncate mb-2" >{{$region}}</div>
+                <div  @click="open=true"   class="bg-white dark:bg-slate-800 border border-stone-300 dark:border-slate-600 text-stone-900 dark:text-slate-100 w-full rounded-sm px-3 py-2 text-sm focus:outline-none transition-none cursor-pointer truncate mb-2" >{{$region}}</div>
             </label>
 
 
             <div style="display: none !important;" x-show="open" class="shadow px-2 py-2 flex flex-col   bg-black  z-20 absolute w-4/12"  >
-                <input   wire:model.live='chooseRegion' type="text" name="" id="" class="bg-white dark:bg-slate-900 border border-stone-300 dark:border-slate-600 text-stone-900 dark:text-slate-100 w-full rounded-sm px-3 py-2 text-sm focus:outline-none transition-none mb-4" placeholder="type region">
+                <input   wire:model.live='chooseRegion' type="text" name="" id="" class="bg-white dark:bg-slate-800 border border-stone-300 dark:border-slate-600 text-stone-900 dark:text-slate-100 w-full rounded-sm px-3 py-2 text-sm focus:outline-none transition-none mb-4" placeholder="type region">
                 @foreach ($regions as $key => $value)
                     <a  wire:click="selectRegion('{{$value[0]}}')"  class="cursor-pointer text-white py-1 hover:bg-stone-800 dark:hover:bg-slate-600 px-4 text-sm">{{$value[0]}}</a>
                 @endforeach
@@ -59,12 +59,12 @@
         <div class="sm:w-6/12 w-full" x-data="{open:false}" @click.away="open=false" @province.window="open = false">
             <h1 class="text-label text-stone-600 dark:text-slate-400 mb-1">Province</h1>
             <label class="w-full">
-                <div  @click="open=true"   class="bg-white dark:bg-slate-900 border border-stone-300 dark:border-slate-600 text-stone-900 dark:text-slate-100 w-full rounded-sm px-3 py-2 text-sm focus:outline-none transition-none cursor-pointer truncate mb-2" >{{$province}}</div>
+                <div  @click="open=true"   class="bg-white dark:bg-slate-800 border border-stone-300 dark:border-slate-600 text-stone-900 dark:text-slate-100 w-full rounded-sm px-3 py-2 text-sm focus:outline-none transition-none cursor-pointer truncate mb-2" >{{$province}}</div>
             </label>
 
 
             <div style="display: none !important;" x-show="open" class="shadow px-2 py-2 flex flex-col   bg-black  z-20 absolute w-4/12"  >
-                <input   wire:model.live='chooseProvince' type="text" name="" id="" class="bg-white dark:bg-slate-900 border border-stone-300 dark:border-slate-600 text-stone-900 dark:text-slate-100 w-full rounded-sm px-3 py-2 text-sm focus:outline-none transition-none mb-4" placeholder="type province">
+                <input   wire:model.live='chooseProvince' type="text" name="" id="" class="bg-white dark:bg-slate-800 border border-stone-300 dark:border-slate-600 text-stone-900 dark:text-slate-100 w-full rounded-sm px-3 py-2 text-sm focus:outline-none transition-none mb-4" placeholder="type province">
                 @foreach ($provincies as $key => $value)
                     <a  wire:click="selectProvince('{{$value[0]}}')"  class="cursor-pointer text-white py-1 hover:bg-stone-800 dark:hover:bg-slate-600 px-4 text-sm">{{$value[0]}}</a>
                 @endforeach

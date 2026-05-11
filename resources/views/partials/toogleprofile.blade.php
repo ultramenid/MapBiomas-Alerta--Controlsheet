@@ -15,11 +15,15 @@
         aria-hidden="true"
       />
     </button>
-    <template x-if="isProfileMenuOpen">
       <ul
-        x-transition:leave="transition ease-in duration-500"
-        x-transition:leave-start="opacity-0"
-        x-transition:leave-end="opacity-100"
+        x-show="isProfileMenuOpen"
+        x-cloak
+        x-transition:enter="transition ease-out duration-150"
+        x-transition:enter-start="opacity-0 scale-95"
+        x-transition:enter-end="opacity-100 scale-100"
+        x-transition:leave="transition ease-in duration-150"
+        x-transition:leave-start="opacity-100 scale-100"
+        x-transition:leave-end="opacity-0 scale-95"
         class="z-20 absolute right-0 w-60 p-2 mt-2 space-y-2 text-gray-600 bg-gray-300 rounded-md shadow-md dark:border-gray-700 dark:text-gray-300  dark:bg-slate-800"
         aria-label="submenu"
       >
@@ -70,5 +74,4 @@
           </a>
         </li>
       </ul>
-    </template>
 </div>

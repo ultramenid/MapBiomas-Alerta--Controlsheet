@@ -1,29 +1,30 @@
 <div class="glass rounded-sm p-5 mb-5 z-20 relative dark:text-slate-400">
-    <a class="text-label text-stone-600 dark:text-slate-400">Alerts</a>
-    <div x-data="{ open: @entangle('isReason') }">
-        @include('partials.auditorReason')
-    </div>
+    <h1 class="text-label text-stone-900 dark:text-slate-100">Alerts</h1>
+    @include('partials.auditorReason')
     <div class="flex gap-3 items-end">
-        <input class="bg-white dark:bg-slate-800 border border-stone-300 dark:border-slate-600 text-stone-900 dark:text-slate-100 w-52 rounded-sm px-3 py-2 text-sm focus:outline-none transition-none mt-2" wire:model.live='search' placeholder="alert ID">
         <div class="flex flex-col">
-            <a class="text-label text-stone-500 dark:text-slate-400">Tahun</a>
+            <span class="text-label text-stone-600 dark:text-slate-400">Search</span>
+            <input class="bg-white dark:bg-slate-800 border border-stone-300 dark:border-slate-600 text-stone-900 dark:text-slate-100 w-52 rounded-sm px-3 py-2 text-sm h-9 focus:outline-none transition-none" wire:model.live='search' placeholder="alert ID">
+        </div>
+        <div class="flex flex-col">
+            <span class="text-label text-stone-600 dark:text-slate-400">Tahun</span>
             <div class="sm:w-36 w-full relative flex  flex-col  text-neutral-600 dark:text-neutral-300">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="absolute pointer-events-none right-4 top-2 size-5">
                     <path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" />
                 </svg>
-                <select wire:ignore id='date-dropdown' wire:model.live="yearAlert" class="w-full appearance-none bg-white dark:bg-slate-900 border border-stone-300 dark:border-slate-600 text-stone-900 dark:text-slate-100 px-3 py-2 text-sm rounded-sm focus:outline-none cursor-pointer transition-none">
+                <select wire:ignore id='date-dropdown' wire:model.live="yearAlert" class="w-full appearance-none bg-white dark:bg-slate-800 border border-stone-300 dark:border-slate-600 text-stone-900 dark:text-slate-100 px-3 py-2 text-sm h-9 rounded-sm focus:outline-none cursor-pointer transition-none">
                     <option value="all">All</option>
                 </select>
             </div>
 
         </div>
         <div class="flex flex-col">
-            <a class="text-label text-stone-500 dark:text-slate-400">Status</a>
+            <span class="text-label text-stone-600 dark:text-slate-400">Status</span>
             <div class="sm:w-40 w-full relative flex  flex-col  text-neutral-600 dark:text-neutral-300">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="absolute pointer-events-none right-4 top-2 size-5">
                     <path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" />
                 </svg>
-                <select wire:ignore wire:model.live='selectStatus'class="w-full appearance-none bg-white dark:bg-slate-900 border border-stone-300 dark:border-slate-600 text-stone-900 dark:text-slate-100 px-3 py-2 text-sm rounded-sm focus:outline-none cursor-pointer transition-none">
+                <select wire:ignore wire:model.live='selectStatus'class="w-full appearance-none bg-white dark:bg-slate-800 border border-stone-300 dark:border-slate-600 text-stone-900 dark:text-slate-100 px-3 py-2 text-sm h-9 rounded-sm focus:outline-none cursor-pointer transition-none">
                     <option value="all">All</option>
                     <option value="pre-approved">Pre-approved</option>
                     <option value="refined">Refined</option>
@@ -37,81 +38,81 @@
     </div>
     <div class="mt-4">
         <div wire:loading class="flex w-full justify-center text-center bg-red-400 dark:bg-red-900 py-2 animate-pulse text-xs px-4 text-white rounded-sm" >loading. . .</div>
-        <table class="w-full divide-y divide-gray-200  rounded-sm  border border-stone-200 dark:border-slate-700 dark:border-slate-700 dark:bg-slate-700 dark:text-slate-400">
+        <table class="w-full divide-y divide-gray-200  rounded-sm  border border-stone-200 dark:border-slate-700 dark:bg-slate-700 dark:text-slate-400">
             <thead class=" text-xs">
-                <tr class="">
-                    <th  class="text-left px-3 py-2.5 text-label text-stone-500 dark:text-slate-400 cursor-pointer">
+                <tr class="border-b border-stone-200 dark:border-slate-700">
+                    <th  class="text-left px-3 py-2 text-label text-stone-500 dark:text-slate-400 cursor-pointer">
                         <div class=" space-x-1 flex" >
-                            <a class="text-label text-stone-500 dark:text-slate-400">Alert ID</a>
+                            <span>Alert ID</span>
                          </div>
                      </th>
-                    <th  class="text-left px-3 py-2.5 text-label text-stone-500 dark:text-slate-400 cursor-pointer hidden sm:table-cell">
+                    <th  class="text-left px-3 py-2 text-label text-stone-500 dark:text-slate-400 cursor-pointer hidden sm:table-cell">
                        <div class="flex space-x-1">
-                           <a>Input date</a>
+                           <span>Input date</span>
 
                         </div>
                     </th>
-                    <th  class="text-left px-3 py-2.5 text-label text-stone-500 dark:text-slate-400 hidden sm:table-cell">
+                    <th  class="text-left px-3 py-2 text-label text-stone-500 dark:text-slate-400 hidden sm:table-cell">
                         <div class="flex space-x-1">
-                            <a>Region/Island</a>
+                            <span>Region/Island</span>
                          </div>
                      </th>
-                     <th  class="text-left px-3 py-2.5 text-label text-stone-500 dark:text-slate-400 hidden sm:table-cell">
+                     <th  class="text-left px-3 py-2 text-label text-stone-500 dark:text-slate-400 hidden sm:table-cell">
                         <div class=" space-x-1 " >
-                            <a >Province</a>
+                            <span>Province</span>
 
                          </div>
                      </th>
-                     <th  class="text-center px-3 py-2.5 text-label text-stone-500 dark:text-slate-400 cursor-pointer">
+                     <th  class="text-center px-3 py-2 text-label text-stone-500 dark:text-slate-400 cursor-pointer">
                         <div class="flex space-x-1">
-                            <a>Platform Status</a>
+                            <span>Platform Status</span>
 
                          </div>
                      </th>
 
 
 
-                     <th class="text-right px-3 py-2.5 text-label text-stone-500 dark:text-slate-400">
+                     <th class="text-right px-3 py-2 text-label text-stone-500 dark:text-slate-400">
 
                     </th>
 
 
                 </tr>
             </thead>
-            <tbody class="text-sm">
+            <tbody class="text-sm bg-white dark:bg-slate-900 divide-y divide-stone-200 dark:divide-slate-700">
                 @forelse ($databases as $item)
                 <tr>
-                    <td class="px-3 py-2.5 text-stone-700 dark:text-slate-300">
-                        <a>{{$item->alertId}}</a>
+                    <td class="px-3 py-2 text-stone-700 dark:text-slate-300">
+                        {{$item->alertId}}
                     </td>
-                    <td class="px-3 py-2.5 text-stone-700 dark:text-slate-300 hidden sm:table-cell">
+                    <td class="px-3 py-2 text-stone-700 dark:text-slate-300 hidden sm:table-cell">
                         @php
                             $date = \Carbon\Carbon::parse($item->created_at)->locale(App::getLocale());
                             $date->settings(['formatFunction' => 'translatedFormat']);
-                        @endphp</h1>
-                        <a>{{ $date->format('d-m-Y')  }}</a>
+                        @endphp
+                        {{ $date->format('d-m-Y')  }}
                     </td>
 
-                    <td class="px-3 py-2.5 text-stone-700 dark:text-slate-300 hidden sm:table-cell">
-                        <a >{{$item->region}}</a>
+                    <td class="px-3 py-2 text-stone-700 dark:text-slate-300 hidden sm:table-cell">
+                        {{$item->region}}
                     </td>
-                    <td class="px-3 py-2.5 text-stone-700 dark:text-slate-300 hidden sm:table-cell">
-                        <a >{{$item->province}}</a>
+                    <td class="px-3 py-2 text-stone-700 dark:text-slate-300 hidden sm:table-cell">
+                        {{$item->province}}
                     </td>
-                    <td class="px-3 py-2.5 text-stone-700 dark:text-slate-300">
+                    <td class="px-3 py-2 text-stone-700 dark:text-slate-300">
                         <div class="relative inline-flex items-center">
                             @if(in_array($item->auditorStatus, ['approved', 'rejected', 'duplicate']))
 
                                 @if ($item->auditorStatus == 'approved')
-                                    <div class="inline-flex items-center justify-center text-center min-w-[7rem] appearance-none rounded-sm text-xs font-semibold uppercase tracking-wider bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300 border border-green-200 dark:border-green-700 px-3 py-1.5">
+                                    <div class="inline-flex items-center justify-center text-center w-[10rem] appearance-none rounded-sm text-xs font-semibold uppercase tracking-wider bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300 border border-green-200 dark:border-green-700 px-3 py-1.5">
                                         Approved
                                     </div>
                                 @elseif ($item->auditorStatus == 'rejected')
-                                    <div class="inline-flex items-center justify-center text-center min-w-[7rem] appearance-none rounded-sm text-xs font-semibold uppercase tracking-wider bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-700 px-3 py-1.5">
+                                    <div class="inline-flex items-center justify-center text-center w-[10rem] appearance-none rounded-sm text-xs font-semibold uppercase tracking-wider bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-700 px-3 py-1.5">
                                         Rejected
                                     </div>
                                 @elseif ($item->auditorStatus == 'duplicate')
-                                    <div class="inline-flex items-center justify-center text-center min-w-[7rem] appearance-none rounded-sm text-xs font-semibold uppercase tracking-wider bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-700 px-3 py-1.5">
+                                    <div class="inline-flex items-center justify-center text-center w-[10rem] appearance-none rounded-sm text-xs font-semibold uppercase tracking-wider bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-700 px-3 py-1.5">
                                         Duplicate
                                     </div>
                                 @endif
@@ -125,7 +126,7 @@
                                     detail: { id: {{ $item->alertId}} }
                                 })
                             )"
-                                class="inline-flex items-center justify-center text-center min-w-[7rem] appearance-none rounded-sm text-xs font-semibold uppercase tracking-wider bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-700 px-3 py-1.5 cursor-pointer">
+                                class="inline-flex items-center justify-center text-center w-[10rem] appearance-none rounded-sm text-xs font-semibold uppercase tracking-wider bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-700 px-3 py-1.5 cursor-pointer">
                                 {{ $item->auditorStatus == 'reexportimage'
                                     ? 'Re-export images'
                                     : ($item->auditorStatus == 'reclassification'
@@ -136,15 +137,15 @@
 
                             @else
                             <!-- wrapper centers the select visually; the inline style helps Safari center the selected option -->
-                            <div class="w-36 flex items-center justify-center relative" wire:key="alert-{{ $item->alertId }}">
+                            <div class="w-[10rem] flex items-center justify-center relative" wire:key="alert-{{ $item->alertId }}">
                                 <select
                                 onchange="Livewire.dispatch('updateStatus', { id: {{ $item->alertId }}, status: this.value })"
-                                class="w-full text-center appearance-none px-2 py-1 text-xs rounded-sm focus:outline-none
+                                class="w-full text-center appearance-none px-3 py-1.5 text-xs font-semibold uppercase tracking-wider rounded-sm focus:outline-none
                                     @if($item->auditorStatus == 'pre-approved') bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-700 cursor-pointer
                                     @elseif($item->auditorStatus == 'refined') bg-[#87bed3]/20 dark:bg-[#87bed3]/30 text-[rgb(70,130,150)] dark:text-[rgb(180,220,235)] border border-[#87bed3]/40 dark:border-[#87bed3]/50 cursor-pointer
                                     @elseif($item->auditorStatus == 'error') bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-700 cursor-pointer
                                     @elseif($item->auditorStatus == 'pending') bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 border border-stone-300 dark:border-stone-600 cursor-pointer
-                                    @else bg-stone-100 dark:bg-slate-800 text-black @endif"
+                                    @else bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 border border-stone-300 dark:border-stone-600 @endif"
                                 @if(!in_array($item->auditorStatus, ['pre-approved', 'refined', 'error', 'pending'])) disabled @endif
                                 style="-webkit-text-align-last: center; text-align-last: center;"
                                 >
@@ -170,7 +171,7 @@
                                 @elseif ($item->auditorStatus == 'pending')
                                 <svg xmlns="http://www.w3.org/2000/svg"
                                     fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
-                                    class="absolute right-2 h-4 w-4 bg-white pointer-events-none">
+                                    class="absolute right-2 h-4 w-4 text-stone-700 dark:text-slate-300 pointer-events-none">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 15 12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9" />
                                 </svg>
                                 @endif
@@ -180,7 +181,7 @@
                         </td>
 
 
-                    <td class="px-3 py-2.5 text-stone-700 dark:text-slate-300">
+                    <td class="px-3 py-2 text-stone-700 dark:text-slate-300">
                         <div class="relative flex justify-end" x-data="{ open: false }">
                             @if (!in_array($item->auditorStatus, ['approved', 'rejected', 'duplicate']) )
                                 <a href="{{ url('/editalert/'.$item->alertId) }}" class=" focus:outline-none cursor-pointer" @click="open = true">
@@ -199,7 +200,7 @@
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="5" class="px-3 py-2.5 text-stone-700 dark:text-slate-300">
+                    <td colspan="5" class="px-3 py-2 text-stone-700 dark:text-slate-300">
                         No data found
                     </td>
                 </tr>
@@ -222,6 +223,11 @@
             dateOption.text = currentYear;
             dateOption.value = currentYear;
             dateDropdown.add(dateOption);
+            currentYear -= 1;
+        }
+
+    </script>
+</div>teOption);
             currentYear -= 1;
         }
 

@@ -20,7 +20,7 @@
     </div>
 
     <div class="w-full gap-4 flex sm:flex-row flex-col mt-12 sm:justify-end">
-        <button wire:click='storePassword' class="bg-stone-900 dark:bg-slate-200 text-white dark:text-stone-900 py-2 px-4 text-sm font-semibold rounded-sm cursor-pointer hover:bg-stone-800 dark:hover:bg-slate-300 transition-none w-full sm:w-auto">Update</button>
+        <button wire:click='storePassword' class="bg-stone-900 dark:bg-slate-200 text-white dark:text-stone-900 py-2 px-4 text-sm font-semibold rounded-sm cursor-pointer hover:bg-stone-800 dark:hover:bg-slate-300 transition-none">Update</button>
     </div>
 
 </div>

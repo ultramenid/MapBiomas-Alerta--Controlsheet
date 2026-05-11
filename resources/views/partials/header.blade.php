@@ -1,7 +1,7 @@
 <header class="dot-pattern max-w-7xl px-6 mx-auto pt-4 flex items-center justify-between py-6">
     <div class="flex items-center">
         <div class="px-2">
-            <img src="{{ asset('assets/logo-alerta.png') }}" alt="Alerta" class="w-36">
+            <img src="{{ asset('assets/logo-alerta.png') }}" alt="Alerta" class="w-36 dark:brightness-0 dark:invert">
         </div>
     </div>
 

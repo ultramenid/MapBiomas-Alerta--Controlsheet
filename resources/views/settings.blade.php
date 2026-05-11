@@ -5,7 +5,7 @@
     @include('partials.nav')
 
     <main class="h-screen sm:mt-28 mt-4">
-        <div class="max-w-7xl px-6 mx-auto mt-4">
+        <div class="max-w-7xl mx-auto px-6 py-6">
             <div class="glass rounded-sm p-5 mb-5">
                 <div class="sm:pt-8 pt-4">
                     <div class="grid grid-cols-12">

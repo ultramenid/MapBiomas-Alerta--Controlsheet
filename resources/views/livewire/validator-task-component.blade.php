@@ -1,4 +1,4 @@
-<div class="py-6 px-4 border border-stone-200 dark:border-slate-700 z-20 relative  bg-stone-50 dark:bg-slate-800 dark:bg-slate-800 dark:border-slate-800 mt-4">
+<div class="glass rounded-sm p-5 mb-5 z-20 relative dark:text-slate-400">
     <div class="text-sm mb-6">
         <a class="text-label text-stone-600 dark:text-slate-400 mb-1">Alert by Validator</a>
         <div class="w-full mt-1 flex gap-2" wire:ignore x-init="
@@ -42,53 +42,53 @@
     <div class="overflow-hidden">
         <div class="overflow-x-auto">
 
-            <table class="w-full min-w-max border-collapse border-b border-stone-300 dark:border-slate-700 dark:border-slate-800 text-xs">
+            <table class="w-full min-w-max border border-stone-200 dark:border-slate-700 text-xs">
 
                 <thead class="text-xs">
 
                     <!-- HEADER ROW 1 -->
-                    <tr>
+                    <tr class="border-b border-stone-200 dark:border-slate-700">
 
                         <!-- Validator -->
                         <th rowspan="2 "
-                            class="sticky left-0 bg-stone-100 dark:bg-slate-800 text-left px-3 py-2.5 text-label text-stone-500 dark:text-slate-400 z-10 border-b border-stone-200 dark:border-slate-700">
+                            class="sticky left-0 bg-stone-100 dark:bg-slate-800 text-left px-3 py-2 text-label text-stone-500 dark:text-slate-400 z-10 border-b border-stone-200 dark:border-slate-700">
                             Validator
                         </th>
 
                         <!-- Loop tanggal -->
                         @foreach($report['dates'] as $date)
                             <th colspan="2"
-                                class=" px-4 py-2 text-center whitespace-nowrap bg-stone-200 dark:bg-slate-700 dark:bg-slate-600 dark:text-slate-400 dark:border-slate-500 border-r border-stone-300 dark:border-slate-700 border-l border-b border-t">
+                                class="px-4 py-2 text-center whitespace-nowrap bg-stone-200 dark:bg-slate-700 dark:text-slate-400 border-r border-stone-300 dark:border-slate-700 border-l border-b border-t">
                                 {{ $date }}
                             </th>
                         @endforeach
 
                         <!-- Total -->
                         <th colspan="2"
-                            class="sticky right-0 bg-stone-100 dark:bg-slate-800 text-center px-3 py-2.5 text-label text-stone-500 dark:text-slate-400 z-10 border-b border-stone-200 dark:border-slate-700">
+                            class="sticky right-0 bg-stone-100 dark:bg-slate-800 text-center px-3 py-2 text-label text-stone-500 dark:text-slate-400 z-10 border-b border-stone-200 dark:border-slate-700">
                             Total
                         </th>
 
                     </tr>
 
                     <!-- HEADER ROW 2 -->
-                    <tr>
+                    <tr class="border-b border-stone-200 dark:border-slate-700">
 
                         @foreach($report['dates'] as $date)
-                            <th class="w-24 bg-stone-200 dark:bg-slate-700 dark:bg-slate-500 dark:text-slate-300 dark:border-slate-500 border-stone-300 dark:border-slate-700 px-4 py-2 text-center border-l">
+                            <th class="w-24 bg-stone-200 dark:bg-slate-700 dark:text-slate-300 border-stone-300 dark:border-slate-700 px-4 py-2 text-center border-l">
                                 task
                             </th>
 
-                            <th class="w-24  border-stone-300 dark:border-slate-700 px-4 py-2 text-center bg-[#bfcec3] dark:bg-[#617c6a] dark:text-slate-300 dark:border-slate-500 border-r">
+                            <th class="w-24 border-stone-300 dark:border-slate-700 px-4 py-2 text-center bg-stone-300 dark:bg-slate-600 dark:text-slate-300 border-r">
                                 approved
                             </th>
                         @endforeach
 
-                        <th colspan="1" class="sticky right-[112px] bg-stone-100 dark:bg-slate-800 text-center px-3 py-2.5 text-stone-700 dark:text-slate-300 z-10 border-b border-stone-200 dark:border-slate-700">
+                        <th colspan="1" class="sticky right-[112px] bg-stone-100 dark:bg-slate-800 text-center px-3 py-2 text-stone-700 dark:text-slate-300 z-10 border-b border-stone-200 dark:border-slate-700">
                             task
                         </th>
 
-                        <th colspan="1" class="w-28  sticky right-0 bg-[#a3c9af] border-b border-[#a3c9af] px-4 py-2 text-center z-20  dark:bg-[#3a5142]  dark:text-slate-300 dark:border-[#3a5142] border-r">
+                        <th colspan="1" class="w-28 sticky right-0 bg-stone-400 dark:bg-slate-700 border-b border-stone-400 dark:border-slate-700 px-4 py-2 text-center z-20 dark:text-slate-300 border-r">
                             approved
                         </th>
 
@@ -97,17 +97,17 @@
                 </thead>
 
 
-                <tbody>
+                <tbody class="divide-y divide-stone-200 dark:divide-slate-700">
 
                     @foreach($report['data'] as $row)
 
-                        <tbody x-data="{ open:false }">
+                        <tbody x-data="{ open:false }" class="divide-y divide-stone-200 dark:divide-slate-700">
 
                             <tr @click="open = !open"
                                 class=" cursor-pointer">
 
                                 <!-- Validator name (sticky left, collapse tetap) -->
-                                <td class="sticky left-0 bg-white dark:bg-slate-900 px-3 py-2.5 z-10 whitespace-nowrap font-medium border-b border-stone-200 dark:border-slate-700">
+                                <td class="sticky left-0 bg-white dark:bg-slate-900 px-3 py-2 z-10 whitespace-nowrap font-medium border-b border-stone-200 dark:border-slate-700">
 
                                     <div class="flex items-center gap-2">
 
@@ -145,12 +145,12 @@
                                 <!-- Loop tanggal -->
                                 @foreach($report['dates'] as $date)
 
-                                    <td class="border-b border-stone-300 dark:border-slate-700 px-4 py-2 text-center bg-stone-200 dark:bg-slate-700 dark:bg-slate-500 dark:text-slate-300 dark:border-slate-500 border-l">
+                                    <td class="border-b border-stone-300 dark:border-slate-700 px-4 py-2 text-center bg-stone-200 dark:bg-slate-700 dark:text-slate-300 border-l">
                                         {{ $row['dates'][$date]['task'] ?? 0 }}
 
                                     </td>
 
-                                    <td class="border-b border-stone-300 dark:border-slate-700 px-4 py-2 text-center bg-[#bfcec3] dark:bg-[#617c6a] dark:text-slate-300 dark:border-slate-500 border-r ">
+                                    <td class="border-b border-stone-300 dark:border-slate-700 px-4 py-2 text-center bg-stone-300 dark:bg-slate-600 dark:text-slate-300 border-r">
                                         {{ $row['dates'][$date]['approved'] ?? 0 }}
                                     </td>
 
@@ -158,12 +158,12 @@
 
 
                                 <!-- total task -->
-                                <td class="w-28 sticky right-[112px] bg-stone-300 dark:bg-slate-600 border-b border-stone-300 dark:border-slate-700 px-4 py-2 text-center font-semibold z-10 dark:bg-slate-600 dark:text-slate-300 dark:border-slate-600">
+                                <td class="w-28 sticky right-[112px] bg-stone-300 dark:bg-slate-600 border-b border-stone-300 dark:border-slate-700 px-4 py-2 text-center font-semibold z-10 dark:text-slate-300">
                                     {{ $row['grandTotal'] ?? 0 }}
                                 </td>
 
                                 <!-- total approved -->
-                                <td class="w-28 sticky right-0  border-b border-[#a1ddb5] px-4 py-2 text-center font-semibold z-10 bg-[#a3c9af]   dark:bg-[#3a5142]  dark:text-slate-300 dark:border-[#3a5142] border-r">
+                                <td class="w-28 sticky right-0 border-b border-stone-400 dark:border-slate-600 px-4 py-2 text-center font-semibold z-10 bg-stone-400 dark:bg-slate-700 dark:text-slate-300 border-r">
                                     {{ $row['grandApproved'] ?? 0 }}
                                 </td>
 

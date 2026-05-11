@@ -1,9 +1,7 @@
 <div class="w-full max-w-md">
     <div class="glass rounded-sm p-8 sm:p-10">
         <div class="text-center mb-8">
-            <div class="w-12 h-12 bg-green-alerta rounded-sm mx-auto mb-4"></div>
-            <h1 class="text-heading text-stone-900 dark:text-slate-100 mb-2">Welcome Back</h1>
-            <p class="text-sm text-stone-500 dark:text-slate-400">Sign in to your account</p>
+            <img src="{{ asset('assets/logo-alerta.png') }}" alt="Alerta" class="w-36 mx-auto mb-4 dark:brightness-0 dark:invert">
         </div>
 
         <form wire:submit.prevent="login" class="space-y-5">
@@ -35,7 +33,7 @@
 
             <button
                 type="submit"
-                class="w-full bg-stone-900 dark:bg-slate-200 text-white dark:text-stone-900 rounded-sm py-3 text-sm font-semibold hover:bg-stone-800 dark:hover:bg-slate-300 cursor-pointer transition-none"
+                class="w-full bg-stone-900 dark:bg-slate-200 text-white dark:text-stone-900 py-2 px-4 text-sm font-semibold rounded-sm cursor-pointer hover:bg-stone-800 dark:hover:bg-slate-300 transition-none"
             >
                 Sign In
             </button>

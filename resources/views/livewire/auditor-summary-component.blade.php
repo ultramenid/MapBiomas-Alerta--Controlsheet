@@ -1,4 +1,4 @@
-<div class="glass rounded-sm p-5 mb-5">
+<div class="glass rounded-sm p-5 mb-5 z-20 relative dark:text-slate-400">
     <div class="flex flex-col sm:flex-row sm:gap-6 gap-3 mb-5 items-start">
         <div>
             <div class="text-label text-stone-600 dark:text-slate-400 mb-3">Alert by Auditor</div>
@@ -59,14 +59,14 @@
     </div>
 
     <div class="overflow-x-auto">
-        <table class="w-full border-collapse">
+        <table class="w-full border border-stone-200 dark:border-slate-700">
             <thead>
-                <tr class="border-b border-stone-300 dark:border-slate-700">
-                    <th class="sticky left-0 bg-stone-100 dark:bg-slate-800 text-left px-3 py-2.5 text-label text-stone-500 dark:text-slate-400 z-10">Auditor</th>
+                <tr class="border-b border-stone-200 dark:border-slate-700">
+                    <th class="sticky left-0 bg-stone-100 dark:bg-slate-800 text-left px-3 py-2 text-label text-stone-500 dark:text-slate-400 z-10">Auditor</th>
                     @if (!empty($results))
                         @foreach (array_keys($results[array_key_first($results)]) as $key)
                             @if ($key !== 'auditorName' && $key !== 'auditorId' && $key !== 'Total')
-                                <th class="text-center px-3 py-2.5 text-label text-stone-500 dark:text-slate-400 cursor-pointer" wire:click="sortBy('{{ $key }}')">
+                                <th class="text-center px-3 py-2 text-label text-stone-500 dark:text-slate-400 cursor-pointer" wire:click="sortBy('{{ $key }}')">
                                     {{ $key }}
                                     @if ($dataField === $key)
                                         <span>{{ $dataOrder === 'asc' ? '▲' : '▼' }}</span>
@@ -74,7 +74,7 @@
                                 </th>
                             @endif
                         @endforeach
-                        <th class="sticky right-0 bg-stone-100 dark:bg-slate-800 text-center px-3 py-2.5 text-label text-stone-500 dark:text-slate-400 z-10 cursor-pointer" wire:click="sortBy('Total')">
+                        <th class="sticky right-0 bg-stone-100 dark:bg-slate-800 text-center px-3 py-2 text-label text-stone-500 dark:text-slate-400 z-10 cursor-pointer" wire:click="sortBy('Total')">
                             Total
                             @if ($dataField === 'Total')
                                 <span>{{ $dataOrder === 'asc' ? '▲' : '▼' }}</span>
@@ -83,20 +83,20 @@
                     @endif
                 </tr>
             </thead>
-            <tbody class="text-sm">
+            <tbody class="text-sm divide-y divide-stone-200 dark:divide-slate-700">
                 @foreach ($results as $row)
-                    <tr class="border-b border-stone-200 dark:border-slate-800">
-                        <td class="sticky left-0 bg-white dark:bg-slate-900 px-3 py-2.5 z-10">
+                    <tr class="border-b border-stone-200 dark:border-slate-700">
+                        <td class="sticky left-0 bg-white dark:bg-slate-900 px-3 py-2 z-10">
                             <a href="{{ url('/auditor-alert/'.$row['auditorId']) }}" class="text-green-700 dark:text-green-400 hover:underline transition-none">
                                 {{ $row['auditorName'] }}
                             </a>
                         </td>
                         @foreach ($row as $key => $val)
                             @if ($key !== 'auditorName' && $key !== 'auditorId' && $key !== 'Total')
-                                <td class="text-center px-3 py-2.5 text-stone-700 dark:text-slate-300">{{ $val }}</td>
+                                <td class="text-center px-3 py-2 text-stone-700 dark:text-slate-300">{{ $val }}</td>
                             @endif
                         @endforeach
-                        <td class="sticky right-0 bg-white dark:bg-slate-900 text-center px-3 py-2.5 font-bold text-stone-900 dark:text-slate-200 z-10">{{ $row['Total'] }}</td>
+                        <td class="sticky right-0 bg-white dark:bg-slate-900 text-center px-3 py-2 font-bold text-stone-900 dark:text-slate-200 z-10">{{ $row['Total'] }}</td>
                     </tr>
                 @endforeach
             </tbody>

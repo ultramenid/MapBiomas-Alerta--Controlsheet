@@ -9,7 +9,7 @@
                     {!! __('pagination.previous') !!}
                 </span>
             @else
-                <button wire:click="previousPage" wire:loading.attr="disabled" dusk="previousPage.before" class="relative inline-flex items-center px-3 py-2 text-sm text-stone-700 dark:text-slate-300 bg-white dark:bg-slate-900 border border-stone-300 dark:border-slate-700 leading-5 rounded-sm hover:text-stone-500 dark:hover:text-slate-400 focus:outline-none active:bg-stone-100 dark:active:bg-slate-700 transition-none">
+                <button wire:click="previousPage" wire:loading.attr="disabled" dusk="previousPage.before" class="relative inline-flex items-center px-3 py-2 text-sm text-stone-700 dark:text-slate-300 bg-white dark:bg-slate-900 border border-stone-300 dark:border-slate-700 leading-5 rounded-sm hover:text-stone-500 dark:hover:text-slate-400 focus:outline-none active:bg-stone-100 dark:active:bg-slate-700 active:text-stone-900 dark:active:text-slate-100 transition-none">
                     {!! __('pagination.previous') !!}
                 </button>
             @endif
@@ -17,11 +17,11 @@
 
         <span>
             @if ($paginator->hasMorePages())
-                <button wire:click="nextPage" wire:loading.attr="disabled" dusk="nextPage.before" class="relative inline-flex items-center px-4 py-2 ml-3 text-sm font-medium  text-stone-700 dark:text-slate-300 bg-white dark:text-slate-400 bg-white dark:bg-slate-900 border border-stone-300 dark:border-slate-700 dark:border-slate-700 border border-stone-300 dark:border-slate-700 leading-5 rounded-sm hover:text-stone-500 dark:text-slate-400 focus:outline-none  focus:border-stone-500 dark:focus:border-slate-400 active:bg-stone-100 dark:bg-slate-800 active:text-stone-700 dark:text-slate-300 transition-none">
+                <button wire:click="nextPage" wire:loading.attr="disabled" dusk="nextPage.before" class="relative inline-flex items-center px-4 py-2 ml-3 text-sm font-medium text-stone-700 dark:text-slate-300 bg-white dark:bg-slate-900 border border-stone-300 dark:border-slate-700 leading-5 rounded-sm hover:text-stone-500 dark:hover:text-slate-400 focus:outline-none focus:border-stone-500 dark:focus:border-slate-400 active:bg-stone-100 dark:active:bg-slate-700 active:text-stone-900 dark:active:text-slate-100 transition-none">
                     {!! __('pagination.next') !!}
                 </button>
             @else
-                <span class="relative inline-flex items-center px-4 py-2 ml-3 text-sm font-medium  text-stone-500 dark:text-slate-400 bg-white dark:text-slate-400 bg-white dark:bg-slate-900 border border-stone-300 dark:border-slate-700 dark:border-slate-700 border border-stone-300 dark:border-slate-700 cursor-default leading-5 rounded-sm">
+                <span class="relative inline-flex items-center px-4 py-2 ml-3 text-sm font-medium text-stone-500 dark:text-slate-400 bg-white dark:bg-slate-900 border border-stone-300 dark:border-slate-700 cursor-default leading-5 rounded-sm">
                     {!! __('pagination.next') !!}
                 </span>
             @endif

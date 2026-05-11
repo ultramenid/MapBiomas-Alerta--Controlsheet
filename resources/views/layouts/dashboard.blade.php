@@ -45,7 +45,7 @@
 
     <x-toaster-hub />
 
-    <img src="{{ asset('assets/logo.png') }}" alt="" class="fixed sm:block hidden sm:bottom-6 sm:left-6 rotate-90 z-10 w-32 opacity-60">
+    <img src="https://controlsheet.mapbiomas.id/assets/logo.png" alt="" class="fixed sm:block hidden sm:-bottom-1/6 sm:-left-1/6 rotate-90 z-0 pointer-events-none">
     @stack('scripts')
 
 </body>
