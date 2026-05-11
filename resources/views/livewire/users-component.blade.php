@@ -14,8 +14,8 @@
         </button>
         <input placeholder="type name..." class="bg-white dark:bg-slate-800 border border-stone-300 dark:border-slate-600 text-stone-900 dark:text-slate-100 w-52 rounded-sm px-3 py-2 text-sm h-9 focus:outline-none transition-none" wire:model.live='search'>
     </div>
-    <div class="">
-        <table class="w-full border border-stone-200 dark:border-slate-700">
+    <div class="overflow-x-auto">
+        <table class="w-full border border-stone-200 dark:border-slate-700 min-w-[640px]">
             <thead class="">
                 <tr class="border-b border-stone-200 dark:border-slate-700">
                     <th wire:click='sortingField("name")'  class="text-left px-3 py-2 text-label text-stone-500 dark:text-slate-400">
@@ -32,11 +32,11 @@
 
                         </div>
                     </th>
-                    <th  class="text-left px-3 py-2 text-label text-stone-500 dark:text-slate-400">
-                        <div class="flex space-x-1">
-                            <a>contact</a>
-                         </div>
-                     </th>
+                     <th  class="hidden md:table-cell text-left px-3 py-2 text-label text-stone-500 dark:text-slate-400">
+                         <div class="flex space-x-1">
+                             <a>contact</a>
+                          </div>
+                      </th>
                      <th  class="text-left px-3 py-2 text-label text-stone-500 dark:text-slate-400">
                         <div class=" space-x-1 " >
                             <a >Level</a>
@@ -58,7 +58,7 @@
                     <td class="px-3 py-2 text-stone-700 dark:text-slate-300">
                         <a >{{ $item->email }}</a>
                     </td>
-                    <td class="px-3 py-2 text-stone-700 dark:text-slate-300">
+                    <td class="hidden md:table-cell px-3 py-2 text-stone-700 dark:text-slate-300">
                         <a >{{$item->contact}}</a>
                     </td>
                     <td class="px-3 py-2 text-stone-700 dark:text-slate-300">
@@ -74,7 +74,7 @@
                         @endswitch
                     </td>
                     @if (session('role_id') == 0)
-                    <td colspan="2" class="px-3 py-2 text-stone-500 dark:text-slate-400 relative">
+                    <td class="px-3 py-2 text-stone-500 dark:text-slate-400 relative">
                         <div class="relative flex justify-end" x-data="{ open: false }">
 
                             <button class=" focus:outline-none cursor-pointer" @click="open = true">
