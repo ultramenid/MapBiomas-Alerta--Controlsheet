@@ -155,7 +155,7 @@
                         </div>
                         <div class=" px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse mt-6 mb-6 ">
                             <span class="flex w-full rounded-md shadow-sm sm:ml-3 sm:w-auto">
-                                <button @click="auditAlert()" :disabled="loading"  wire:loading.attr="disabled" class="cursor-pointer inline-flex items-center justify-center gap-2 w-full rounded-md border border-transparent px-4 py-2 bg-black text-base font-medium text-gray-200 shadow-sm focus:outline-none transition sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed" >
+                                <button @click="auditAlert()" :disabled="loading"  wire:loading.attr="disabled" class="cursor-pointer inline-flex items-center justify-center gap-2 w-full rounded-md border border-transparent px-4 py-2 bg-black text-base font-medium text-gray-200 shadow-sm focus:outline-none transition-none sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed" >
 
                                     <!-- Text normal -->
                                     <span wire:loading.remove wire:target="auditing">
@@ -172,7 +172,7 @@
                             </span>
                             <span class="mt-3 flex w-full rounded-md shadow-sm sm:mt-0 sm:w-auto">
 
-                                <button @click="close()" type="button" class=" cursor-pointer inline-flex justify-center w-full rounded-md border border-gray-300 px-4 py-2 bg-white text-base leading-6 font-medium text-gray-700 shadow-sm hover:text-gray-500 focus:outline-none focus:border-blue-300 focus:shadow-outline-blue transition ease-in-out duration-150 sm:text-sm sm:leading-5">
+                                <button @click="close()" type="button" class=" cursor-pointer inline-flex justify-center w-full rounded-md border border-gray-300 px-4 py-2 bg-white text-base leading-6 font-medium text-gray-700 shadow-sm hover:text-gray-500 focus:outline-none focus:border-blue-300 focus:shadow-outline-blue transition-none sm:text-sm sm:leading-5">
                                     Close
                                 </button>
 
