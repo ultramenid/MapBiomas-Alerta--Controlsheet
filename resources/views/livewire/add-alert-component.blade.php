@@ -21,11 +21,11 @@
         <div class="sm:w-6/12 w-full">
             <label class="w-full"  >
                 <div class="relative flex w-full flex-col  text-neutral-600 dark:text-neutral-300 ">
-                    <label for="os" class="w-fit pl-0.5 text-stone-700 dark:text-slate-300 mb-1 dark:text-slate-400">Alert Status</label>
+                    <label for="os" class="text-label text-stone-600 dark:text-slate-400 mb-1">Alert Status</label>
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="absolute pointer-events-none right-4 top-9 size-5">
                         <path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" />
                     </svg>
-                    <select wire:ignore wire:model='alertStatus' class="dark:bg-slate-700 dark:border-slate-700 dark:text-slate-400 w-full appearance-none text-black  border border-stone-300 dark:border-slate-600 bg-stone-100 dark:bg-slate-800 px-4 py-2 text-sm focus:outline-none">
+                    <select wire:ignore wire:model='alertStatus' class="w-full appearance-none bg-white dark:bg-slate-800 border border-stone-300 dark:border-slate-600 text-stone-900 dark:text-slate-100 px-4 py-2 text-sm rounded-sm focus:outline-none transition-none">
                         <option selected>Please Select</option>
                         <option value="valid">Valid</option>
                         <option value="rejected">Rejected</option>
