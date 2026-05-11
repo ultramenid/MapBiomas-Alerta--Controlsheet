@@ -123,7 +123,7 @@
                             @elseif(in_array($item->auditorStatus, ['reexportimage', 'reclassification']))
                             <div onclick="window.dispatchEvent(
                                 new CustomEvent('open-reason-modal', {
-                                    detail: { id: {{ $item->alertId}} }
+                                    detail: { id: '{{ $item->alertId }}' }
                                 })
                             )"
                                 class="inline-flex items-center justify-center text-center w-[10rem] appearance-none rounded-sm text-xs font-semibold uppercase tracking-wider bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-700 px-3 py-1.5 cursor-pointer">
@@ -139,7 +139,7 @@
                             <!-- wrapper centers the select visually; the inline style helps Safari center the selected option -->
                             <div class="w-[10rem] flex items-center justify-center relative" wire:key="alert-{{ $item->alertId }}">
                                 <select
-                                onchange="Livewire.dispatch('updateStatus', { id: {{ $item->alertId }}, status: this.value })"
+                                onchange="Livewire.dispatch('updateStatus', { id: '{{ $item->alertId }}', status: this.value })"
                                 class="w-full text-center appearance-none px-3 py-1.5 text-xs font-semibold uppercase tracking-wider rounded-sm focus:outline-none
                                     @if($item->auditorStatus == 'pre-approved') bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-700 cursor-pointer
                                     @elseif($item->auditorStatus == 'refined') bg-[#87bed3]/20 dark:bg-[#87bed3]/30 text-[rgb(70,130,150)] dark:text-[rgb(180,220,235)] border border-[#87bed3]/40 dark:border-[#87bed3]/50 cursor-pointer
@@ -223,11 +223,6 @@
             dateOption.text = currentYear;
             dateOption.value = currentYear;
             dateDropdown.add(dateOption);
-            currentYear -= 1;
-        }
-
-    </script>
-</div>teOption);
             currentYear -= 1;
         }
 
