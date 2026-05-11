@@ -51,20 +51,7 @@ export function toggleTheme() {
 
 }
 
-// ALWAYS follow system changes (override everything)
 export function watchSystemTheme() {
-
-    const media = window.matchMedia('(prefers-color-scheme: dark)');
-
-    media.addEventListener('change', (e) => {
-
-        const newTheme = e.matches ? 'dark' : 'light';
-
-        applyTheme(newTheme);
-
-        // optional: sync storage
-        localStorage.setItem(STORAGE_KEY, newTheme);
-
-    });
-
+    // REMOVED: No longer auto-overrides user preference
+    // User choice now persists until manually changed
 }
