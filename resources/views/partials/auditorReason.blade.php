@@ -5,7 +5,7 @@
             <div x-show="open" x-transition.opacity.duration.200ms class="fixed inset-0 bg-black/40" @click="close()"></div>
 
             {{-- Panel --}}
-            <div x-show="open" x-transition:enter="ease-out duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100" x-transition:leave="ease-in duration-150" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95" @click.stop class="relative w-full sm:max-w-lg bg-white dark:bg-slate-800 rounded-sm shadow-xl max-h-[85vh] overflow-y-auto">
+            <div x-show="open" x-transition:enter="ease-out duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100" x-transition:leave="ease-in duration-150" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95" @click.stop class="relative w-full sm:max-w-lg bg-white dark:bg-slate-800 rounded-sm shadow-xl">
                 <div class="px-5 py-5">
                     {{-- Header --}}
                     <div class="flex items-center justify-between mb-5 pb-4 border-b border-stone-200 dark:border-slate-600">
@@ -25,7 +25,7 @@
                         <div class="animate-pulse text-gray-400 py-8 text-center text-sm">Memuat data...</div>
                     </template>
                     <template x-if="!loading">
-                        <div class="bg-stone-50 dark:bg-slate-900 rounded-sm p-4 border border-stone-200 dark:border-slate-600">
+                        <div class="bg-stone-50 dark:bg-slate-900 rounded-sm p-4 border border-stone-200 dark:border-slate-600 max-h-[50vh] overflow-y-auto">
                             <span class="text-label text-stone-500 dark:text-slate-400 mb-2 block">Reason</span>
                             <p class="text-sm dark:text-slate-300" x-html="alertReason"></p>
                         </div>
