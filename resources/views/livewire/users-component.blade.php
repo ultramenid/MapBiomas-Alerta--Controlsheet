@@ -43,6 +43,11 @@
 
                          </div>
                      </th>
+                     <th  class="text-left px-3 py-2 text-label text-stone-500 dark:text-slate-400">
+                        <div class=" space-x-1 " >
+                            <a >Status</a>
+                         </div>
+                     </th>
 
                      <th  class="text-left px-3 py-2 text-label text-stone-500 dark:text-slate-400">
 
@@ -73,6 +78,13 @@
                                 <span class="inline-flex items-center justify-center text-center w-[10rem] appearance-none rounded-sm text-xs font-semibold uppercase tracking-wider bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 border border-stone-300 dark:border-stone-600 px-3 py-1.5">Validator</span>
                         @endswitch
                     </td>
+                    <td class="px-3 py-2 text-stone-700 dark:text-slate-300">
+                        @if ($item->is_active == 1)
+                            <span class="inline-flex items-center justify-center text-center w-[10rem] appearance-none rounded-sm text-xs font-semibold uppercase tracking-wider bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 border border-green-300 dark:border-green-600 px-3 py-1.5">Active</span>
+                        @else
+                            <span class="inline-flex items-center justify-center text-center w-[10rem] appearance-none rounded-sm text-xs font-semibold uppercase tracking-wider bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 border border-red-300 dark:border-red-600 px-3 py-1.5">Inactive</span>
+                        @endif
+                    </td>
                     @if (session('role_id') == 0)
                     <td class="px-3 py-2 text-stone-500 dark:text-slate-400 relative">
                         <div class="relative flex justify-end" x-data="{ open: false }">
@@ -97,7 +109,7 @@
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="5" class="px-3 py-2 text-stone-500 dark:text-slate-400">
+                    <td colspan="6" class="px-3 py-2 text-stone-500 dark:text-slate-400">
                         No data found
                     </td>
                 </tr>
