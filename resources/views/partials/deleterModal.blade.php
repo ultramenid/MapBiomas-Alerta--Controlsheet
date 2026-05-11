@@ -8,34 +8,30 @@
             <!-- This element is to trick the browser into centering the modal contents. -->
             <span class="hidden sm:inline-block sm:align-middle sm:h-screen"></span>​
 
-            <div class="inline-block align-bottom bg-gray-900 dark:bg-gray-200 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg w-full " role="dialog" aria-modal="true" aria-labelledby="modal-headline">
-                <h1 class="text-center px-4 text-2xl pt-10 pb-10 text-gray-300 dark:text-gray-900">Deleting <a class="font-bold"> {{$deleteName}}</a> ?</h1>
-
-                <div class=" px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                    <span class="flex w-full rounded-md shadow-sm sm:ml-3 sm:w-auto">
-                        <button wire:loading.remove wire:click="deleting({{ $deleteID }})" type="button" class="inline-flex justify-center w-full rounded-md border border-transparent px-4 py-2 bg-red-500 text-base leading-6 font-medium text-gray-200 dark shadow-sm hover:bg-red-800 focus:outline-none  transition-none sm:text-sm sm:leading-5">
-                            Yes
-                        </button>
-                        {{-- loading --}}
-                        <button wire:loading wire:target='deleting({{ $deleteID }})' type="button" class="inline-flex justify-center w-full rounded-md border border-transparent px-4 py-2 bg-gray-900 text-base leading-6 font-medium text-white shadow-sm hover:bg-gray-500 focus:outline-none  transition-none sm:text-sm sm:leading-5">
-                            <svg class="animate-spin mx-auto h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            <div class="inline-block align-bottom bg-white dark:bg-slate-800 rounded-sm text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg w-full " role="dialog" aria-modal="true" aria-labelledby="modal-headline">
+                <div class="px-6 py-8">
+                    <div class="flex items-center justify-center mb-6">
+                        <div class="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-red-600 dark:text-red-400">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
                             </svg>
-                        </button>
-                    </span>
-                    <span class="mt-3 flex w-full rounded-md shadow-sm sm:mt-0 sm:w-auto">
+                        </div>
+                    </div>
+                    <h1 class="text-center text-xl font-bold text-stone-900 dark:text-slate-100 mb-2">Delete Alert</h1>
+                    <p class="text-center text-sm text-stone-500 dark:text-slate-400 mb-8">Are you sure you want to delete <span class="font-semibold text-stone-900 dark:text-slate-200">{{$deleteName}}</span>?</p>
 
-                        <button wire:loading.remove wire:click='closeDelete' type="button" class="inline-flex justify-center w-full rounded-md border border-gray-300 px-4 py-2 bg-white text-base leading-6 font-medium text-gray-700 shadow-sm hover:text-gray-500 focus:outline-none focus:border-blue-300 focus:shadow-outline-blue transition-none sm:text-sm sm:leading-5">
-                            No
-                        </button>
-                        <button wire:loading wire:target='closeDelete' type="button" class=" px-6 inline-flex justify-center w-full rounded-md border border-gray-300  py-2 bg-white text-base leading-6 font-medium text-gray-700 shadow-sm hover:text-gray-500 focus:outline-none focus:border-blue-300 focus:shadow-outline-blue transition-none sm:text-sm sm:leading-5">
-                            <svg class="animate-spin mx-auto h-5 w-5 text-black" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                            </svg>
-                        </button>
-                    </span>
+                    <div class="flex gap-3 justify-center">
+                        <span class="flex rounded-md shadow-sm">
+                            <button wire:loading.remove wire:click="deleting({{ $deleteID }})" type="button" class="inline-flex justify-center rounded-sm border border-transparent px-6 py-2.5 bg-red-600 text-sm font-semibold text-white shadow-sm hover:bg-red-700 focus:outline-none cursor-pointer transition-none">
+                                Yes, Delete
+                            </button>
+                        </span>
+                        <span class="flex rounded-md shadow-sm">
+                            <button wire:loading.remove wire:click='closeDelete' type="button" class="inline-flex justify-center rounded-sm border border-stone-300 dark:border-slate-600 px-6 py-2.5 bg-white dark:bg-slate-700 text-sm font-semibold text-stone-700 dark:text-slate-200 shadow-sm hover:bg-stone-50 dark:hover:bg-slate-600 focus:outline-none cursor-pointer transition-none">
+                                Cancel
+                            </button>
+                        </span>
+                    </div>
                 </div>
             </div>
         </div>

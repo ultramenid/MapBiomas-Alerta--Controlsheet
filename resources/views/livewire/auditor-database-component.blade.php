@@ -38,7 +38,6 @@
 
 
 
-
     </div>
     <div x-data="{ open: @entangle('isAudit') }">
         @include('partials.auditing')
@@ -112,28 +111,28 @@
                     <td class="px-3 py-2.5 text-stone-700 dark:text-slate-300 hidden sm:table-cell">
                         <a >{{$item->province}}</a>
                     </td>
-                    <td class="px-6 py-1 break-words text-xs  text-stone-700 dark:text-slate-300" wire:key="alert-{{ $item->alertId }}">
+                    <td class="px-6 py-2 break-words text-xs  text-stone-700 dark:text-slate-300" wire:key="alert-{{ $item->alertId }}">
                         @if (in_array($item->auditorStatus, ['pre-approved', 'refined', 'error']))
                             <button
                                 wire:loading.attr='disabled'
                                 onclick="window.dispatchEvent(
                                 new CustomEvent('open-audit-modal',
                                 { detail: { id: {{ $item->id }} } })
-                                )" @click.away="open = false" class="inline-block text-center w-28 appearance-none rounded-sm-xs
-                                @if($item->auditorStatus == 'pre-approved') bg-blue-100 text-stone-700 dark:text-slate-300 cursor-pointer
-                                @elseif($item->auditorStatus == 'refined') bg-[#87bed3]  text-white cursor-pointer
-                                @elseif($item->auditorStatus == 'error') bg-merah-alerta  text-white cursor-pointer
+                                )" @click.away="open = false" class="inline-flex items-center justify-center text-center min-w-[7rem] appearance-none rounded-sm text-xs font-semibold uppercase tracking-wider
+                                @if($item->auditorStatus == 'pre-approved') bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-700 cursor-pointer
+                                @elseif($item->auditorStatus == 'refined') bg-[#87bed3]/20 dark:bg-[#87bed3]/30 text-[rgb(70,130,150)] dark:text-[rgb(180,220,235)] border border-[#87bed3]/40 dark:border-[#87bed3]/50 cursor-pointer
+                                @elseif($item->auditorStatus == 'error') bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-700 cursor-pointer
                                 @endif
-                                px-2 py-1">{{ $item->auditorStatus }}
+                                px-3 py-1.5">{{ $item->auditorStatus }}
                     </button>
                         @elseif ($item->auditorStatus == 'approved')
-                            <a  class="rounded-sm-xs inline-block text-center  w-28 appearance-none bg-green-alerta px-2 py-1 text-white">{{$item->auditorStatus}}</a>
+                            <span class="inline-flex items-center justify-center text-center min-w-[7rem] appearance-none rounded-sm text-xs font-semibold uppercase tracking-wider bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300 border border-green-200 dark:border-green-700 px-3 py-1.5">{{$item->auditorStatus}}</span>
                         @elseif ($item->auditorStatus == 'pending')
-                            <a  class="rounded-sm-xs inline-block text-center  w-28 appearance-none bg-black px-2 py-1 text-white">{{$item->auditorStatus}}</a>
+                            <span class="inline-flex items-center justify-center text-center min-w-[7rem] appearance-none rounded-sm text-xs font-semibold uppercase tracking-wider bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 border border-stone-300 dark:border-stone-600 px-3 py-1.5">{{$item->auditorStatus}}</span>
                         @elseif ($item->auditorStatus == 'duplicate' or $item->auditorStatus == 'rejected')
-                            <a  class="rounded-sm-xs inline-block text-center w-28 appearance-none bg-merah-alerta px-2 py-1 text-white">{{$item->auditorStatus}}</a>
+                            <span class="inline-flex items-center justify-center text-center min-w-[7rem] appearance-none rounded-sm text-xs font-semibold uppercase tracking-wider bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-700 px-3 py-1.5">{{$item->auditorStatus}}</span>
                         @else
-                            <a  class="rounded-sm-xs inline-block text-center w-28 appearance-none  bg-yellow-alerta px-2 py-1 text-white">{{$item->auditorStatus}}</a>
+                            <span class="inline-flex items-center justify-center text-center min-w-[7rem] appearance-none rounded-sm text-xs font-semibold uppercase tracking-wider bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-700 px-3 py-1.5">{{$item->auditorStatus}}</span>
                         @endif
                     </td>
 

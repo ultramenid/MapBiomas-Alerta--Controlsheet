@@ -19,14 +19,25 @@
             <div class=" px-4 py-6 inline-block align-bottom h-[660px] rounded-sm bg-white dark:bg-slate-700 text-left  shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-5xl w-full " role="dialog" aria-modal="true" aria-labelledby="modal-headline">
                 <div wire:loading class="absolute flex w-[97%] justify-start text-center bg-red-300 py-1 animate-pulse text-xs  text-white mb-12" >loading. . .</div>
 
-                <div class="w-full">
-                    <a class="text-xl dark:text-slate-400">{{$alertId}} - {{$observation}} - {{$analis}}</a>
+                <div class="w-full mb-6 pb-4 border-b border-stone-200 dark:border-slate-600">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h2 class="text-xl font-bold text-stone-900 dark:text-slate-100">{{$alertId}}</h2>
+                            <p class="text-sm text-stone-500 dark:text-slate-400 mt-1">{{$observation}} - {{$analis}}</p>
+                        </div>
+                        <button @click="close()" class="text-stone-400 hover:text-stone-600 dark:text-slate-400 dark:hover:text-slate-200 cursor-pointer transition-none">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
                 </div>
                 <div class=" flex sm:flex-row flex-col gap-6 ">
                     {{-- left side --}}
                     <div class="sm:w-6/12 w-full h-[580px] overflow-y-auto">
                         <div class="flex flex-col  mb-3 mt-4  ">
-                             <a class="text-sm text-left prose dark:text-slate-400"><b>Note</b>:
+                             <div class="text-sm text-left prose dark:text-slate-400">
+                                <span class="text-label text-stone-500 dark:text-slate-400 mb-2 block">Note</span>
                                 <template x-if="loading">
                                     <div class="space-y-4 animate-pulse mt-4">
                                         <div class="h-4 bg-gray-300 dark:bg-slate-600 rounded w-1/3"></div>
@@ -36,22 +47,22 @@
                                 </template>
 
                                 <template x-if="!loading">
-                                    <div>
+                                    <div class="bg-stone-50 dark:bg-slate-800 rounded-sm p-4 border border-stone-200 dark:border-slate-600">
                                         {!! $alertNote !!}
                                     </div>
                                 </template>
-                            </a>
+                            </div>
                         </div>
                     </div>
                     {{-- right side --}}
                     <div class="sm:w-6/12 w-full  ">
                         <label class="w-full"  >
                             <div class="relative flex w-full flex-col  text-neutral-600 dark:text-neutral-300">
-                                <label for="os" class="w-fit pl-0.5 text-gray-700 mb-1 text-sm dark:text-slate-400">Alert Status</label>
+                                <label for="os" class="w-fit pl-0.5 text-label text-stone-500 dark:text-slate-400 mb-2">Alert Status</label>
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="absolute pointer-events-none right-4 top-9 size-5">
                                     <path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" />
                                 </svg>
-                                <select wire:ignore wire:model='alertStatus' class="dark:bg-slate-600 dark:text-slate-300 dark:border-slate-700 w-full text-black appearance-none  border border-neutral-300 bg-gray-100 px-4 py-2 text-sm focus:outline-none">
+                                <select wire:ignore wire:model='alertStatus' class="dark:bg-slate-800 dark:text-slate-100 dark:border-slate-600 w-full text-stone-900 appearance-none border border-stone-300 bg-white px-4 py-2.5 text-sm rounded-sm focus:outline-none transition-none">
                                     <option value="pre-approved">Pre-Approved</option>
                                     <option value="refined">Refined</option>
                                     <option value="error">Error</option>
@@ -65,8 +76,8 @@
                             </div>
                         </label>
 
-                        <div class="w-full  border-gray-300  mb-6 mt-6">
-                            <h1 class="text-gray-700 dark:text-slate-400">Reason</h1>
+                        <div class="w-full border-stone-200 dark:border-slate-600 mb-6 mt-6">
+                            <span class="text-label text-stone-500 dark:text-slate-400 mb-2 block">Reason</span>
                             <div
                             x-data="{
                                 darkMode: document.documentElement.classList.contains('dark'),
@@ -155,7 +166,7 @@
                         </div>
                         <div class=" px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse mt-6 mb-6 ">
                             <span class="flex w-full rounded-md shadow-sm sm:ml-3 sm:w-auto">
-                                <button @click="auditAlert()" :disabled="loading"  wire:loading.attr="disabled" class="cursor-pointer inline-flex items-center justify-center gap-2 w-full rounded-md border border-transparent px-4 py-2 bg-black text-base font-medium text-gray-200 shadow-sm focus:outline-none transition-none sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed" >
+                                <button @click="auditAlert()" :disabled="loading"  wire:loading.attr="disabled" class="cursor-pointer inline-flex items-center justify-center gap-2 w-full rounded-sm border border-transparent px-4 py-2 bg-stone-900 dark:bg-slate-200 text-base font-medium text-white dark:text-stone-900 shadow-sm focus:outline-none transition-none sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed" >
 
                                     <!-- Text normal -->
                                     <span wire:loading.remove wire:target="auditing">
@@ -172,7 +183,7 @@
                             </span>
                             <span class="mt-3 flex w-full rounded-md shadow-sm sm:mt-0 sm:w-auto">
 
-                                <button @click="close()" type="button" class=" cursor-pointer inline-flex justify-center w-full rounded-md border border-gray-300 px-4 py-2 bg-white text-base leading-6 font-medium text-gray-700 shadow-sm hover:text-gray-500 focus:outline-none focus:border-blue-300 focus:shadow-outline-blue transition-none sm:text-sm sm:leading-5">
+                                <button @click="close()" type="button" class="cursor-pointer inline-flex justify-center w-full rounded-sm border border-stone-300 dark:border-slate-600 px-4 py-2 bg-white dark:bg-slate-800 text-base leading-6 font-medium text-stone-700 dark:text-slate-200 shadow-sm hover:text-stone-500 dark:hover:text-slate-400 focus:outline-none focus:border-stone-500 focus:shadow-outline-stone transition-none sm:text-sm sm:leading-5">
                                     Close
                                 </button>
 

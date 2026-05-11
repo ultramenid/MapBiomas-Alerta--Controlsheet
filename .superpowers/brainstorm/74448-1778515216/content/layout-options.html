@@ -1,0 +1,101 @@
+<h2>Navigation & Layout Direction</h2>
+<p class="subtitle">How should we structure the navigation and page layout?</p>
+
+<div class="section">
+  <h3>Option A: Top Navigation (Current Style, Improved)</h3>
+  <div class="mockup">
+    <div class="mockup-header">Current Approach - Refined</div>
+    <div class="mockup-body">
+      <div style="background:#1e293b;padding:8px 16px;color:white;font-size:12px;">Logo | Dashboard | Alerts | Users | Settings | Profile</div>
+      <div style="background:#f8fafc;padding:20px;min-height:200px;">
+        <div style="background:white;border-radius:8px;padding:16px;box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+          <div style="height:12px;background:#e2e8f0;width:40%;margin-bottom:12px;border-radius:4px;"></div>
+          <div style="height:8px;background:#e2e8f0;width:80%;margin-bottom:8px;border-radius:4px;"></div>
+          <div style="height:8px;background:#e2e8f0;width:60%;border-radius:4px;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <ul style="margin-top:12px;font-size:14px;">
+    <li>Clean horizontal nav below header</li>
+    <li>Content starts immediately below</li>
+    <li>More vertical space for tables</li>
+  </ul>
+</div>
+
+<div class="section">
+  <h3>Option B: Sidebar Navigation</h3>
+  <div class="mockup">
+    <div class="mockup-header">Sidebar Layout</div>
+    <div class="mockup-body" style="display:flex;">
+      <div style="background:#0f172a;padding:16px 8px;color:white;width:60px;font-size:10px;text-align:center;">
+        <div style="margin-bottom:16px;">📊</div>
+        <div style="margin-bottom:16px;">🔔</div>
+        <div style="margin-bottom:16px;">👥</div>
+        <div>⚙️</div>
+      </div>
+      <div style="flex:1;background:#f8fafc;padding:20px;">
+        <div style="background:white;border-radius:8px;padding:16px;box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+          <div style="height:12px;background:#e2e8f0;width:40%;margin-bottom:12px;border-radius:4px;"></div>
+          <div style="height:8px;background:#e2e8f0;width:80%;margin-bottom:8px;border-radius:4px;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <ul style="margin-top:12px;font-size:14px;">
+    <li>Icons-only sidebar for quick navigation</li>
+    <li>More horizontal space for content</li>
+    <li>Modern SaaS feel</li>
+  </ul>
+</div>
+
+<div class="section">
+  <h3>Option C: Hybrid (Sidebar + Top)</h3>
+  <div class="mockup">
+    <div class="mockup-header">Hybrid Layout</div>
+    <div class="mockup-body" style="display:flex;">
+      <div style="background:#1e293b;padding:12px;width:50px;color:white;font-size:10px;">
+        <div style="margin-bottom:12px;text-align:center;">📊</div>
+        <div style="margin-bottom:12px;text-align:center;">🔔</div>
+      </div>
+      <div style="flex:1;">
+        <div style="background:#f8fafc;padding:8px 16px;border-bottom:1px solid #e2e8f0;font-size:12px;">Dashboard / Overview</div>
+        <div style="background:white;padding:20px;">
+          <div style="height:12px;background:#e2e8f0;width:30%;margin-bottom:12px;border-radius:4px;"></div>
+          <div style="height:8px;background:#e2e8f0;width:70%;border-radius:4px;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <ul style="margin-top:12px;font-size:14px;">
+    <li>Sidebar for primary sections</li>
+    <li>Top bar for breadcrumbs/context</li>
+    <li>Most information-dense</li>
+  </ul>
+</div>
+
+<div class="options" style="margin-top:24px;">
+  <div class="option" data-choice="top" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Top Navigation</h3>
+      <p>Keep current style but refined</p>
+    </div>
+  </div>
+  <div class="option" data-choice="sidebar" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>Sidebar</h3>
+      <p>Modern icon-based sidebar</p>
+    </div>
+  </div>
+  <div class="option" data-choice="hybrid" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>Hybrid</h3>
+      <p>Sidebar + top bar combo</p>
+    </div>
+  </div>
+</div>
+
+<p style="margin-top:20px;font-size:14px;color:#666;"><strong>Which layout direction feels right for your CMS?</strong> Click to select your preference.</p>
