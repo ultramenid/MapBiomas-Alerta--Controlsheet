@@ -45,7 +45,7 @@ class UsersComponent extends Component
           $sc = '%' . $this->search . '%';
           try {
             return  DB::table('users')
-                        ->select('name', 'email','contact', 'role_id', 'id')
+                        ->select('name', 'email','contact', 'role_id', 'id', 'is_active')
                         ->where('name', 'like', $sc)
                         ->orderBy($this->dataField, $this->dataOrder)
                         ->paginate($this->paginate);
