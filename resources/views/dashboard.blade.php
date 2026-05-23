@@ -19,6 +19,7 @@
 
             <livewire:auditor-task-component />
             <livewire:filter-dashboard-component>
+            <livewire:validator-task-component />
             <livewire:check-alert-analis />
 
         @endif
