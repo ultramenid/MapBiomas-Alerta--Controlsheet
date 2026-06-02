@@ -13,15 +13,11 @@ class CheckAlertAnalis extends Component
     use WithPagination;
     public $searchName;
     public $dataField = 'name', $dataOrder = 'asc';
-    public $startDateCheckAlert, $endDateCheckAlert, $rangeCheckAlert;
 
     public $yearAlert;
 
     public function mount(){
         $this->yearAlert = Carbon::now()->format('Y');
-        $this->startDateCheckAlert = Carbon::now("Asia/Jakarta")->format("Y-m-d");
-        $this->endDateCheckAlert = Carbon::now("Asia/Jakarta")->format("Y-m-d");
-        $this->rangeCheckAlert = $this->startDateCheckAlert . " to " . $this->endDateCheckAlert;
     }
 
     #[On('filterYear')]
@@ -63,10 +59,9 @@ class CheckAlertAnalis extends Component
             ->when(!empty($sc), function ($q) use ($sc) {
                 return $q->where('users.name', 'like', $sc);
             })
-            ->whereBetween(DB::raw('DATE(alerts.detectionDate)'), [
-                $this->startDateCheckAlert,
-                $this->endDateCheckAlert,
-            ])
+            ->when($this->yearAlert !== 'all', function ($q) {
+                return $q->whereYear('alerts.detectionDate', $this->yearAlert);
+            })
             ->where('alerts.isActive', 1)     // alerts active flag
             ->where('users.is_active', 1)     // user active flag
             ->groupBy('alerts.analisId', 'users.name')

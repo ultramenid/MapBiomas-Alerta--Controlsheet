@@ -2,33 +2,6 @@
     <div class="text-sm mb-6">
         <a class="text-label text-stone-600 dark:text-slate-400 mb-1">Alert status by validator</a>
         <div class="mt-2 flex gap-2">
-            <div wire:ignore x-init="
-                flatpickr('#rangeCheckAlert', {
-                    mode:'range',
-                    dateFormat: 'Y-m-d',
-                    onChange: function(selectedDates) {
-                        if (selectedDates.length === 2) {
-                            let options = { timeZone: 'Asia/Jakarta', year: 'numeric', month: '2-digit', day: '2-digit' };
-
-                            function formatDate(d) {
-                                let parts = new Intl.DateTimeFormat('id-ID', options).formatToParts(d);
-                                let y = parts.find(p => p.type === 'year').value;
-                                let m = parts.find(p => p.type === 'month').value;
-                                let day = parts.find(p => p.type === 'day').value;
-                                return `${y}-${m}-${day}`;
-                            }
-
-                            let startDateCheckAlert = formatDate(selectedDates[0]);
-                            let endDateCheckAlert = formatDate(selectedDates[1]);
-
-                            $wire.set('startDateCheckAlert', startDateCheckAlert);
-                            $wire.set('endDateCheckAlert', endDateCheckAlert);
-                        }
-                    }
-                });
-            ">
-                <input id="rangeCheckAlert" type="text" class="bg-white dark:bg-slate-800 border border-stone-300 dark:border-slate-600 text-stone-900 dark:text-slate-100 w-52 rounded-sm px-3 py-2 text-sm h-9 focus:outline-none transition-none" wire:model.defer='rangeCheckAlert' placeholder="Please select">
-            </div>
             <input class="bg-white dark:bg-slate-800 border border-stone-300 dark:border-slate-600 text-stone-900 dark:text-slate-100 w-52 rounded-sm px-3 py-2 text-sm h-9 focus:outline-none transition-none" wire:model.live='searchName' placeholder="validator name">
         </div>
     </div>
