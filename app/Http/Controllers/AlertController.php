@@ -39,7 +39,7 @@ class AlertController extends Controller
     }
 
     public function editalert($id){
-        if(!$this->checkAnalis($id) or $this->checkAnalis($id)->analisId != session('id') or $this->checkAnalis($id)->auditorStatus == 'approved' or $this->checkAnalis($id)->auditorStatus == 'rejected' or $this->checkAnalis($id)->auditorStatus == 'duplicate'){
+        if(!$this->checkAnalis($id) or $this->checkAnalis($id)->auditorStatus == 'approved' or $this->checkAnalis($id)->auditorStatus == 'rejected' or $this->checkAnalis($id)->auditorStatus == 'duplicate'){
             return redirect('alerts');
         }
         $id = $id;
