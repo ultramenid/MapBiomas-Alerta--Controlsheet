@@ -83,7 +83,7 @@ class TableAnalisis extends Component
 
 
     public function mount(){
-        $this->yearAlert = Carbon::now()->format('Y');
+        $this->yearAlert = 'all';
     }
 
     #[On('filterYear')]
@@ -108,7 +108,6 @@ class TableAnalisis extends Component
                 'alerts.auditorStatus',
                 'alerts.created_at'
             )
-            ->where('alerts.analisId', session('id'))
             ->whereNotNull('alerts.auditorStatus')
             ->whereNotIn('alerts.auditorStatus', [
                 'approved', 'rejected', 'duplicate', 'pre-approved', 'refined', 'error'

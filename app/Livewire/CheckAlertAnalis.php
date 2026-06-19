@@ -2,7 +2,6 @@
 
 namespace App\Livewire;
 
-use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\On;
 use Livewire\Component;
@@ -17,7 +16,7 @@ class CheckAlertAnalis extends Component
     public $yearAlert;
 
     public function mount(){
-        $this->yearAlert = Carbon::now()->format('Y');
+        $this->yearAlert = 'all';
     }
 
     #[On('filterYear')]

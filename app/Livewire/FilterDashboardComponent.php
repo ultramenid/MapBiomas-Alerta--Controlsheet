@@ -2,7 +2,6 @@
 
 namespace App\Livewire;
 
-use Carbon\Carbon;
 use Livewire\Component;
 
 class FilterDashboardComponent extends Component
@@ -10,8 +9,7 @@ class FilterDashboardComponent extends Component
     public $yearAlert;
 
     public function mount(){
-
-        $this->yearAlert = Carbon::now()->format('Y');
+        $this->yearAlert = 'all';
     }
 
     public function filter(){
