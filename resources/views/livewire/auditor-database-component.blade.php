@@ -112,6 +112,15 @@
                     </td>
                     <td class="px-3 py-2 break-words text-xs  text-stone-700 dark:text-slate-300" wire:key="alert-{{ $item->alertId }}">
                         @if (in_array($item->auditorStatus, ['pre-approved', 'refined', 'error']))
+                            @if (session('role_id') == 2)
+                                {{-- analis cannot audit: inert pill, no modal trigger --}}
+                                <span class="inline-flex items-center justify-center text-center w-[10rem] appearance-none rounded-sm text-xs font-semibold uppercase tracking-wider
+                                @if($item->auditorStatus == 'pre-approved') bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-700
+                                @elseif($item->auditorStatus == 'refined') bg-[#87bed3]/20 dark:bg-[#87bed3]/30 text-[rgb(70,130,150)] dark:text-[rgb(180,220,235)] border border-[#87bed3]/40 dark:border-[#87bed3]/50
+                                @elseif($item->auditorStatus == 'error') bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-700
+                                @endif
+                                px-3 py-1.5">{{ $item->auditorStatus }}</span>
+                            @else
                             <button
                                 wire:loading.attr='disabled'
                                 onclick="window.dispatchEvent(
@@ -124,6 +133,7 @@
                                 @endif
                                 px-3 py-1.5">{{ $item->auditorStatus }}
                     </button>
+                            @endif
                         @elseif ($item->auditorStatus == 'approved')
                             <span class="inline-flex items-center justify-center text-center w-[10rem] appearance-none rounded-sm text-xs font-semibold uppercase tracking-wider bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300 border border-green-200 dark:border-green-700 px-3 py-1.5">{{$item->auditorStatus}}</span>
                         @elseif ($item->auditorStatus == 'pending')
@@ -136,9 +146,12 @@
                     </td>
 
                     <td class="text-center px-3 py-2">
+                        @if (session('role_id') == 0 || (session('role_id') == 2 && $item->analisId == session('id')))
+                        {{-- ponytail: admin deletes any, analis deletes own (analisId), role 1 none --}}
                         <svg  wire:click="deleteAlert({{ $item->alertId }})" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 text-red-600 dark:text-red-400 cursor-pointer transition-none">
                             <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
                         </svg>
+                        @endif
                     </td>
 
                 </tr>

@@ -5,14 +5,7 @@
     @include('partials.nav')
 
     <div class="max-w-7xl mx-auto px-6 py-6">
-        @if (in_array(session('role_id'), [0,1]))
-            <livewire:auditor-database-component />
-        @endif
-
-        @if (session('role_id') == 2)
-            <livewire:analis-database-component />
-        @endif
-
+        <livewire:auditor-database-component />
     </div>
 
     @if (session('role_id') == 2)

@@ -66,6 +66,9 @@ class AuditorDatabaseComponent extends Component
 
     public function deleteAlert($alertId)
     {
+        if (! $this->canDelete($alertId)) {
+            abort(403);
+        }
 
         // load data to delete function
         $dataDelete = DB::table('alerts')->where('alertId', $alertId)->where('isActive', 1)->first();
@@ -73,8 +76,31 @@ class AuditorDatabaseComponent extends Component
         $this->deleter = true;
     }
 
+    // ponytail: role-based delete gate — admin (0) any, analis (2) own (analisId == session id), role 1 none
+    protected function canDelete($alertId)
+    {
+        $role = session('role_id');
+
+        if ($role == 0) {
+            return true;
+        }
+
+        if ($role == 2) {
+            return DB::table('alerts')
+                ->where('alertId', $alertId)
+                ->where('isActive', 1)
+                ->value('analisId') == session('id');
+        }
+
+        return false;
+    }
+
     public function deleting($alertId)
     {
+        if (! $this->canDelete($alertId)) {
+            abort(403);
+        }
+
         DB::table('alerts')
             ->where('alertId', $alertId)
             ->where('isActive', 1)
@@ -123,6 +149,10 @@ class AuditorDatabaseComponent extends Component
 
     public function auditing($alertId)
     {
+        if (session('role_id') == 2) {
+            abort(403);
+        }
+
         // dd($this->alertStatus);
         event(new UpdateAnalis);
         if ($this->manualValidation()) {
@@ -190,7 +220,8 @@ class AuditorDatabaseComponent extends Component
                 'alerts.province',
                 'alerts.auditorStatus',
                 'alerts.created_at',
-                'alerts.platformStatus'
+                'alerts.platformStatus',
+                'alerts.analisId'
             )
             ->join('users', 'users.id', '=', 'alerts.analisId')
             ->where('alerts.isActive', 1)
