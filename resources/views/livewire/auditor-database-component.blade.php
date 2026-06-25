@@ -35,6 +35,18 @@
             </div>
 
         </div>
+        <div class="flex flex-col">
+            <span class="text-label text-stone-600 dark:text-slate-400">User</span>
+            <div class="sm:w-40 w-full relative flex flex-col text-neutral-600 dark:text-neutral-300">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="absolute pointer-events-none right-4 top-2 size-5">
+                    <path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" />
+                </svg>
+                <select wire:ignore wire:model.live="selectOwner" class="w-full appearance-none bg-white dark:bg-slate-800 border border-stone-300 dark:border-slate-600 text-stone-900 dark:text-slate-100 px-3 py-2 text-sm h-9 rounded-sm focus:outline-none cursor-pointer transition-none">
+                    <option value="all">All users</option>
+                    <option value="mine">My alerts</option>
+                </select>
+            </div>
+        </div>
         </div>
 
 

@@ -45,16 +45,26 @@ class AuditorDatabaseComponent extends Component
 
     public $yearAlert;
 
+    // ponytail: 'all' = everyone's alerts, 'mine' = scoped to session id
+    public $selectOwner = 'all';
+
     public function mount()
     {
         //cek if session selectstatus exist if not set to 'all'
         session()->has('selectStatus') ? $this->selectStatus = session('selectStatus') : $this->selectStatus = 'all';
         $this->yearAlert = session('yearAlert');
+        $this->selectOwner = session()->has('selectOwner') ? session('selectOwner') : 'all';
     }
 
     public function updatedYearAlert($value)
     {
         session(['yearAlert' => $value]);
+        $this->resetPage();
+    }
+
+    public function updatedSelectOwner($value)
+    {
+        session(['selectOwner' => $value]);
         $this->resetPage();
     }
 
@@ -255,6 +265,10 @@ class AuditorDatabaseComponent extends Component
 
             if (!empty($this->searchId)) {
                 $query->where('alerts.alertId', $this->searchId);
+            }
+
+            if ($this->selectOwner === 'mine') {
+                $query->where('alerts.analisId', session('id'));
             }
 
             if ($this->selectStatus !== 'all') {
