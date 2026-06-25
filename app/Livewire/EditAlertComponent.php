@@ -124,6 +124,12 @@ class EditAlertComponent extends Component
     }
 
     public function storeAlert(){
+        // ponytail: terminal states are not editable — mirrors AlertController::editalert gate
+        $alert = $this->getData();
+        if (! $alert || in_array($alert->auditorStatus, ['approved', 'rejected', 'duplicate'])) {
+            Toaster::error('This alert can no longer be edited');
+            return redirect()->to('/alerts');
+        }
 
         if($this->manualValidation()){
             DB::table('alerts')
