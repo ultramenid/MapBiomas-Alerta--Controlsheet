@@ -86,9 +86,18 @@ class AuditorDatabaseComponent extends Component
         $this->deleter = true;
     }
 
-    // ponytail: role-based delete gate — admin (0) any, analis (2) own (analisId == session id), role 1 none
+    // ponytail: terminal states (approved/rejected/duplicate) are locked for everyone; else admin (0) any, analis (2) own, role 1 none
     protected function canDelete($alertId)
     {
+        $alert = DB::table('alerts')
+            ->where('alertId', $alertId)
+            ->where('isActive', 1)
+            ->first(['analisId', 'auditorStatus']);
+
+        if (! $alert || in_array($alert->auditorStatus, ['approved', 'rejected', 'duplicate'])) {
+            return false;
+        }
+
         $role = session('role_id');
 
         if ($role == 0) {
@@ -96,10 +105,7 @@ class AuditorDatabaseComponent extends Component
         }
 
         if ($role == 2) {
-            return DB::table('alerts')
-                ->where('alertId', $alertId)
-                ->where('isActive', 1)
-                ->value('analisId') == session('id');
+            return $alert->analisId == session('id');
         }
 
         return false;
