@@ -110,39 +110,50 @@
                     <td class="px-3 py-2 text-stone-700 dark:text-slate-300 hidden sm:table-cell">
                         {{$item->province}}
                     </td>
-                    <td class="px-3 py-2 break-words text-xs  text-stone-700 dark:text-slate-300" wire:key="alert-{{ $item->alertId }}">
-                        @if (in_array($item->auditorStatus, ['pre-approved', 'refined', 'error']))
-                            @if (session('role_id') == 2)
-                                {{-- analis cannot audit: inert pill, no modal trigger --}}
-                                <span class="inline-flex items-center justify-center text-center w-[10rem] appearance-none rounded-sm text-xs font-semibold uppercase tracking-wider
-                                @if($item->auditorStatus == 'pre-approved') bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-700
-                                @elseif($item->auditorStatus == 'refined') bg-[#87bed3]/20 dark:bg-[#87bed3]/30 text-[rgb(70,130,150)] dark:text-[rgb(180,220,235)] border border-[#87bed3]/40 dark:border-[#87bed3]/50
-                                @elseif($item->auditorStatus == 'error') bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-700
+                    <td class="px-3 py-2 text-stone-700 dark:text-slate-300" wire:key="alert-{{ $item->alertId }}">
+                        <div class="relative inline-flex items-center">
+                            @if (in_array($item->auditorStatus, ['approved', 'rejected', 'duplicate']))
+                                @if ($item->auditorStatus == 'approved')
+                                    <div class="inline-flex items-center justify-center text-center w-[10rem] appearance-none rounded-sm text-xs font-semibold uppercase tracking-wider bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300 border border-green-200 dark:border-green-700 px-3 py-1.5">Approved</div>
+                                @elseif ($item->auditorStatus == 'rejected')
+                                    <div class="inline-flex items-center justify-center text-center w-[10rem] appearance-none rounded-sm text-xs font-semibold uppercase tracking-wider bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-700 px-3 py-1.5">Rejected</div>
+                                @elseif ($item->auditorStatus == 'duplicate')
+                                    <div class="inline-flex items-center justify-center text-center w-[10rem] appearance-none rounded-sm text-xs font-semibold uppercase tracking-wider bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-700 px-3 py-1.5">Duplicate</div>
                                 @endif
-                                px-3 py-1.5">{{ $item->auditorStatus }}</span>
+                            @elseif (in_array($item->auditorStatus, ['reexportimage', 'reclassification']))
+                                <div class="inline-flex items-center justify-center text-center w-[10rem] appearance-none rounded-sm text-xs font-semibold uppercase tracking-wider bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-700 px-3 py-1.5">
+                                    {{ $item->auditorStatus == 'reexportimage' ? 'Re-export images' : 'Re-classification' }}
+                                </div>
                             @else
-                            <button
-                                wire:loading.attr='disabled'
-                                onclick="window.dispatchEvent(
-                                new CustomEvent('open-audit-modal',
-                                { detail: { id: {{ $item->id }} } })
-                                )" @click.away="open = false" class="inline-flex items-center justify-center text-center w-[10rem] appearance-none rounded-sm text-xs font-semibold uppercase tracking-wider
-                                @if($item->auditorStatus == 'pre-approved') bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-700 cursor-pointer
-                                @elseif($item->auditorStatus == 'refined') bg-[#87bed3]/20 dark:bg-[#87bed3]/30 text-[rgb(70,130,150)] dark:text-[rgb(180,220,235)] border border-[#87bed3]/40 dark:border-[#87bed3]/50 cursor-pointer
-                                @elseif($item->auditorStatus == 'error') bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-700 cursor-pointer
-                                @endif
-                                px-3 py-1.5">{{ $item->auditorStatus }}
-                    </button>
+                                <div class="w-[10rem] flex items-center justify-center relative">
+                                    <select
+                                        onchange="Livewire.dispatch('updateStatus', { id: '{{ $item->alertId }}', status: this.value })"
+                                        class="w-full text-center appearance-none px-3 py-1.5 text-xs font-semibold uppercase tracking-wider rounded-sm focus:outline-none
+                                            @if($item->auditorStatus == 'pre-approved') bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-700 cursor-pointer
+                                            @elseif($item->auditorStatus == 'refined') bg-[#87bed3]/20 dark:bg-[#87bed3]/30 text-[rgb(70,130,150)] dark:text-[rgb(180,220,235)] border border-[#87bed3]/40 dark:border-[#87bed3]/50 cursor-pointer
+                                            @elseif($item->auditorStatus == 'error') bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-700 cursor-pointer
+                                            @elseif($item->auditorStatus == 'pending') bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 border border-stone-300 dark:border-stone-600 cursor-pointer
+                                            @else bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 border border-stone-300 dark:border-stone-600 @endif"
+                                        style="-webkit-text-align-last: center; text-align-last: center;">
+                                        <option value="pre-approved" {{ $item->auditorStatus == 'pre-approved' ? 'selected' : '' }}>Pre-Approved</option>
+                                        <option value="refined" {{ $item->auditorStatus == 'refined' ? 'selected' : '' }}>Refined</option>
+                                        <option value="error" {{ $item->auditorStatus == 'error' ? 'selected' : '' }}>Error</option>
+                                        <option value="pending" {{ $item->auditorStatus == 'pending' ? 'selected' : '' }}>Pending</option>
+                                    </select>
+
+                                    {{-- SVG chevron icon --}}
+                                    @if (in_array($item->auditorStatus, ['pre-approved', 'refined', 'pending']))
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="absolute right-2 h-4 w-4 text-stone-700 dark:text-slate-300 pointer-events-none">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 15 12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9" />
+                                        </svg>
+                                    @elseif ($item->auditorStatus == 'error')
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="absolute right-2 h-4 w-4 text-yellow-400 pointer-events-none">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 15 12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9" />
+                                        </svg>
+                                    @endif
+                                </div>
                             @endif
-                        @elseif ($item->auditorStatus == 'approved')
-                            <span class="inline-flex items-center justify-center text-center w-[10rem] appearance-none rounded-sm text-xs font-semibold uppercase tracking-wider bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300 border border-green-200 dark:border-green-700 px-3 py-1.5">{{$item->auditorStatus}}</span>
-                        @elseif ($item->auditorStatus == 'pending')
-                            <span class="inline-flex items-center justify-center text-center w-[10rem] appearance-none rounded-sm text-xs font-semibold uppercase tracking-wider bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 border border-stone-300 dark:border-stone-600 px-3 py-1.5">{{$item->auditorStatus}}</span>
-                        @elseif ($item->auditorStatus == 'duplicate' or $item->auditorStatus == 'rejected')
-                            <span class="inline-flex items-center justify-center text-center w-[10rem] appearance-none rounded-sm text-xs font-semibold uppercase tracking-wider bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-700 px-3 py-1.5">{{$item->auditorStatus}}</span>
-                        @else
-                            <span class="inline-flex items-center justify-center text-center w-[10rem] appearance-none rounded-sm text-xs font-semibold uppercase tracking-wider bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-700 px-3 py-1.5">{{$item->auditorStatus}}</span>
-                        @endif
+                        </div>
                     </td>
 
                     <td class="text-center px-3 py-2">

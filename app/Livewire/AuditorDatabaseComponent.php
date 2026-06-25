@@ -176,6 +176,32 @@ class AuditorDatabaseComponent extends Component
 
     }
 
+    // ponytail: inline status dropdown — auditor (admin) can switch working states for any alert
+    #[On('updateStatus')]
+    public function updateStatus($id, $status)
+    {
+        if ($status == 'refined') {
+            DB::table('auditorlog')->insert([
+                'auditorId' => session('id'),
+                'alertId' => $id,
+                'ngapain' => 'refined',
+                'created_at' => Carbon::now('Asia/Jakarta'),
+            ]);
+        }
+
+        DB::table('alerts')
+            ->where('alertId', $id)
+            ->where('isActive', 1)
+            ->update([
+                'auditorStatus' => $status,
+                'updated_at' => Carbon::now('Asia/Jakarta'),
+            ]);
+
+        event(new UpdateAnalis);
+        $this->resetPage();
+        Toaster::success('Successfully change platform status');
+    }
+
     public function updatedSearchId()
     {
         $this->resetPage();
