@@ -192,10 +192,14 @@ class AuditorDatabaseComponent extends Component
 
     }
 
-    // ponytail: inline status dropdown — auditor (admin) can switch working states for any alert
+    // ponytail: inline status dropdown — only the validator (role 2) switches working states; auditor/admin use the audit dialog
     #[On('updateStatus')]
     public function updateStatus($id, $status)
     {
+        if (session('role_id') != 2) {
+            abort(403);
+        }
+
         if ($status == 'refined') {
             DB::table('auditorlog')->insert([
                 'auditorId' => session('id'),

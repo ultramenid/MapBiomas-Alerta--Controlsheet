@@ -137,6 +137,8 @@
                                     {{ $item->auditorStatus == 'reexportimage' ? 'Re-export images' : 'Re-classification' }}
                                 </div>
                             @else
+                                {{-- ponytail: validator (role 2) changes platform status inline; auditor (1) / admin (0) open the audit dialog --}}
+                                @if (session('role_id') == 2)
                                 <div class="w-[10rem] flex items-center justify-center relative">
                                     <select
                                         onchange="Livewire.dispatch('updateStatus', { id: '{{ $item->alertId }}', status: this.value })"
@@ -164,6 +166,17 @@
                                         </svg>
                                     @endif
                                 </div>
+                                @else
+                                    <a onclick="window.dispatchEvent(new CustomEvent('open-audit-modal', { detail: { id: {{ $item->id }} } }))"
+                                       class="inline-flex items-center justify-center text-center w-[10rem] appearance-none rounded-sm text-xs font-semibold uppercase tracking-wider cursor-pointer px-3 py-1.5
+                                        @if($item->auditorStatus == 'pre-approved') bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-700
+                                        @elseif($item->auditorStatus == 'refined') bg-[#87bed3]/20 dark:bg-[#87bed3]/30 text-[rgb(70,130,150)] dark:text-[rgb(180,220,235)] border border-[#87bed3]/40 dark:border-[#87bed3]/50
+                                        @elseif($item->auditorStatus == 'error') bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-700
+                                        @else bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 border border-stone-300 dark:border-stone-600 @endif"
+                                       title="Open audit dialog">
+                                        {{ $item->auditorStatus }}
+                                    </a>
+                                @endif
                             @endif
                         </div>
                     </td>
