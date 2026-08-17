@@ -42,10 +42,10 @@ Route::middleware([checkSession::class])->group(function () {
 
 
 Route::middleware([hasSession::class])->group(function () {
-    // Route::get('/', [IndexController::class, 'index']);
-    Route::get('/', function () {
-        return view('migration');
-    });
+    Route::get('/', [IndexController::class, 'index']);
+    // Route::get('/', function () {
+    //     return view('migration');
+    // });
 });
 
 
