@@ -15,8 +15,12 @@ class hasSession
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if(session('id')){
-            return redirect('/dashboard');
+        // if(session('id')){
+        //     return redirect('/dashboard');
+        // }
+
+         if(session('id')){
+            return view('migration');
         }
         return $next($request);
     }
