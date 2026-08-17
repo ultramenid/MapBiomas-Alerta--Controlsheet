@@ -11,15 +11,6 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
-.dot-pattern {
-    background-image: radial-gradient(circle, #d1d5db 1px, transparent 1px);
-    background-size: 24px 24px;
-}
-
-.dark .dot-pattern {
-    background-image: radial-gradient(circle, #374151 1px, transparent 1px);
-}
-
 .selection-bg ::selection {
   background-color: #79ffe1;
   color: #0f172a;

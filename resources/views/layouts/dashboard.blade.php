@@ -40,7 +40,7 @@
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/airbnb.css">
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 </head>
-<body class="dot-pattern dark:selection-bg selection-bg font-sans dark:bg-slate-900 bg-stone-50">
+<body class="dark:selection-bg selection-bg font-sans dark:bg-slate-900 bg-stone-50">
     @yield('content')
 
     <x-toaster-hub />
