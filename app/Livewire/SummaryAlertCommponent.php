@@ -10,15 +10,18 @@ class SummaryAlertCommponent extends Component
 {
 
     public $yearAlert;
+    public $monthAlert;
 
     public function mount(){
         $this->yearAlert = 'all';
+        $this->monthAlert = 'all';
     }
 
     #[On('filterYear')]
-    public function updateData($year)
+    public function updateData($year, $month)
     {
         $this->yearAlert = $year;
+        $this->monthAlert = $month;
     }
 
     #[On('echo:analis-data,UpdateAnalis')]
@@ -39,6 +42,9 @@ class SummaryAlertCommponent extends Component
         ")
         ->when($this->yearAlert !== 'all', function ($q) {
             return $q->whereYear('alerts.detectionDate', $this->yearAlert);
+        })
+        ->when($this->monthAlert !== 'all', function ($q) {
+            return $q->whereMonth('alerts.detectionDate', $this->monthAlert);
         })
         ->where('alerts.isActive', 1)
         ->where('users.is_active', 1)

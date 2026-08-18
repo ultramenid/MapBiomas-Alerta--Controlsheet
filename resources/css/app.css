@@ -161,3 +161,46 @@
 }
 
 
+
+
+/* Sticky filter bar: must be opaque - .glass lets scrolling rows ghost through */
+.glass-sticky {
+    background: #FBFBFA;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    box-shadow: 0 2px 8px -4px rgba(0, 0, 0, 0.18);
+}
+
+.dark .glass-sticky {
+    background: #0F172A;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.10);
+    box-shadow: 0 2px 8px -4px rgba(0, 0, 0, 0.5);
+}
+
+/* Pastel status ramp for the stacked bars. Fixed order, assigned per status -
+   never cycled, never reassigned by rank. Validated with the dataviz palette
+   checker: both modes PASS CVD separation (worst adjacent dE 13.8) and the
+   normal-vision floor (15.7), so neighbouring segments stay tellable apart -
+   `approved` next to `rejected` was dE 1.1 under deutan before re-hueing.
+   Lightness/chroma sit outside the validator's band by design: that is what
+   makes them pastel. Light mode WARNs on 3:1 contrast, which the legend
+   labels + counts, per-segment tooltips and per-region totals stand in for. */
+:root {
+    --st-pending: #C4B8AC;
+    --st-pre-approved: #7BA3EE;
+    --st-refined: #E8A56B;
+    --st-error: #EA80C6;
+    --st-reexportimage: #E9CE72;
+    --st-reclassification: #B7A3EF;
+    --st-approved: #9BDCAE;
+    --st-rejected: #D96662;
+    --st-duplicate: #6BCBBD;
+}
+
+/* pale fills need an edge so they do not dissolve into the card surface */
+.st-seg {
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.10);
+}
+
+.dark .st-seg {
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14);
+}

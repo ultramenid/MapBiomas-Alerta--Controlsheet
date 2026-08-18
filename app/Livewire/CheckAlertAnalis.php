@@ -14,15 +14,18 @@ class CheckAlertAnalis extends Component
     public $dataField = 'name', $dataOrder = 'asc';
 
     public $yearAlert;
+    public $monthAlert;
 
     public function mount(){
         $this->yearAlert = 'all';
+        $this->monthAlert = 'all';
     }
 
     #[On('filterYear')]
-    public function updateData($year)
+    public function updateData($year, $month)
     {
         $this->yearAlert = $year;
+        $this->monthAlert = $month;
     }
 
     public function sortingField($field){
@@ -60,6 +63,9 @@ class CheckAlertAnalis extends Component
             })
             ->when($this->yearAlert !== 'all', function ($q) {
                 return $q->whereYear('alerts.detectionDate', $this->yearAlert);
+            })
+            ->when($this->monthAlert !== 'all', function ($q) {
+                return $q->whereMonth('alerts.detectionDate', $this->monthAlert);
             })
             ->where('alerts.isActive', 1)     // alerts active flag
             ->where('users.is_active', 1)     // user active flag

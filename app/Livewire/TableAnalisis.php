@@ -17,6 +17,7 @@ class TableAnalisis extends Component
     public $alertId, $alertStatus, $alertReason;
     public $dataField = 'alertId', $dataOrder = 'asc', $paginate = 50;
     public $yearAlert;
+    public $monthAlert;
 
     public function sortingField($field){
         $this->dataField = $field;
@@ -84,12 +85,14 @@ class TableAnalisis extends Component
 
     public function mount(){
         $this->yearAlert = 'all';
+        $this->monthAlert = 'all';
     }
 
     #[On('filterYear')]
-    public function updateData($year)
+    public function updateData($year, $month)
     {
         $this->yearAlert = $year;
+        $this->monthAlert = $month;
     }
 
     #[On('echo:analis-data,UpdateAnalis')]
@@ -114,6 +117,9 @@ class TableAnalisis extends Component
             ])
             ->when($this->yearAlert !== 'all', function ($q) {
                 return $q->whereYear('alerts.detectionDate', $this->yearAlert);
+            })
+            ->when($this->monthAlert !== 'all', function ($q) {
+                return $q->whereMonth('alerts.detectionDate', $this->monthAlert);
             })
             ->when(!empty($sc), function ($q) use ($sc) {
                 return $q->where('alerts.alertId', 'like', $sc);
