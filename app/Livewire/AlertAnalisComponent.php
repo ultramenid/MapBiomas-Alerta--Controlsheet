@@ -291,6 +291,10 @@ class AlertAnalisComponent extends Component
     }
 
     public function auditing($alertId){
+        if (session('role_id') == 2) {
+            abort(403);
+        }
+
         if(!$this->manualValidation()){
             return;
         }

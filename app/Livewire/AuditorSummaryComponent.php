@@ -59,20 +59,26 @@ class AuditorSummaryComponent extends Component
 
 
     public function find(){
+        // ngapain='auditing' only — auditorlog also stores validator actions
+        // (Insert/Reject/refined/reexportimage/reclassification), so without
+        // this filter the latest row is often the validator, not the auditor.
         $find = DB::table('auditorlog')
             ->where('alertId', $this->alertCode)
+            ->where('ngapain', 'auditing')
             ->join('users', 'users.id', '=', 'auditorlog.auditorId')
             ->select('users.name as auditorName', 'users.id as auditorId')
             ->orderBy('auditorlog.created_at', 'desc')
             ->first();
 
-        try {
-            Toaster::success('Alert ID '.$this->alertCode.' audited by '.$find->auditorName);
-        } catch (\Exception $e) {
-            Toaster::error('Alert ID '.$this->alertCode.' not found in auditor log');
+        if (! $find) {
+            $exists = DB::table('auditorlog')->where('alertId', $this->alertCode)->exists();
+            Toaster::error($exists
+                ? 'Alert ID '.$this->alertCode.' has not been audited yet'
+                : 'Alert ID '.$this->alertCode.' not found in auditor log');
             return;
         }
 
+        Toaster::success('Alert ID '.$this->alertCode.' audited by '.$find->auditorName);
     }
 
     public function getStatus($alertId){
@@ -97,13 +103,12 @@ class AuditorSummaryComponent extends Component
             ->select('users.name as auditorName', 'users.id as auditorId')
             ->first();
 
-        try {
-            Toaster::success('Alert ID '.$this->alertCodeValidator.' validated by '.$find->auditorName. ' with status '.$this->getStatus($this->alertCodeValidator));
-        } catch (\Exception $e) {
+        if (! $find) {
             Toaster::error('Alert ID '.$this->alertCodeValidator.' not found in alert database');
             return;
         }
 
+        Toaster::success('Alert ID '.$this->alertCodeValidator.' validated by '.$find->auditorName. ' with status '.$this->getStatus($this->alertCodeValidator));
     }
 
     #[On('echo:analis-data,UpdateAnalis')]

@@ -61,7 +61,7 @@ class ValidatorTaskComponent extends Component
                     "COUNT(DISTINCT CASE WHEN auditorlog.ngapain = 'reclassification' THEN auditorlog.alertId END) as total_reclassification",
                 ),
                 DB::raw(
-                    "COUNT(DISTINCT CASE WHEN auditorlog.ngapain = 'reexportImage' THEN auditorlog.alertId END) as total_reexportimage",
+                    "COUNT(DISTINCT CASE WHEN auditorlog.ngapain = 'reexportimage' THEN auditorlog.alertId END) as total_reexportimage",
                 ),
                 DB::raw(
                     "COUNT(DISTINCT CASE WHEN auditorlog.ngapain = 'refined' THEN auditorlog.alertId END) as total_refined",
@@ -76,7 +76,7 @@ class ValidatorTaskComponent extends Component
                 "Insert",
                 "Reject",
                 "reclassification",
-                "reexportImage",
+                "reexportimage",
                 "refined",
             ])
             ->groupBy(
