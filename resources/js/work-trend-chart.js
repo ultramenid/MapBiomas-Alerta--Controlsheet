@@ -34,9 +34,12 @@ window.WorkTrendChart = function (root) {
         return { wrap, tip, series: wrap.dataset.series, style: STYLE[wrap.dataset.series], svg: null, hoverG: null };
     });
 
-    const brush = (root.closest('[data-wt-root]') || root).querySelector('[data-brush]');
-    const rangeLabel = (root.closest('[data-wt-root]') || root).querySelector('[data-range-label]');
-    const resetBtn = (root.closest('[data-wt-root]') || root).querySelector('[data-reset]');
+    const wtRoot = root.closest('[data-wt-root]') || root;
+    const brush = wtRoot.querySelector('[data-brush]');
+    const rangeLabel = wtRoot.querySelector('[data-range-label]');
+    const rangeTrigger = wtRoot.querySelector('[data-range-trigger]');
+    const pickerInput = wtRoot.querySelector('[data-range-picker]');
+    const resetBtn = wtRoot.querySelector('[data-reset]');
     const totalEls = {};
     root.querySelectorAll('[data-total]').forEach((el) => (totalEls[el.dataset.total] = el));
 
@@ -247,6 +250,8 @@ window.WorkTrendChart = function (root) {
 
     const endDrag = () => {
         drag = null;
+        // keep the calendar popup in step with the dragged window
+        syncPicker();
         // notify Livewire tables of the new date range
         dispatchRange();
     };
@@ -261,9 +266,72 @@ window.WorkTrendChart = function (root) {
         });
     }
 
+    // ---- flatpickr popup range selector (Airbnb theme) ----
+    // The range label doubles as a trigger for a calendar popup; it and the
+    // brush stay in sync as two views of the same sel window.
+    let picker = null;
+    const ymdJakarta = (d) => {
+        const parts = new Intl.DateTimeFormat('id-ID', {
+            timeZone: 'Asia/Jakarta', year: 'numeric', month: '2-digit', day: '2-digit',
+        }).formatToParts(d);
+        const get = (t) => parts.find((p) => p.type === t).value;
+        return `${get('year')}-${get('month')}-${get('day')}`;
+    };
+    // first payload date >= ymd / last payload date <= ymd — the chart only
+    // holds days with logged work, so off-data picks snap to the nearest edge
+    const firstIdxFrom = (ymd) => {
+        let lo = 0, hi = N - 1, res = N - 1;
+        while (lo <= hi) {
+            const mid = (lo + hi) >> 1;
+            if (data.dates[mid] >= ymd) { res = mid; hi = mid - 1; } else lo = mid + 1;
+        }
+        return res;
+    };
+    const lastIdxBefore = (ymd) => {
+        let lo = 0, hi = N - 1, res = 0;
+        while (lo <= hi) {
+            const mid = (lo + hi) >> 1;
+            if (data.dates[mid] <= ymd) { res = mid; lo = mid + 1; } else hi = mid - 1;
+        }
+        return res;
+    };
+
+    function syncPicker() {
+        if (picker) picker.setDate([data.dates[sel[0]], data.dates[sel[1]]], false);
+    }
+
+    function applyPickerRange(d1, d2) {
+        const i0 = firstIdxFrom(ymdJakarta(d1));
+        const i1 = Math.max(i0, lastIdxBefore(ymdJakarta(d2)));
+        sel = [i0, i1];
+        renderAll();
+        syncPicker();
+        dispatchRange();
+    }
+
+    if (pickerInput && typeof window.whenLib === 'function') {
+        window.whenLib('flatpickr', wtRoot.dataset.flatpickrUrl, () => {
+            picker = window.flatpickr(pickerInput, {
+                mode: 'range',
+                dateFormat: 'Y-m-d',
+                minDate: data.dates[0],
+                maxDate: data.dates[N - 1],
+                defaultDate: [data.dates[sel[0]], data.dates[sel[1]]],
+                appendTo: document.body, // escape sticky/backdrop ancestors so popup sits right
+                showMonths: window.innerWidth >= 768 ? 2 : 1, // airbnb-style dual-month on desktop
+                disableMobile: true, // keep the themed popup, not the native mobile picker
+                onChange: (dates) => {
+                    if (dates.length === 2) applyPickerRange(dates[0], dates[1]);
+                },
+            });
+            rangeTrigger.addEventListener('click', () => picker.open());
+        });
+    }
+
     resetBtn.addEventListener('click', () => {
         sel = [Math.max(0, N - DEF_DAYS), N - 1];
         renderAll();
+        syncPicker();
         dispatchRange();
     });
 
