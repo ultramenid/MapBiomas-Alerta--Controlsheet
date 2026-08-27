@@ -13,58 +13,24 @@
         </button>
     </div>
 
-    {{-- Skeleton: a real <table> mirroring the loaded table's column structure
-         (same w-52 name, w-14 day, w-20 total widths and same $dates column count)
-         and row count (capped at the 5 default-visible rows), so its width and
-         height match the table that replaces it. The date headers render the
-         actual "d M" text as a transparent pulsing block, which keeps the day
-         columns exactly as wide as the real ones. wire:loading.remove below only
-         toggles display, so the real table's Alpine state survives the swap. --}}
-    <div wire:loading.delay class="overflow-auto no-scrollbar border border-stone-200 dark:border-slate-700 rounded-sm">
-        <table class="w-full min-w-max text-xs border-collapse">
-            <thead class="sticky top-0 z-30">
-                <tr class="bg-stone-100 dark:bg-slate-800 border-b border-stone-200 dark:border-slate-700">
-                    <th rowspan="2" class="w-52 min-w-52 sticky left-0 z-30 bg-stone-100 dark:bg-slate-800 px-3 py-2 border-r border-stone-200 dark:border-slate-700">
-                        <div class="h-3 w-3/4 rounded-sm bg-stone-200 dark:bg-slate-700 animate-pulse"></div>
-                    </th>
-                    @foreach ($dates as $d)
-                        <th class="px-3 py-2 text-center whitespace-nowrap border-l border-stone-200 dark:border-slate-700">
-                            <span class="inline-block text-transparent bg-stone-200 dark:bg-slate-700 animate-pulse rounded-sm">{{ \Carbon\Carbon::parse($d)->format('d M') }}</span>
-                        </th>
-                    @endforeach
-                    <th class="w-20 sticky right-0 z-20 bg-stone-200 dark:bg-slate-700 px-3 py-2 border-l border-stone-300 dark:border-slate-600">
-                        <div class="h-3 mx-auto w-2/3 rounded-sm bg-stone-200 dark:bg-slate-700 animate-pulse"></div>
-                    </th>
-                </tr>
-                <tr class="bg-stone-100 dark:bg-slate-800 border-b border-stone-200 dark:border-slate-700">
-                    @foreach ($dates as $d)
-                        <th class="w-14 px-3 py-1.5 border-l border-stone-200 dark:border-slate-700">
-                            <div class="h-2.5 w-full rounded-sm bg-stone-200 dark:bg-slate-700 animate-pulse"></div>
-                        </th>
-                    @endforeach
-                    <th class="w-20 sticky right-0 z-20 bg-stone-200 dark:bg-slate-700 px-3 py-1.5 border-l border-stone-300 dark:border-slate-600">
-                        <div class="h-2.5 mx-auto w-2/3 rounded-sm bg-stone-200 dark:bg-slate-700 animate-pulse"></div>
-                    </th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-stone-200 dark:divide-slate-700">
-                @foreach (range(1, min(max(count($results), 1), 5)) as $i)
-                    <tr>
-                        <td class="w-52 min-w-52 sticky left-0 z-10 bg-white dark:bg-slate-900 px-3 py-2 border-r border-stone-200 dark:border-slate-700">
-                            <div class="h-3.5 w-full rounded-sm bg-stone-200 dark:bg-slate-700 animate-pulse"></div>
-                        </td>
-                        @foreach ($dates as $d)
-                            <td class="px-3 py-2 border-l border-stone-200 dark:border-slate-700">
-                                <div class="h-3.5 mx-auto w-6 rounded-sm bg-stone-200 dark:bg-slate-700 animate-pulse"></div>
-                            </td>
-                        @endforeach
-                        <td class="w-20 sticky right-0 z-10 bg-stone-100 dark:bg-slate-800 px-3 py-2 border-l border-stone-300 dark:border-slate-600">
-                            <div class="h-3.5 mx-auto w-2/3 rounded-sm bg-stone-200 dark:bg-slate-700 animate-pulse"></div>
-                        </td>
-                    </tr>
-                @endforeach
-            </tbody>
-        </table>
+    {{-- Skeleton: fills the card's full width (the real table lives in an
+         overflow-auto container, so its visible width is always the card width
+         — w-full matches that exactly) with a guessed row count for height.
+         wire:loading.remove below only toggles display, so the real table's
+         Alpine state survives the swap. --}}
+    <div wire:loading.delay class="w-full overflow-hidden border border-stone-200 dark:border-slate-700 rounded-sm">
+        <div class="flex items-center gap-3 px-3 py-2 bg-stone-100 dark:bg-slate-800 border-b border-stone-200 dark:border-slate-700">
+            <div class="h-3 w-28 rounded-sm bg-stone-200 dark:bg-slate-700 animate-pulse"></div>
+            <div class="flex-1"></div>
+            <div class="h-3 w-16 rounded-sm bg-stone-200 dark:bg-slate-700 animate-pulse"></div>
+        </div>
+        @foreach (range(1, 6) as $i)
+            <div class="flex items-center gap-3 px-3 py-2.5 border-b border-stone-100 dark:border-slate-800/60 last:border-0">
+                <div class="h-3.5 w-44 shrink-0 rounded-sm bg-stone-200 dark:bg-slate-700 animate-pulse"></div>
+                <div class="flex-1 h-3.5 rounded-sm bg-stone-200 dark:bg-slate-700 animate-pulse"></div>
+                <div class="h-3.5 w-12 shrink-0 rounded-sm bg-stone-200 dark:bg-slate-700 animate-pulse"></div>
+            </div>
+        @endforeach
     </div>
 
     {{-- Per-day matrix: auditor and total stay pinned, the days scroll between them --}}
