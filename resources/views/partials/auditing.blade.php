@@ -171,7 +171,9 @@
 </div>
 
 <script>
-const AUDIT_ENDPOINT = '{{ $auditEndpoint ?? "/rest/audit" }}';
+// var (not const): Livewire re-executes this script on every morph, and a
+// re-declared const would throw; auditModal() below is fine to redeclare.
+var AUDIT_ENDPOINT = '{{ $auditEndpoint ?? "/rest/audit" }}';
 
 function auditModal() {
     return {

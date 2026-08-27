@@ -165,17 +165,22 @@
 
 
     <script>
-        let dateDropdown = document.getElementById('date-dropdown');
+        // Livewire re-runs this script on every morph, so keep it
+        // re-executable (IIFE, no top-level let/const) and idempotent
+        // (skip once the years are appended — wire:ignore keeps them).
+        (function () {
+            let dateDropdown = document.getElementById('date-dropdown');
+            if (!dateDropdown || dateDropdown.options.length > 1) return;
 
-        let currentYear = new Date().getFullYear();
-        let earliestYear = 2020;
-        while (currentYear >= earliestYear) {
-            let dateOption = document.createElement('option');
-            dateOption.text = currentYear;
-            dateOption.value = currentYear;
-            dateDropdown.add(dateOption);
-            currentYear -= 1;
-        }
-
+            let currentYear = new Date().getFullYear();
+            let earliestYear = 2020;
+            while (currentYear >= earliestYear) {
+                let dateOption = document.createElement('option');
+                dateOption.text = currentYear;
+                dateOption.value = currentYear;
+                dateDropdown.add(dateOption);
+                currentYear -= 1;
+            }
+        })();
     </script>
 </div>
