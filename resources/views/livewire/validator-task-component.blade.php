@@ -2,6 +2,7 @@
     <div class="text-sm mb-6">
         <a class="text-label text-stone-600 dark:text-slate-400 mb-1">Alert by Validator</a>
         <div class="w-full mt-1 flex gap-2" wire:ignore x-init="
+        whenLib('flatpickr', '{{ asset('assets/vendor/flatpickr/flatpickr.min.js') }}', function () {
         flatpickr('#rangeValidator', {
             mode:'range',
             dateFormat: 'Y-m-d',
@@ -29,12 +30,15 @@
                 }
             }
         });
+        });
      "
         ">
             <input id="rangeValidator" type="text" class="bg-white dark:bg-slate-900 border border-stone-300 dark:border-slate-600 text-stone-900 dark:text-slate-100 w-52 rounded-sm px-3 py-2 text-sm focus:outline-none transition-none"  wire:model.defer='rangeValidator' placeholder="Please select">
 
         </div>
     </div>
+
+    <div wire:loading.delay class="w-full bg-stone-900 dark:bg-slate-200 h-0.5 animate-pulse rounded-sm mb-2"></div>
 
     <div>
 

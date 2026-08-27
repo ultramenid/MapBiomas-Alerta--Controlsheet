@@ -4,10 +4,11 @@
     <div class="flex gap-4 mt-4 items-end">
         <div class="flex flex-col">
             <span class="text-label text-stone-600 dark:text-slate-400">Search</span>
-            <input class="bg-white dark:bg-slate-800 border border-stone-300 dark:border-slate-600 text-stone-900 dark:text-slate-100 w-52 rounded-sm px-3 py-2 text-sm h-9 focus:outline-none transition-none" wire:model.live='search' placeholder="alert ID">
+            <input class="bg-white dark:bg-slate-800 border border-stone-300 dark:border-slate-600 text-stone-900 dark:text-slate-100 w-52 rounded-sm px-3 py-2 text-sm h-9 focus:outline-none transition-none" wire:model.live.debounce.300ms='search' placeholder="alert ID">
         </div>
     </div>
     <div class="mt-4">
+        <div wire:loading.delay class="w-full bg-stone-900 dark:bg-slate-200 h-0.5 animate-pulse rounded-sm mb-2"></div>
         <table class="w-full border border-stone-200 dark:border-slate-700">
             <thead class=" text-xs">
                 <tr class="border-b border-stone-200 dark:border-slate-700">
@@ -59,7 +60,7 @@
             </thead>
             <tbody class="text-sm bg-white dark:bg-slate-900 divide-y divide-stone-200 dark:divide-slate-700">
                 @forelse ($databases as $item)
-                <tr>
+                <tr wire:key="alert-{{ $item->alertId }}">
                     <td class="px-3 py-2 text-stone-700 dark:text-slate-300">
                         {{$item->alertId}}
                     </td>

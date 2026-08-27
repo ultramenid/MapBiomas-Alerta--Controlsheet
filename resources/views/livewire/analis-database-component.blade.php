@@ -4,7 +4,7 @@
     <div class="flex gap-3 items-end">
         <div class="flex flex-col">
             <span class="text-label text-stone-600 dark:text-slate-400">Search</span>
-            <input class="bg-white dark:bg-slate-800 border border-stone-300 dark:border-slate-600 text-stone-900 dark:text-slate-100 w-52 rounded-sm px-3 py-2 text-sm h-9 focus:outline-none transition-none" wire:model.live='search' placeholder="alert ID">
+            <input class="bg-white dark:bg-slate-800 border border-stone-300 dark:border-slate-600 text-stone-900 dark:text-slate-100 w-52 rounded-sm px-3 py-2 text-sm h-9 focus:outline-none transition-none" wire:model.live.debounce.300ms='search' placeholder="alert ID">
         </div>
         <div class="flex flex-col">
             <span class="text-label text-stone-600 dark:text-slate-400">Tahun</span>
@@ -37,16 +37,16 @@
         </div>
     </div>
     <div class="mt-4">
-        <div wire:loading class="flex w-full justify-center text-center bg-red-400 dark:bg-red-900 py-2 animate-pulse text-xs px-4 text-white rounded-sm" >loading. . .</div>
+        <div wire:loading.delay.200ms wire:target="search, selectStatus, yearAlert, sortingField, previousPage, nextPage, gotoPage" class="flex w-full justify-center text-center bg-red-400 dark:bg-red-900 py-2 animate-pulse text-xs px-4 text-white rounded-sm" >loading. . .</div>
         <table class="w-full divide-y divide-gray-200  rounded-sm  border border-stone-200 dark:border-slate-700 dark:bg-slate-700 dark:text-slate-400">
             <thead class=" text-xs">
                 <tr class="border-b border-stone-200 dark:border-slate-700">
-                    <th  class="text-left px-3 py-2 text-label text-stone-500 dark:text-slate-400 cursor-pointer">
+                    <th wire:click='sortingField("alertId")'  class="text-left px-3 py-2 text-label text-stone-500 dark:text-slate-400 cursor-pointer">
                         <div class=" space-x-1 flex" >
                             <span>Alert ID</span>
                          </div>
                      </th>
-                    <th  class="text-left px-3 py-2 text-label text-stone-500 dark:text-slate-400 cursor-pointer hidden sm:table-cell">
+                    <th wire:click='sortingField("created_at")'  class="text-left px-3 py-2 text-label text-stone-500 dark:text-slate-400 cursor-pointer hidden sm:table-cell">
                        <div class="flex space-x-1">
                            <span>Input date</span>
 
@@ -63,7 +63,7 @@
 
                          </div>
                      </th>
-                     <th  class="text-center px-3 py-2 text-label text-stone-500 dark:text-slate-400 cursor-pointer">
+                     <th wire:click='sortingField("auditorStatus")' class="text-center px-3 py-2 text-label text-stone-500 dark:text-slate-400 cursor-pointer">
                         <div class="flex space-x-1">
                             <span>Platform Status</span>
 
@@ -81,7 +81,7 @@
             </thead>
             <tbody class="text-sm bg-white dark:bg-slate-900 divide-y divide-stone-200 dark:divide-slate-700">
                 @forelse ($databases as $item)
-                <tr>
+                <tr wire:key="alert-{{ $item->alertId }}">
                     <td class="px-3 py-2 text-stone-700 dark:text-slate-300">
                         {{$item->alertId}}
                     </td>
@@ -137,7 +137,7 @@
 
                             @else
                             <!-- wrapper centers the select visually; the inline style helps Safari center the selected option -->
-                            <div class="w-[10rem] flex items-center justify-center relative" wire:key="alert-{{ $item->alertId }}">
+                            <div class="w-[10rem] flex items-center justify-center relative">
                                 <select
                                 onchange="Livewire.dispatch('updateStatus', { id: '{{ $item->alertId }}', status: this.value })"
                                 class="w-full text-center appearance-none px-3 py-1.5 text-xs font-semibold uppercase tracking-wider rounded-sm focus:outline-none

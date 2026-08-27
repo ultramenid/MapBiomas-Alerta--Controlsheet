@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Livewire\Concerns\CachesAggregates;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\On;
@@ -9,6 +10,7 @@ use Livewire\Component;
 
 class ValidatorTaskComponent extends Component
 {
+    use CachesAggregates;
     public $startDateValidator, $endDateValidator, $rangeValidator;
     public $report = [
         "dates" => [],
@@ -33,6 +35,24 @@ class ValidatorTaskComponent extends Component
 
     #[On("echo:analis-data,UpdateAnalis")]
     #[On("echo:auditor-data,UpdateAuditor")]
+    public function refreshReport()
+    {
+        // realtime events must show through the 60s cache window
+        $this->forgetCached($this->tasksCacheKey());
+        $this->forgetCached($this->approvedCacheKey());
+        $this->generateReport();
+    }
+
+    private function tasksCacheKey()
+    {
+        return "dashboard:validator-task:tasks:v1:" . $this->startDateValidator . ":" . $this->endDateValidator;
+    }
+
+    private function approvedCacheKey()
+    {
+        return "dashboard:validator-task:approved:v1:" . $this->startDateValidator . ":" . $this->endDateValidator;
+    }
+
     public function generateReport()
     {
         /*
@@ -40,71 +60,75 @@ class ValidatorTaskComponent extends Component
     | QUERY TASK (auditorlog)
     |--------------------------------------------------------------------------
     */
-        $rows = DB::table("auditorlog")
-            ->join("users", "users.id", "=", "auditorlog.auditorId")
-            ->select(
-                "users.name as validatorName",
-                "users.id as auditorId",
-                DB::raw("DATE(auditorlog.created_at) as d"),
+        $rows = $this->cached($this->tasksCacheKey(), 60, function () {
+            return DB::table("auditorlog")
+                ->join("users", "users.id", "=", "auditorlog.auditorId")
+                ->select(
+                    "users.name as validatorName",
+                    "users.id as auditorId",
+                    DB::raw("DATE(auditorlog.created_at) as d"),
 
-                DB::raw(
-                    "COUNT(DISTINCT CASE WHEN auditorlog.ngapain IN ('refined', 'Reject') THEN auditorlog.alertId END) as total",
-                ),
+                    DB::raw(
+                        "COUNT(DISTINCT CASE WHEN auditorlog.ngapain IN ('refined', 'Reject') THEN auditorlog.alertId END) as total",
+                    ),
 
-                DB::raw(
-                    "COUNT(DISTINCT CASE WHEN auditorlog.ngapain = 'Insert' THEN auditorlog.alertId END) as total_Insert",
-                ),
-                DB::raw(
-                    "COUNT(DISTINCT CASE WHEN auditorlog.ngapain = 'Reject' THEN auditorlog.alertId END) as total_Reject",
-                ),
-                DB::raw(
-                    "COUNT(DISTINCT CASE WHEN auditorlog.ngapain = 'reclassification' THEN auditorlog.alertId END) as total_reclassification",
-                ),
-                DB::raw(
-                    "COUNT(DISTINCT CASE WHEN auditorlog.ngapain = 'reexportimage' THEN auditorlog.alertId END) as total_reexportimage",
-                ),
-                DB::raw(
-                    "COUNT(DISTINCT CASE WHEN auditorlog.ngapain = 'refined' THEN auditorlog.alertId END) as total_refined",
-                ),
-            )
-            ->whereBetween(DB::raw("DATE(auditorlog.created_at)"), [
-                $this->startDateValidator,
-                $this->endDateValidator,
-            ])
-            ->where("users.is_active", 1)
-            ->whereIn("auditorlog.ngapain", [
-                "Insert",
-                "Reject",
-                "reclassification",
-                "reexportimage",
-                "refined",
-            ])
-            ->groupBy(
-                "users.name",
-                "users.id",
-                DB::raw("DATE(auditorlog.created_at)"),
-            )
-            ->orderBy("users.name")
-            ->get();
+                    DB::raw(
+                        "COUNT(DISTINCT CASE WHEN auditorlog.ngapain = 'Insert' THEN auditorlog.alertId END) as total_Insert",
+                    ),
+                    DB::raw(
+                        "COUNT(DISTINCT CASE WHEN auditorlog.ngapain = 'Reject' THEN auditorlog.alertId END) as total_Reject",
+                    ),
+                    DB::raw(
+                        "COUNT(DISTINCT CASE WHEN auditorlog.ngapain = 'reclassification' THEN auditorlog.alertId END) as total_reclassification",
+                    ),
+                    DB::raw(
+                        "COUNT(DISTINCT CASE WHEN auditorlog.ngapain = 'reexportimage' THEN auditorlog.alertId END) as total_reexportimage",
+                    ),
+                    DB::raw(
+                        "COUNT(DISTINCT CASE WHEN auditorlog.ngapain = 'refined' THEN auditorlog.alertId END) as total_refined",
+                    ),
+                )
+                ->whereBetween("auditorlog.created_at", [
+                    $this->startDateValidator . " 00:00:00",
+                    $this->endDateValidator . " 23:59:59",
+                ])
+                ->where("users.is_active", 1)
+                ->whereIn("auditorlog.ngapain", [
+                    "Insert",
+                    "Reject",
+                    "reclassification",
+                    "reexportimage",
+                    "refined",
+                ])
+                ->groupBy(
+                    "users.name",
+                    "users.id",
+                    DB::raw("DATE(auditorlog.created_at)"),
+                )
+                ->orderBy("users.name")
+                ->get();
+        });
 
         /*
     |--------------------------------------------------------------------------
     | QUERY APPROVED (alerts)
     |--------------------------------------------------------------------------
     */
-        $approvedRows = DB::table("alerts")
-            ->select(
-                "alerts.analisId as auditorId",
-                DB::raw("DATE(alerts.updated_at) as d"),
-                DB::raw("COUNT(DISTINCT alerts.alertId) as approvedTotal"),
-            )
-            ->whereBetween(DB::raw("DATE(alerts.updated_at)"), [
-                $this->startDateValidator,
-                $this->endDateValidator,
-            ])
-            ->where("alerts.auditorStatus", "approved")
-            ->groupBy("alerts.analisId", DB::raw("DATE(alerts.updated_at)"))
-            ->get();
+        $approvedRows = $this->cached($this->approvedCacheKey(), 60, function () {
+            return DB::table("alerts")
+                ->select(
+                    "alerts.analisId as auditorId",
+                    DB::raw("DATE(alerts.updated_at) as d"),
+                    DB::raw("COUNT(DISTINCT alerts.alertId) as approvedTotal"),
+                )
+                ->whereBetween("alerts.updated_at", [
+                    $this->startDateValidator . " 00:00:00",
+                    $this->endDateValidator . " 23:59:59",
+                ])
+                ->where("alerts.auditorStatus", "approved")
+                ->groupBy("alerts.analisId", DB::raw("DATE(alerts.updated_at)"))
+                ->get();
+        });
 
         /*
     |--------------------------------------------------------------------------

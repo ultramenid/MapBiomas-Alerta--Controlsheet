@@ -3,6 +3,7 @@
         <div>
             <div class="text-label text-stone-600 dark:text-slate-400 mb-3">Alert by Auditor</div>
             <div wire:ignore x-init="
+                whenLib('flatpickr', '{{ asset('assets/vendor/flatpickr/flatpickr.min.js') }}', function () {
                 flatpickr('#rangeAuditor', {
                     mode:'range',
                     dateFormat: 'Y-m-d',
@@ -23,6 +24,7 @@
                             $wire.call('filter');
                         }
                     }
+                });
                 });
             ">
                 <input 
@@ -57,6 +59,8 @@
             >
         </div>
     </div>
+
+    <div wire:loading.delay class="w-full bg-stone-900 dark:bg-slate-200 h-0.5 animate-pulse rounded-sm mb-2"></div>
 
     <div class="overflow-x-auto">
         <table class="w-full border border-stone-200 dark:border-slate-700">

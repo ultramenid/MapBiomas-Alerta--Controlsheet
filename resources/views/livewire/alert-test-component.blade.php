@@ -4,7 +4,7 @@
         <div class="flex gap-4 items-end">
         <div class="flex flex-col">
             <span class="text-label text-stone-600 dark:text-slate-400">Search</span>
-            <input class="bg-white dark:bg-slate-800 border border-stone-300 dark:border-slate-600 text-stone-900 dark:text-slate-100 w-52 rounded-sm px-3 py-2 text-sm h-9 focus:outline-none transition-none" wire:model.live='searchId' placeholder="alert ID">
+            <input class="bg-white dark:bg-slate-800 border border-stone-300 dark:border-slate-600 text-stone-900 dark:text-slate-100 w-52 rounded-sm px-3 py-2 text-sm h-9 focus:outline-none transition-none" wire:model.live.debounce.300ms='searchId' placeholder="alert ID">
         </div>
         <div class="flex flex-col">
             <span class="text-label text-stone-600 dark:text-slate-400">Status</span>
@@ -48,19 +48,19 @@
 
 
     <div class="mt-4">
-        <div wire:loading class="flex w-full justify-center text-center bg-red-400 dark:bg-red-900 py-2 animate-pulse text-xs px-4 text-white rounded-sm">
+        <div wire:loading.delay.200ms wire:target="searchId, selectStatus, yearAlert, sortingField, previousPage, nextPage, gotoPage" class="flex w-full justify-center text-center bg-red-400 dark:bg-red-900 py-2 animate-pulse text-xs px-4 text-white rounded-sm">
             Loading...
         </div>
         <table class="w-full border border-stone-200 dark:border-slate-700">
             <thead class=" text-xs">
                 <tr class="border-b border-stone-200 dark:border-slate-700">
-                    <th   class="text-left px-3 py-2 text-label text-stone-500 dark:text-slate-400 cursor-pointer">
+                    <th wire:click='sortingField("alertId")'   class="text-left px-3 py-2 text-label text-stone-500 dark:text-slate-400 cursor-pointer">
                         <div class=" space-x-1 flex" >
                             <span>Alert ID</span>
 
                          </div>
                      </th>
-                    <th  class="text-left px-3 py-2 text-label text-stone-500 dark:text-slate-400 cursor-pointer hidden sm:table-cell">
+                    <th wire:click='sortingField("created_at")'  class="text-left px-3 py-2 text-label text-stone-500 dark:text-slate-400 cursor-pointer hidden sm:table-cell">
                        <div class="flex space-x-1">
                            <span>Input date</span>
 
@@ -77,7 +77,7 @@
 
                          </div>
                      </th>
-                     <th  class="text-center px-3 py-2 text-label text-stone-500 dark:text-slate-400 cursor-pointer">
+                     <th wire:click='sortingField("auditorStatus")' class="text-center px-3 py-2 text-label text-stone-500 dark:text-slate-400 cursor-pointer">
                         <div class="flex space-x-1">
                             <span>Platform Status</span>
 
@@ -95,7 +95,7 @@
             </thead>
             <tbody class="bg-white dark:bg-slate-900  divide-y divide-stone-200 dark:divide-slate-700">
                 @forelse ($databases as $item)
-                <tr>
+                <tr wire:key="alert-{{ $item->alertId }}">
                     <td class="px-3 py-2 text-stone-700 dark:text-slate-300">
                         {{$item->alertId}}
                     </td>
@@ -113,7 +113,7 @@
                     <td class="px-3 py-2 text-stone-700 dark:text-slate-300 hidden sm:table-cell">
                         {{$item->province}}
                     </td>
-                    <td class="px-3 py-1 break-words text-xs  text-stone-700 dark:text-slate-300" wire:key="alert-{{ $item->alertId }}">
+                    <td class="px-3 py-1 break-words text-xs  text-stone-700 dark:text-slate-300">
                         @if (in_array($item->auditorStatus, ['pre-approved', 'refined', 'error']))
                             <button
                                 wire:loading.attr='disabled'

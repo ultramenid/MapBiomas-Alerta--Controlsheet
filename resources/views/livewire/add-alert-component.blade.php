@@ -2,7 +2,13 @@
     <div class="flex justify-between">
         <h1 class="text-label text-stone-900 dark:text-slate-100 mt-10 mb-6">Add alert</h1>
         <div class="flex justify-end items-center mt-4">
-            <button wire:click='storeAlert' class="bg-stone-900 dark:bg-slate-200 text-white dark:text-stone-900 py-2 px-4 text-sm font-semibold rounded-sm cursor-pointer hover:bg-stone-800 dark:hover:bg-slate-300 transition-none">Save</button>
+            <button wire:click='storeAlert' wire:loading.attr='disabled' class="bg-stone-900 dark:bg-slate-200 text-white dark:text-stone-900 py-2 px-4 text-sm font-semibold rounded-sm cursor-pointer hover:bg-stone-800 dark:hover:bg-slate-300 transition-none disabled:opacity-60 disabled:cursor-not-allowed">
+                <span wire:loading.remove wire:target='storeAlert'>Save</span>
+                <span wire:loading wire:target='storeAlert' class="flex items-center justify-center gap-2">
+
+                    Saving alert...
+                </span>
+            </button>
         </div>
     </div>
 
@@ -49,7 +55,7 @@
 
 
             <div style="display: none !important;" x-show="open" class="shadow px-2 py-2 flex flex-col   bg-black  z-20 absolute w-4/12"  >
-                <input   wire:model.live='chooseRegion' type="text" name="" id="" class="bg-white dark:bg-slate-800 border border-stone-300 dark:border-slate-600 text-stone-900 dark:text-slate-100 w-full rounded-sm px-3 py-2 text-sm focus:outline-none transition-none mb-4" placeholder="type region">
+                <input   wire:model.live.debounce.400ms='chooseRegion' type="text" name="" id="" class="bg-white dark:bg-slate-800 border border-stone-300 dark:border-slate-600 text-stone-900 dark:text-slate-100 w-full rounded-sm px-3 py-2 text-sm focus:outline-none transition-none mb-4" placeholder="type region">
                 @foreach ($regions as $key => $value)
                     <a  wire:click="selectRegion('{{$value[0]}}')"  class="cursor-pointer text-white py-1 hover:bg-stone-800 dark:hover:bg-slate-600 px-4 text-sm">{{$value[0]}}</a>
                 @endforeach
@@ -64,7 +70,7 @@
 
 
             <div style="display: none !important;" x-show="open" class="shadow px-2 py-2 flex flex-col   bg-black  z-20 absolute w-4/12"  >
-                <input   wire:model.live='chooseProvince' type="text" name="" id="" class="bg-white dark:bg-slate-800 border border-stone-300 dark:border-slate-600 text-stone-900 dark:text-slate-100 w-full rounded-sm px-3 py-2 text-sm focus:outline-none transition-none mb-4" placeholder="type province">
+                <input   wire:model.live.debounce.400ms='chooseProvince' type="text" name="" id="" class="bg-white dark:bg-slate-800 border border-stone-300 dark:border-slate-600 text-stone-900 dark:text-slate-100 w-full rounded-sm px-3 py-2 text-sm focus:outline-none transition-none mb-4" placeholder="type province">
                 @foreach ($provincies as $key => $value)
                     <a  wire:click="selectProvince('{{$value[0]}}')"  class="cursor-pointer text-white py-1 hover:bg-stone-800 dark:hover:bg-slate-600 px-4 text-sm">{{$value[0]}}</a>
                 @endforeach
@@ -117,7 +123,7 @@
                         },
                         setup: function(editor) {
                             self.editor = editor;
-                            editor.on('change blur input', function() {
+                            editor.on('change blur', function() {
                                 @this.set('alertNote', editor.getContent());
                             });
                         }

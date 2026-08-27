@@ -1,5 +1,9 @@
 @extends('layouts.dashboard')
 
+@push('vendor-scripts')
+    <script src="{{ asset('tinymce/tinymce.min.js') }}" referrerpolicy="origin"></script>
+@endpush
+
 
 @section('content')
     @include('partials.header')

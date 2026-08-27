@@ -45,6 +45,18 @@ class AlertTestComponent extends Component
 
     public $yearAlert;
 
+    // sortable headers -> table-qualified columns; orderBy allowlist only, never raw input
+    private function sortColumns(): array
+    {
+        $t = config('alerts.test_table');
+
+        return [
+            'alertId' => "$t.alertId",
+            'created_at' => "$t.created_at",
+            'auditorStatus' => "$t.auditorStatus",
+        ];
+    }
+
     public function mount()
     {
         //cek if session selectstatus exist if not set to 'all'
@@ -68,14 +80,14 @@ class AlertTestComponent extends Component
     {
 
         // load data to delete function
-        $dataDelete = DB::table('alerts_backup_terbaru')->where('alertId', $alertId)->where('isActive', 1)->first();
+        $dataDelete = DB::table(config('alerts.test_table'))->where('alertId', $alertId)->where('isActive', 1)->first();
         $this->alertDeleteId = $dataDelete->alertId;
         $this->deleter = true;
     }
 
     public function deleting($alertId)
     {
-        DB::table('alerts_backup_terbaru')
+        DB::table(config('alerts.test_table'))
             ->where('alertId', $alertId)
             ->where('isActive', 1)
             ->delete();
@@ -97,13 +109,17 @@ class AlertTestComponent extends Component
     {
         $this->dataField = $field;
         $this->dataOrder = $this->dataOrder == 'asc' ? 'desc' : 'asc';
+        $this->resetPage();
     }
 
     public function closeReason()
     {
         $this->selectStatus = session('selectStatus');
-       redirect()->to(url()->previous());
-        // dd(session()->all());
+        $this->isAudit = false;
+        $this->alertId = null;
+        $this->observation = null;
+        $this->analis = null;
+        $this->dispatch('close-audit-modal');
     }
 
     public function checkAlertStatus(){
@@ -124,9 +140,8 @@ class AlertTestComponent extends Component
     public function auditing($alertId)
     {
         // dd($this->alertStatus);
-        event(new UpdateAnalis);
         if ($this->manualValidation()) {
-            DB::table('alerts_backup_terbaru')
+            DB::table(config('alerts.test_table'))
                 ->where('isActive', 1)
                 ->where('alertId', $alertId)
                 ->update([
@@ -141,7 +156,10 @@ class AlertTestComponent extends Component
                 'ngapain' => 'auditing',
                 'created_at' => Carbon::now('Asia/Jakarta'),
             ]);
-            // Jangan redirect, biarkan AlpineJS yang close modal
+            // broadcast only after the write succeeded
+            event(new UpdateAnalis);
+            Toaster::success('Success auditing Alert');
+            $this->dispatch('close-audit-modal');
         }
 
     }
@@ -160,11 +178,12 @@ class AlertTestComponent extends Component
     public function showAudit($id)
     {
          $this->isAudit = true;
-        $data = DB::table('alerts_backup_terbaru')
-        ->join('users', 'alerts_backup_terbaru.analisId', '=', 'users.id')
-        ->select('alerts_backup_terbaru.*', 'users.*')
-        ->where('alerts_backup_terbaru.isActive', 1)
-        ->where('alerts_backup_terbaru.alertId', $id)->first();
+        $t = config('alerts.test_table');
+        $data = DB::table($t)
+        ->join('users', "$t.analisId", '=', 'users.id')
+        ->select("$t.*", 'users.*')
+        ->where("$t.isActive", 1)
+        ->where("$t.alertId", $id)->first();
         // dd($data);
         $this->alertId = $data->alertId;
         $this->analis = $data->name;
@@ -180,38 +199,45 @@ class AlertTestComponent extends Component
     public function getAlerts()
     {
         $sc = '%'.$this->searchId.'%';
+        $t = config('alerts.test_table');
         try {
-            $query = DB::table('alerts_backup_terbaru')
+            $query = DB::table($t)
             ->select(
-                'alerts_backup_terbaru.id',
-                'alerts_backup_terbaru.alertId',
-                'alerts_backup_terbaru.detectionDate',
-                'alerts_backup_terbaru.region',
-                'alerts_backup_terbaru.province',
-                'alerts_backup_terbaru.auditorStatus',
-                'alerts_backup_terbaru.created_at',
-                'alerts_backup_terbaru.platformStatus'
+                "$t.id",
+                "$t.alertId",
+                "$t.detectionDate",
+                "$t.region",
+                "$t.province",
+                "$t.auditorStatus",
+                "$t.created_at",
+                "$t.platformStatus"
             )
-            ->join('users', 'users.id', '=', 'alerts_backup_terbaru.analisId')
-            ->where('alerts_backup_terbaru.isActive', 1)
+            ->join('users', 'users.id', '=', "$t.analisId")
+            ->where("$t.isActive", 1)
             ->where('users.is_active', 1);
 
             if (!empty($this->searchId)) {
-                $query->where('alerts_backup_terbaru.alertId', $this->searchId);
+                $query->where("$t.alertId", $this->searchId);
             }
 
             if ($this->selectStatus !== 'all') {
-                $query->where('alerts_backup_terbaru.auditorStatus', $this->selectStatus);
+                $query->where("$t.auditorStatus", $this->selectStatus);
             }
 
             if ($this->yearAlert !== 'all') {
-                $query->whereYear('alerts_backup_terbaru.detectionDate', $this->yearAlert);
+                $query->whereYear("$t.detectionDate", $this->yearAlert);
             }
 
-            return $query->paginate($this->paginate);
+            // column comes from the allowlist above only — never raw input
+            $field = is_string($this->dataField) ? $this->dataField : '';
+            $column = $this->sortColumns()[$field] ?? "$t.alertId";
+            $order = is_string($this->dataOrder) && strtolower($this->dataOrder) === 'desc' ? 'desc' : 'asc';
+
+            return $query->orderBy($column, $order)->paginate($this->paginate);
 
         } catch (\Throwable $th) {
-            return [];
+            // The view calls paginator methods, so fail into an empty paginator, not an array.
+            return new \Illuminate\Pagination\LengthAwarePaginator([], 0, $this->paginate);
         }
     }
 

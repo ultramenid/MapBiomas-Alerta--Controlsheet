@@ -1,6 +1,8 @@
 <div class="glass rounded-sm p-5 mb-5 z-20 relative dark:text-slate-400">
     <div class="text-label text-stone-600 dark:text-slate-400 mb-4">Alert Status by Region</div>
 
+    <div wire:loading.delay class="w-full bg-stone-900 dark:bg-slate-200 h-0.5 animate-pulse rounded-sm mb-2"></div>
+
     <div class="overflow-x-auto">
         <table class="w-full border-collapse">
             <thead>

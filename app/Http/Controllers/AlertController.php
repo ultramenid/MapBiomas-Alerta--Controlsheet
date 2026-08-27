@@ -27,19 +27,13 @@ class AlertController extends Controller
         return view('auditor-alert', compact('id', 'title', 'nav'));
     }
 
-    public function auditing($id){
-        $id = $id;
-        $title = 'Auditing alert - Mapbiomas Indonesia';
-        $nav = 'alerts';
-        return view('auditing', compact('id', 'title', 'nav'));
-    }
-
     public function checkAnalis($id){
         return DB::table('alerts')->where('alertId', $id)->where('isActive', 1)->first();
     }
 
     public function editalert($id){
-        if(!$this->checkAnalis($id) or $this->checkAnalis($id)->auditorStatus == 'approved' or $this->checkAnalis($id)->auditorStatus == 'rejected' or $this->checkAnalis($id)->auditorStatus == 'duplicate'){
+        $alert = $this->checkAnalis($id);
+        if(!$alert or $alert->auditorStatus == 'approved' or $alert->auditorStatus == 'rejected' or $alert->auditorStatus == 'duplicate'){
             return redirect('alerts');
         }
         $id = $id;
@@ -91,20 +85,20 @@ class AlertController extends Controller
 
 
     public function auditTest($id){
-
-        $data = DB::table('alerts_backup_terbaru')
-        ->join('users', 'alerts_backup_terbaru.analisId', '=', 'users.id')
+        $t = config('alerts.test_table');
+        $data = DB::table($t)
+        ->join('users', "$t.analisId", '=', 'users.id')
         ->select([
-            'alerts_backup_terbaru.alertId',
-            'alerts_backup_terbaru.auditorStatus',
-            'alerts_backup_terbaru.alertStatus',
-            'alerts_backup_terbaru.auditorReason',
-            'alerts_backup_terbaru.observation',
-            'alerts_backup_terbaru.alertNote',
+            "$t.alertId",
+            "$t.auditorStatus",
+            "$t.alertStatus",
+            "$t.auditorReason",
+            "$t.observation",
+            "$t.alertNote",
             'users.name as name',
         ])
-        ->where('alerts_backup_terbaru.isActive', 1)
-        ->where('alerts_backup_terbaru.id', $id)
+        ->where("$t.isActive", 1)
+        ->where("$t.id", $id)
         ->first();
         // dd($data);
 

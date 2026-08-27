@@ -2,15 +2,23 @@
 
 namespace App\Livewire;
 
+use App\Livewire\Concerns\CachesAggregates;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\On;
 use Livewire\Component;
 
 class SumaryAlertAnalis extends Component
 {
+    use CachesAggregates;
 
     public $yearAlert;
     public $monthAlert;
+
+    private function cacheKey(){
+        // data is scoped to the signed-in analis, so the key must be too
+        return 'dashboard:summary-analis:v1:'.session('id').':'.$this->yearAlert.':'.$this->monthAlert;
+    }
 
     public function mount(){
         $this->yearAlert = 'all';
@@ -26,8 +34,14 @@ class SumaryAlertAnalis extends Component
 
     #[On('echo:analis-data,UpdateAnalis')]
     #[On('echo:auditor-data,UpdateAuditor')]
+    public function refreshAlerts(){
+        // realtime events must show through the 60s cache window
+        $this->forgetCached($this->cacheKey());
+    }
+
     public function getAlerts(){
-        $query = DB::table('alerts')
+        $query = $this->cached($this->cacheKey(), 60, function () {
+            return DB::table('alerts')
             ->join('users', 'users.id', '=', 'alerts.analisId')
             ->selectRaw("
                 COALESCE(alerts.auditorStatus, 'Pending') AS auditorStatus,
@@ -41,9 +55,19 @@ class SumaryAlertAnalis extends Component
                 COUNT(*) AS `TOTAL`
             ")
             ->when($this->yearAlert !== 'all', function ($q) {
-                return $q->whereYear('alerts.detectionDate', $this->yearAlert);
+                // detectionDate is a 'YYYY-MM-DD' string, so an explicit range
+                // compares lexicographically and stays sargable
+                $start = $this->yearAlert.'-01-01';
+                $end = $this->yearAlert.'-12-31';
+                if ($this->monthAlert !== 'all') {
+                    $month = Carbon::createFromDate((int) $this->yearAlert, (int) $this->monthAlert, 1);
+                    $start = $month->copy()->startOfMonth()->toDateString();
+                    $end = $month->copy()->endOfMonth()->toDateString();
+                }
+                return $q->whereBetween('alerts.detectionDate', [$start, $end]);
             })
-            ->when($this->monthAlert !== 'all', function ($q) {
+            ->when($this->yearAlert === 'all' && $this->monthAlert !== 'all', function ($q) {
+                // month-only across every year cannot be a single sargable range
                 return $q->whereMonth('alerts.detectionDate', $this->monthAlert);
             })
             ->where('alerts.isActive', 1)
@@ -51,6 +75,7 @@ class SumaryAlertAnalis extends Component
             ->where('users.is_active', 1)   // only include active users
             ->groupBy('alerts.auditorStatus')
             ->get();
+        });
 
 
 

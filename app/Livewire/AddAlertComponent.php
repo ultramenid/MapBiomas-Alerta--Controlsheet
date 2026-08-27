@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Livewire\Concerns\CachesAggregates;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
@@ -10,70 +11,86 @@ use Masmerise\Toaster\Toaster;
 
 class AddAlertComponent extends Component
 {
+    use CachesAggregates;
     public $alertId, $alertStatus, $detectionDate, $observation, $alertNote;
     public $chooseRegion = '', $chooseProvince = '';
     public $region = 'Please select', $province = 'Please select';
 
     public function getRegions(){
-        try {
-            $req = Http::get('http://129.150.48.143:8080/geoserver/simontini/wfs',
-            [
-                'service' => 'wfs',
-                'version' => '1.1.0',
-                'request' => 'GetFeature',
-                'typename' => 'simontini:province',
-                'propertyName' => 'island_en',
-                'cql_filter' => "island_en ILIKE '%". $this->chooseRegion ."%'",
-                'maxFeatures' => 10,
-                'outputFormat' => 'application/json',
-            ]);
-            $response = json_decode($req, true);
-            // $arrUnique = array_unique($response['features'][0]['properties']['provinsi']);
-            $res = array();
-            foreach ($response['features'] as $each) {
-                if (isset($res[$each['properties']['island_en']]))
-                    array_push($res[$each['properties']['island_en']], $each['properties']['island_en']);
-                else
+        // full island list fetched once a day; the search box narrows it in
+        // PHP so typing does not trigger a GeoServer round trip anymore.
+        // A null return (GeoServer down) is not cached, so it retries later.
+        $regions = $this->cached('geoserver:regions', 86400, function () {
+            try {
+                $req = Http::timeout(3)->retry(1, 100)->get('http://129.150.48.143:8080/geoserver/simontini/wfs',
+                [
+                    'service' => 'wfs',
+                    'version' => '1.1.0',
+                    'request' => 'GetFeature',
+                    'typename' => 'simontini:province',
+                    'propertyName' => 'island_en',
+                    'maxFeatures' => 1000,
+                    'outputFormat' => 'application/json',
+                ]);
+                $response = json_decode($req, true);
+                $res = array();
+                foreach ($response['features'] as $each) {
                     $res[$each['properties']['island_en']] = array($each['properties']['island_en']);
                 }
-            return array_slice($res, 0, 10);
-        } catch (\Throwable $th) {
-            return [];
+                return $res ?: null;
+            } catch (\Throwable $th) {
+                return null;
+            }
+        }) ?? [];
+
+        if ($this->chooseRegion !== '') {
+            $regions = array_filter($regions, function ($value) {
+                return stripos($value[0], $this->chooseRegion) !== false;
+            });
         }
 
-
-
+        return $regions;
     }
 
     public function getProvinces(){
-        try {
-            $req = Http::get('http://129.150.48.143:8080/geoserver/simontini/wfs',
-            [
-                'service' => 'wfs',
-                'version' => '1.1.0',
-                'request' => 'GetFeature',
-                'typename' => 'simontini:province',
-                'propertyName' => 'island_en,prov_en',
-                'cql_filter' => "island_en = '". $this->region ."' AND prov_en ILIKE '%". $this->chooseProvince ."%'",
-                'maxFeatures' => 10,
-                'outputFormat' => 'application/json',
-            ]);
-            $response = json_decode($req, true);
-            // $arrUnique = array_unique($response['features'][0]['properties']['provinsi']);
-            $res = array();
-            foreach ($response['features'] as $each) {
-                if (isset($res[$each['properties']['prov_en']]))
-                    array_push($res[$each['properties']['prov_en']], $each['properties']['prov_en']);
-                else
-                    $res[$each['properties']['prov_en']] = array($each['properties']['prov_en']);
-                }
-            return array_slice($res, 0, 10);
-        } catch (\Throwable $th) {
+        // provinces are only fetched once a region is actually selected,
+        // then cached per region; the search box narrows them in PHP
+        if ($this->region === '' || $this->region === 'Please select') {
             return [];
         }
 
+        $region = str_replace("'", "''", (string) $this->region);
+        $provincies = $this->cached('geoserver:provinces:'.$region, 86400, function () use ($region) {
+            try {
+                $req = Http::timeout(3)->retry(1, 100)->get('http://129.150.48.143:8080/geoserver/simontini/wfs',
+                [
+                    'service' => 'wfs',
+                    'version' => '1.1.0',
+                    'request' => 'GetFeature',
+                    'typename' => 'simontini:province',
+                    'propertyName' => 'island_en,prov_en',
+                    'cql_filter' => "island_en = '". $region ."'",
+                    'maxFeatures' => 1000,
+                    'outputFormat' => 'application/json',
+                ]);
+                $response = json_decode($req, true);
+                $res = array();
+                foreach ($response['features'] as $each) {
+                    $res[$each['properties']['prov_en']] = array($each['properties']['prov_en']);
+                }
+                return $res ?: null;
+            } catch (\Throwable $th) {
+                return null;
+            }
+        }) ?? [];
 
+        if ($this->chooseProvince !== '') {
+            $provincies = array_filter($provincies, function ($value) {
+                return stripos($value[0], $this->chooseProvince) !== false;
+            });
+        }
 
+        return $provincies;
     }
 
     public function selectRegion($value){

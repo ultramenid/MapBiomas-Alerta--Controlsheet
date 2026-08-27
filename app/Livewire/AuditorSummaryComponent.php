@@ -6,11 +6,13 @@ use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
+use App\Livewire\Concerns\CachesAggregates;
 use Livewire\Attributes\On;
 use Masmerise\Toaster\Toaster;
 
 class AuditorSummaryComponent extends Component
 {
+    use CachesAggregates;
     public $startDate , $endDate, $rangeAuditor, $alertCode, $alertCodeValidator;
 
 
@@ -111,13 +113,25 @@ class AuditorSummaryComponent extends Component
         Toaster::success('Alert ID '.$this->alertCodeValidator.' validated by '.$find->auditorName. ' with status '.$this->getStatus($this->alertCodeValidator));
     }
 
+    private function cacheKey(){
+        // the row set depends on the date range and the sort applied in SQL
+        return 'dashboard:auditor-summary:v1:'.$this->startDate.':'.$this->endDate.':'.$this->dataField.':'.$this->dataOrder;
+    }
+
     #[On('echo:analis-data,UpdateAnalis')]
     #[On('echo:auditor-data,UpdateAuditor')]
+    public function refreshAuditorSummary(){
+        // realtime events must show through the 60s cache window; render()
+        // calls filter() which repopulates the cache with fresh data
+        $this->forgetCached($this->cacheKey());
+    }
+
     public function filter(){
 
        [$dataField, $dataOrder] = $this->normalizedSort();
 
-        $rows = DB::table('auditorlog')
+        $rows = $this->cached($this->cacheKey(), 60, function () use ($dataField, $dataOrder) {
+            return DB::table('auditorlog')
         ->join('users', 'users.id', '=', 'auditorlog.auditorId')
         ->select(
             'users.name as auditorName',
@@ -125,12 +139,13 @@ class AuditorSummaryComponent extends Component
             DB::raw("DATE(auditorlog.created_at) as d"),
             DB::raw("COUNT(DISTINCT auditorlog.alertId) as total")
         )
-        ->whereBetween(DB::raw("DATE(auditorlog.created_at)"), [$this->startDate, $this->endDate])
+        ->whereBetween('auditorlog.created_at', [$this->startDate.' 00:00:00', $this->endDate.' 23:59:59'])
         ->where('ngapain', 'auditing')
         ->where('users.is_active', 1)
         ->groupBy('users.name', 'users.id', DB::raw("DATE(auditorlog.created_at)"))
         ->orderBy($dataField, $dataOrder)
         ->get();
+        });
 
 
 

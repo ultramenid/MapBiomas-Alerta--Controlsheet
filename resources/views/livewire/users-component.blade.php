@@ -12,8 +12,9 @@
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
         </button>
-        <input placeholder="type name..." class="bg-white dark:bg-slate-800 border border-stone-300 dark:border-slate-600 text-stone-900 dark:text-slate-100 w-52 rounded-sm px-3 py-2 text-sm h-9 focus:outline-none transition-none" wire:model.live='search'>
+        <input placeholder="type name..." class="bg-white dark:bg-slate-800 border border-stone-300 dark:border-slate-600 text-stone-900 dark:text-slate-100 w-52 rounded-sm px-3 py-2 text-sm h-9 focus:outline-none transition-none" wire:model.live.debounce.300ms='search'>
     </div>
+    <div wire:loading.delay class="w-full bg-stone-900 dark:bg-slate-200 h-0.5 animate-pulse rounded-sm mb-2"></div>
     <div class="overflow-x-auto">
         <table class="w-full border border-stone-200 dark:border-slate-700 min-w-[640px]">
             <thead class="">
@@ -56,7 +57,7 @@
             </thead>
             <tbody class="text-sm divide-y divide-stone-200 dark:divide-slate-700">
                 @forelse ($databases as $item)
-                <tr>
+                <tr wire:key="user-{{ $item->id }}">
                     <td class="px-3 py-2 text-stone-700 dark:text-slate-300">
                         <a href="{{ url('/edituser/'.$item->id) }}">{{$item->name}}</a>
                     </td>

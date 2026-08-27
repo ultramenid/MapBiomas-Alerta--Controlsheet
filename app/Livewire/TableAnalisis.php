@@ -5,10 +5,12 @@ namespace App\Livewire;
 use App\Events\UpdateAuditor;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Livewire\Attributes\Lazy;
 use Livewire\Attributes\On;
 use Livewire\Component;
 use Livewire\WithPagination;
 
+#[Lazy]
 class TableAnalisis extends Component
 {
     use WithPagination;
@@ -18,6 +20,17 @@ class TableAnalisis extends Component
     public $dataField = 'alertId', $dataOrder = 'asc', $paginate = 50;
     public $yearAlert;
     public $monthAlert;
+
+    public static function placeholder()
+    {
+        // subtle pulsing skeleton sized like the panel it replaces
+        return <<<'HTML'
+        <div class="glass rounded-sm p-5 mb-5 z-20 relative animate-pulse">
+            <div class="h-9 w-52 rounded-sm bg-stone-200 dark:bg-slate-700 mb-6"></div>
+            <div class="h-72 w-full rounded-sm bg-stone-100 dark:bg-slate-800"></div>
+        </div>
+        HTML;
+    }
 
     public function sortingField($field){
         $this->dataField = $field;
@@ -66,7 +79,6 @@ class TableAnalisis extends Component
         }
 
 
-        event(new UpdateAuditor);
         DB::table('alerts')
         ->where('isActive', 1)
         ->where('alertId', $id)->update([
@@ -74,6 +86,8 @@ class TableAnalisis extends Component
             'auditorReason' => null,
             'updated_at' => Carbon::now('Asia/Jakarta')
         ]);
+        // broadcast only after the write succeeded
+        event(new UpdateAuditor);
         $this->dispatch('fix-alert');
         $this->closeReason();
     }

@@ -19,6 +19,13 @@ class AnalisDatabaseComponent extends Component
     public $alertId, $alertStatus, $alertReason;
     public $dataField = 'alertId', $dataOrder = 'asc', $paginate = 50, $yearAlert, $selectStatus;
 
+    // sortable headers -> table-qualified columns; orderBy allowlist only, never raw input
+    private array $sortColumns = [
+        'alertId' => 'alerts.alertId',
+        'created_at' => 'alerts.created_at',
+        'auditorStatus' => 'alerts.auditorStatus',
+    ];
+
      public function mount(){
         $this->yearAlert = session('yearAlert');
         session()->has('selectStatus') ? $this->selectStatus = session('selectStatus') : $this->selectStatus = 'all';
@@ -37,11 +44,14 @@ class AnalisDatabaseComponent extends Component
     public function sortingField($field){
         $this->dataField = $field;
         $this->dataOrder = $this->dataOrder == 'asc' ? 'desc' : 'asc';
+        $this->resetPage();
     }
 
     public function closeReason(){
         $this->isReason = false;
-        redirect()->to(url()->previous());
+        $this->alertId = null;
+        $this->alertStatus = null;
+        $this->alertReason = null;
     }
 
     public function showReason($id){
@@ -77,7 +87,6 @@ class AnalisDatabaseComponent extends Component
         }
 
 
-        event(new UpdateAuditor);
         DB::table('alerts')
         ->where('alertId', $id)
         ->where('isActive', 1)
@@ -86,6 +95,8 @@ class AnalisDatabaseComponent extends Component
             'auditorReason' => null,
             'updated_at' => Carbon::now('Asia/Jakarta')
         ]);
+        // broadcast only after the write succeeded
+        event(new UpdateAuditor);
         $this->dispatch('fix-alert');
         $this->closeReason();
     }
@@ -114,7 +125,6 @@ class AnalisDatabaseComponent extends Component
             'updated_at' => Carbon::now('Asia/Jakarta')
         ]);
         event(new UpdateAnalis);
-        $this->resetPage();
         Toaster::success('Succesfully change platform status');
      }
 
@@ -151,7 +161,12 @@ class AnalisDatabaseComponent extends Component
             }
 
 
-            return $query->paginate($this->paginate);
+            // column comes from the allowlist above only — never raw input
+            $field = is_string($this->dataField) ? $this->dataField : '';
+            $column = $this->sortColumns[$field] ?? 'alerts.alertId';
+            $order = is_string($this->dataOrder) && strtolower($this->dataOrder) === 'desc' ? 'desc' : 'asc';
+
+            return $query->orderBy($column, $order)->paginate($this->paginate);
 
         } catch (\Throwable $th) {
             return [];

@@ -315,7 +315,8 @@ class AlertAnalisComponent extends Component
             'created_at' => Carbon::now('Asia/Jakarta')
         ]);
         event(new UpdateAnalis);
-        redirect()->to(url()->previous());
+        Toaster::success('Success auditing Alert');
+        $this->dispatch('close-audit-modal');
     }
     public function showAudit($id){
         $this->isAudit = true;

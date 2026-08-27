@@ -48,6 +48,13 @@ class AuditorDatabaseComponent extends Component
     // ponytail: 'all' = everyone's alerts, 'mine' = scoped to session id
     public $selectOwner = 'all';
 
+    // sortable headers -> table-qualified columns; orderBy allowlist only, never raw input
+    private array $sortColumns = [
+        'alertId' => 'alerts.alertId',
+        'created_at' => 'alerts.created_at',
+        'auditorStatus' => 'alerts.auditorStatus',
+    ];
+
     public function mount()
     {
         //cek if session selectstatus exist if not set to 'all'
@@ -139,13 +146,17 @@ class AuditorDatabaseComponent extends Component
     {
         $this->dataField = $field;
         $this->dataOrder = $this->dataOrder == 'asc' ? 'desc' : 'asc';
+        $this->resetPage();
     }
 
     public function closeReason()
     {
         $this->selectStatus = session('selectStatus');
-       redirect()->to(url()->previous());
-        // dd(session()->all());
+        $this->isAudit = false;
+        $this->alertId = null;
+        $this->observation = null;
+        $this->analis = null;
+        $this->dispatch('close-audit-modal');
     }
 
     public function checkAlertStatus(){
@@ -170,7 +181,6 @@ class AuditorDatabaseComponent extends Component
         }
 
         // dd($this->alertStatus);
-        event(new UpdateAnalis);
         if ($this->manualValidation()) {
             DB::table('alerts')
                 ->where('isActive', 1)
@@ -187,7 +197,10 @@ class AuditorDatabaseComponent extends Component
                 'ngapain' => 'auditing',
                 'created_at' => Carbon::now('Asia/Jakarta'),
             ]);
-            // Jangan redirect, biarkan AlpineJS yang close modal
+            // broadcast only after the write succeeded
+            event(new UpdateAnalis);
+            Toaster::success('Success auditing Alert');
+            $this->dispatch('close-audit-modal');
         }
 
     }
@@ -218,7 +231,6 @@ class AuditorDatabaseComponent extends Component
             ]);
 
         event(new UpdateAnalis);
-        $this->resetPage();
         Toaster::success('Successfully change platform status');
     }
 
@@ -289,10 +301,16 @@ class AuditorDatabaseComponent extends Component
                 $query->whereYear('alerts.detectionDate', $this->yearAlert);
             }
 
-            return $query->paginate($this->paginate);
+            // column comes from the allowlist above only — never raw input
+            $field = is_string($this->dataField) ? $this->dataField : '';
+            $column = $this->sortColumns[$field] ?? 'alerts.alertId';
+            $order = is_string($this->dataOrder) && strtolower($this->dataOrder) === 'desc' ? 'desc' : 'asc';
+
+            return $query->orderBy($column, $order)->paginate($this->paginate);
 
         } catch (\Throwable $th) {
-            return [];
+            // The view calls paginator methods, so fail into an empty paginator, not an array.
+            return new \Illuminate\Pagination\LengthAwarePaginator([], 0, $this->paginate);
         }
     }
 

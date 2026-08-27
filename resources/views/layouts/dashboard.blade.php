@@ -29,23 +29,40 @@
 
     })();
     </script>
+    <script>
+    // Ensures a vendor lib (tinymce/flatpickr) is present before running an init
+    // callback; needed after wire:navigate swaps the page when the lib script
+    // hasn't been loaded yet on the previous page.
+    window.whenLib = (function () {
+        var pending = {};
+        return function (name, url, cb) {
+            if (window[name]) { return cb(); }
+            (pending[url] = pending[url] || []).push(cb);
+            if (pending[url].length === 1) {
+                var s = document.createElement('script');
+                s.src = url;
+                s.onload = function () {
+                    pending[url].forEach(function (fn) { fn(); });
+                    pending[url] = null;
+                };
+                document.head.appendChild(s);
+            }
+        };
+    })();
+    </script>
     @vite(['resources/js/app.js', 'resources/css/app.css'])
 
     @livewireStyles
-    @livewireScripts
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
-    <script src="{{ asset('tinymce/tinymce.min.js') }}" referrerpolicy="origin"></script>
-
-    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/airbnb.css">
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    @stack('vendor-styles')
+    @stack('vendor-scripts')
 </head>
 <body class="dark:selection-bg selection-bg font-sans dark:bg-slate-900 bg-stone-50">
     @yield('content')
 
     <x-toaster-hub />
 
-    <img src="https://controlsheet.mapbiomas.id/assets/logo.png" alt="" class="fixed sm:block hidden sm:-bottom-1/6 sm:-left-1/6 rotate-90 z-0 pointer-events-none">
+    <img src="{{ asset('assets/watermark.png') }}" alt="" class="fixed sm:block hidden sm:-bottom-1/6 sm:-left-1/6 rotate-90 z-0 pointer-events-none">
+    @livewireScripts
     @stack('scripts')
 
 </body>

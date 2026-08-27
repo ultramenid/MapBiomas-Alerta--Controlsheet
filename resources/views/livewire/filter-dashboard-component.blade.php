@@ -1,11 +1,11 @@
-<div class="glass rounded-sm p-4 mb-5">
+<div class="glass-sticky rounded-sm p-4 mb-5 sticky top-0 z-30 dark:text-slate-400">
     <div class="text-label text-stone-600 dark:text-slate-400 mb-3">Filter</div>
     <div class="flex gap-3">
         <div class="sm:w-36 w-full relative">
             <select 
                 wire:ignore 
                 id='date-dropdown' 
-                wire:model.live="yearAlert" 
+                wire:model.defer="yearAlert"
                 class="w-full appearance-none bg-white dark:bg-slate-800 border border-stone-300 dark:border-slate-600 text-stone-900 dark:text-slate-100 px-3 py-2 text-sm rounded-sm focus:outline-none cursor-pointer transition-none"
             >
                 <option value="all">All Years</option>
@@ -18,7 +18,7 @@
             <select
                 wire:ignore
                 id='month-dropdown'
-                wire:model.live="monthAlert"
+                wire:model.defer="monthAlert"
                 class="w-full appearance-none bg-white dark:bg-slate-800 border border-stone-300 dark:border-slate-600 text-stone-900 dark:text-slate-100 px-3 py-2 text-sm rounded-sm focus:outline-none cursor-pointer transition-none"
             >
                 <option value="all">All Months</option>
@@ -40,10 +40,13 @@
             </svg>
         </div>
         <button
-            wire:click='filter' 
-            class="bg-stone-900 dark:bg-slate-200 text-white dark:text-stone-900 py-2 px-4 text-sm font-semibold rounded-sm cursor-pointer hover:bg-stone-800 dark:hover:bg-slate-300 transition-none"
+            wire:click='filter'
+            wire:loading.attr='disabled'
+            wire:target='filter'
+            class="bg-stone-900 dark:bg-slate-200 text-white dark:text-stone-900 py-2 px-4 text-sm font-semibold rounded-sm cursor-pointer hover:bg-stone-800 dark:hover:bg-slate-300 transition-none disabled:opacity-60 disabled:cursor-not-allowed"
         >
-            Apply
+            <span wire:loading.remove wire:target='filter'>Apply</span>
+            <span wire:loading wire:target='filter' class="flex items-center justify-center gap-2">Applying...</span>
         </button>
     </div>
 

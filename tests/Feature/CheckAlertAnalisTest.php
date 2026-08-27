@@ -29,7 +29,7 @@ it('filters alert status by validator counts by dashboard year', function () {
 
     $component = new CheckAlertAnalis();
     $component->mount();
-    $component->updateData('2024');
+    $component->updateData('2024', 'all');
 
     $alerts = $component->getAlerts();
 

@@ -33,9 +33,12 @@
 
             <button
                 type="submit"
-                class="w-full bg-stone-900 dark:bg-slate-200 text-white dark:text-stone-900 py-2 px-4 text-sm font-semibold rounded-sm cursor-pointer hover:bg-stone-800 dark:hover:bg-slate-300 transition-none"
+                wire:loading.attr="disabled"
+                wire:target="login"
+                class="w-full bg-stone-900 dark:bg-slate-200 text-white dark:text-stone-900 py-2 px-4 text-sm font-semibold rounded-sm cursor-pointer hover:bg-stone-800 dark:hover:bg-slate-300 transition-none disabled:opacity-60 disabled:cursor-not-allowed"
             >
-                Sign In
+                <span wire:loading.remove wire:target="login">Sign In</span>
+                <span wire:loading wire:target="login" class="flex items-center justify-center gap-2">Signing in...</span>
             </button>
         </form>
     </div>
