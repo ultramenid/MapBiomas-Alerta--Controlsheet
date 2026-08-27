@@ -19,8 +19,14 @@ class ValidatorTaskComponent extends Component
         "data" => [],
     ];
 
-    public function mount()
+    public function mount($scopeUserId = null)
     {
+        // only admins may scope to "all"; everyone else is locked to themselves
+        $role = (int) session('role_id');
+        $this->scopeUserId = $role === 0
+            ? ($scopeUserId ?? null)
+            : ($role === 2 ? session('id') : null);
+
         $this->startDateValidator = Carbon::now("Asia/Jakarta")->format(
             "Y-m-d",
         );
@@ -58,6 +64,13 @@ class ValidatorTaskComponent extends Component
 
     public function generateReport()
     {
+        // re-clamp: scopeUserId is a public property, so a non-admin could
+        // tamper it via the request payload; enforce the boundary every query.
+        $role = (int) session('role_id');
+        if ($role !== 0) {
+            $this->scopeUserId = ($role === 2 ? session('id') : null);
+        }
+
         /*
     |--------------------------------------------------------------------------
     | QUERY TASK (auditorlog)

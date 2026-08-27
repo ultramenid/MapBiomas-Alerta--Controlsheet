@@ -89,9 +89,6 @@
                             @if ($p['who'])
                                 <a href="{{ url($p['url'].$p['who']['id']) }}"
                                    class="text-sm font-medium text-green-700 dark:text-green-400 underline decoration-green-700/40 dark:decoration-green-400/40 underline-offset-4 hover:decoration-current">{{ $p['who']['name'] }}</a>
-                                @if (!empty($p['who']['at']))
-                                    <div class="text-[11px] tabular-nums text-stone-400 dark:text-slate-500 mt-1">{{ \Carbon\Carbon::parse($p['who']['at'])->format('d M Y · H:i') }}</div>
-                                @endif
                             @else
                                 <div class="text-sm text-stone-400 dark:text-slate-500 italic">{{ $p['empty'] }}</div>
                             @endif

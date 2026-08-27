@@ -17,6 +17,13 @@ class AlertLookupComponent extends Component
     public string $alertCode = '';
     public ?array $lookup = null;
 
+    public function mount(): void
+    {
+        if ((int) session('role_id') !== 0) {
+            abort(403);
+        }
+    }
+
     /** Live search: type the ID, no Enter needed. */
     public function updatedAlertCode(): void
     {
