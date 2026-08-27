@@ -171,8 +171,8 @@
                         skin: self.darkMode ? 'oxide-dark' : 'oxide',
                         content_css: self.darkMode ? 'dark' : 'default',
                         content_style: self.darkMode
-                            ? 'body { background-color: #1e293b; color: #cbd5e1; font-size: 14px; }'
-                            : 'body { background-color: #f4f5f7; font-size: 14px; }',
+                            ? 'body { background-color: #1e293b; color: #cbd5e1; font-size: 14px; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }'
+                            : 'body { background-color: #f4f5f7; font-size: 14px; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }',
                         plugins: 'lists advlist autolink link image charmap anchor pagebreak searchreplace wordcount visualblocks visualchars code fullscreen insertdatetime media nonbreaking table emoticons help',
                         toolbar: 'fullscreen image bullist numlist |',
                         menubar: false,
