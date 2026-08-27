@@ -1,4 +1,4 @@
-<div x-data="{ all: false }" class="dark:text-slate-400">
+<div class="dark:text-slate-400">
     {{-- Section header --}}
     <div class="flex flex-wrap items-center gap-x-4 gap-y-2 mb-4">
         <div class="text-label text-stone-600 dark:text-slate-400">Alert by Auditor</div>
@@ -13,11 +13,33 @@
         </button>
     </div>
 
-    <div wire:loading.delay class="w-full bg-stone-900 dark:bg-slate-200 h-0.5 animate-pulse rounded-sm mb-2"></div>
+    {{-- Skeleton: shown only while a refresh is in flight (after the 200ms delay),
+         in place of the table. wire:loading.remove below only toggles display, so
+         the real table's Alpine state survives the swap. --}}
+    <div wire:loading.delay class="border border-stone-200 dark:border-slate-700 rounded-sm mb-4">
+        <div class="flex items-center gap-3 px-3 py-2 bg-stone-100 dark:bg-slate-800 border-b border-stone-200 dark:border-slate-700">
+            <div class="flex-1 h-3 rounded-sm bg-stone-200 dark:bg-slate-700 animate-pulse"></div>
+            <div class="w-20 h-3 rounded-sm bg-stone-200 dark:bg-slate-700 animate-pulse"></div>
+        </div>
+        @foreach (range(1, 6) as $i)
+            <div class="flex items-center gap-3 px-3 py-2.5 border-b border-stone-100 dark:border-slate-800/60">
+                <div class="w-28 h-3.5 rounded-sm bg-stone-200 dark:bg-slate-700 animate-pulse"></div>
+                <div class="flex-1 grid grid-cols-6 gap-2">
+                    @foreach (range(1, 6) as $j)
+                        <div class="h-3.5 rounded-sm bg-stone-200 dark:bg-slate-700 animate-pulse"></div>
+                    @endforeach
+                </div>
+                <div class="w-12 h-3.5 rounded-sm bg-stone-200 dark:bg-slate-700 animate-pulse"></div>
+            </div>
+        @endforeach
+    </div>
 
     {{-- Per-day matrix: auditor and total stay pinned, the days scroll between them --}}
-    <div class="overflow-auto no-scrollbar border border-stone-200 dark:border-slate-700 rounded-sm transition-[max-height] duration-300 ease-out"
-         :class="all ? 'max-h-[70vh]' : 'max-h-[15rem]'">
+    <div wire:loading.remove.delay>
+    {{-- No vertical cap: let the table show all rows at natural height so a short
+         list never forces a cramped hidden-scrollbar scroll. Horizontal scroll
+         (hidden) stays for the day columns; the sticky name/total columns pin. --}}
+    <div class="overflow-auto no-scrollbar border border-stone-200 dark:border-slate-700 rounded-sm">
         <table class="w-full min-w-max text-xs border-collapse">
             <thead class="sticky top-0 z-30">
                 <tr class="bg-stone-100 dark:bg-slate-800 border-b border-stone-200 dark:border-slate-700">
@@ -75,12 +97,5 @@
             </tbody>
         </table>
     </div>
-
-    @if (count($results) > 5)
-        <button type="button" @click="all = !all"
-                class="mt-2 text-xs text-stone-500 dark:text-slate-400 hover:text-stone-800 dark:hover:text-slate-200 cursor-pointer">
-            <span x-show="!all">Show all {{ count($results) }} auditors</span>
-            <span x-show="all" x-cloak>Show less</span>
-        </button>
-    @endif
+    </div>{{-- /wire:loading.remove --}}
 </div>
