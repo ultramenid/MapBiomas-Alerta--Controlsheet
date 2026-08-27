@@ -1,109 +1,86 @@
-<div class="glass rounded-sm p-5 mb-5 z-20 relative dark:text-slate-400">
-    <div class="flex flex-col sm:flex-row sm:gap-6 gap-3 mb-5 items-start">
-        <div>
-            <div class="text-label text-stone-600 dark:text-slate-400 mb-3">Alert by Auditor</div>
-            <div wire:ignore x-init="
-                whenLib('flatpickr', '{{ asset('assets/vendor/flatpickr/flatpickr.min.js') }}', function () {
-                flatpickr('#rangeAuditor', {
-                    mode:'range',
-                    dateFormat: 'Y-m-d',
-                    onChange: function(selectedDates) {
-                        if (selectedDates.length === 2) {
-                            let options = { timeZone: 'Asia/Jakarta', year: 'numeric', month: '2-digit', day: '2-digit' };
-                            function formatDate(d) {
-                                let parts = new Intl.DateTimeFormat('id-ID', options).formatToParts(d);
-                                let y = parts.find(p => p.type === 'year').value;
-                                let m = parts.find(p => p.type === 'month').value;
-                                let day = parts.find(p => p.type === 'day').value;
-                                return `${y}-${m}-${day}`;
-                            }
-                            let startDate = formatDate(selectedDates[0]);
-                            let endDate = formatDate(selectedDates[1]);
-                            $wire.set('startDate', startDate);
-                            $wire.set('endDate', endDate);
-                            $wire.call('filter');
-                        }
-                    }
-                });
-                });
-            ">
-                <input 
-                    id="rangeAuditor" 
-                    type="text" 
-                    class="bg-white dark:bg-slate-800 border border-stone-300 dark:border-slate-600 text-stone-900 dark:text-slate-100 w-52 rounded-sm px-3 py-2 text-sm focus:outline-none transition-none" 
-                    wire:model.defer='rangeAuditor' 
-                    placeholder="Select date range"
-                >
-            </div>
-        </div>
-        
-        <div>
-            <div class="text-label text-stone-600 dark:text-slate-400 mb-3">Find Auditor</div>
-            <input 
-                wire:keydown.enter="find" 
-                type="text" 
-                class="bg-white dark:bg-slate-800 border border-stone-300 dark:border-slate-600 text-stone-900 dark:text-slate-100 w-52 rounded-sm px-3 py-2 text-sm focus:outline-none transition-none" 
-                wire:model.defer='alertCode' 
-                placeholder="Type alert ID"
-            >
-        </div>
-        
-        <div>
-            <div class="text-label text-stone-600 dark:text-slate-400 mb-3">Find Validator</div>
-            <input 
-                wire:keydown.enter="findValidator" 
-                type="text" 
-                class="bg-white dark:bg-slate-800 border border-stone-300 dark:border-slate-600 text-stone-900 dark:text-slate-100 w-52 rounded-sm px-3 py-2 text-sm focus:outline-none transition-none" 
-                wire:model.defer='alertCodeValidator' 
-                placeholder="Type alert ID"
-            >
-        </div>
+<div x-data="{ all: false }" class="dark:text-slate-400">
+    {{-- Section header --}}
+    <div class="flex flex-wrap items-center gap-x-4 gap-y-2 mb-4">
+        <div class="text-label text-stone-600 dark:text-slate-400">Alert by Auditor</div>
+        <div class="flex-1"></div>
+        <button type="button" @click="wide = wide === 'auditor' ? null : 'auditor'"
+                :title="wide === 'auditor' ? 'Collapse' : 'Expand to full width'"
+                class="text-stone-500 dark:text-slate-400 rounded-sm border border-stone-200 dark:border-slate-600 p-1.5 hover:bg-stone-100 dark:hover:bg-slate-800 cursor-pointer">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      :d="wide === 'auditor' ? 'M8 4v4H4M16 4v4h4M8 20v-4H4M16 20v-4h4' : 'M4 8V4h4M16 4h4v4M20 16v4h-4M8 20H4v-4'" />
+            </svg>
+        </button>
     </div>
 
     <div wire:loading.delay class="w-full bg-stone-900 dark:bg-slate-200 h-0.5 animate-pulse rounded-sm mb-2"></div>
 
-    <div class="overflow-x-auto">
-        <table class="w-full border border-stone-200 dark:border-slate-700">
-            <thead>
-                <tr class="border-b border-stone-200 dark:border-slate-700">
-                    <th class="sticky left-0 bg-stone-100 dark:bg-slate-800 text-left px-3 py-2 text-label text-stone-500 dark:text-slate-400 z-10">Auditor</th>
-                    @if (!empty($results))
-                        @foreach (array_keys($results[array_key_first($results)]) as $key)
-                            @if ($key !== 'auditorName' && $key !== 'auditorId' && $key !== 'Total')
-                                <th class="text-center px-3 py-2 text-label text-stone-500 dark:text-slate-400 cursor-pointer" wire:click="sortBy('{{ $key }}')">
-                                    {{ $key }}
-                                    @if ($dataField === $key)
-                                        <span>{{ $dataOrder === 'asc' ? '▲' : '▼' }}</span>
-                                    @endif
-                                </th>
-                            @endif
-                        @endforeach
-                        <th class="sticky right-0 bg-stone-100 dark:bg-slate-800 text-center px-3 py-2 text-label text-stone-500 dark:text-slate-400 z-10 cursor-pointer" wire:click="sortBy('Total')">
-                            Total
-                            @if ($dataField === 'Total')
-                                <span>{{ $dataOrder === 'asc' ? '▲' : '▼' }}</span>
-                            @endif
+    {{-- Per-day matrix: auditor and total stay pinned, the days scroll between them --}}
+    <div class="overflow-auto no-scrollbar border border-stone-200 dark:border-slate-700 rounded-sm transition-[max-height] duration-300 ease-out"
+         :class="all ? 'max-h-[70vh]' : 'max-h-[15rem]'">
+        <table class="w-full min-w-max text-xs border-collapse">
+            <thead class="sticky top-0 z-30">
+                <tr class="bg-stone-100 dark:bg-slate-800 border-b border-stone-200 dark:border-slate-700">
+                    <th rowspan="2" class="w-52 min-w-52 sticky left-0 z-30 bg-stone-100 dark:bg-slate-800 text-left px-3 py-2 text-label text-stone-500 dark:text-slate-400 cursor-pointer border-r border-stone-200 dark:border-slate-700 hover:text-stone-900 dark:hover:text-slate-200"
+                        wire:click="sortBy('name')">
+                        Auditor @if ($dataField === 'name'){{ $dataOrder === 'asc' ? '▲' : '▼' }}@endif
+                    </th>
+                    @foreach ($dates as $d)
+                        <th class="px-3 py-2 text-center text-label whitespace-nowrap cursor-pointer border-l border-stone-200 dark:border-slate-700 hover:text-stone-900 dark:hover:text-slate-200 {{ $dataField === $d ? 'text-stone-900 dark:text-slate-200' : 'text-stone-500 dark:text-slate-400' }}"
+                            wire:click="sortBy('{{ $d }}')">
+                            {{ \Carbon\Carbon::parse($d)->format('d M') }}
+                            @if ($dataField === $d){{ $dataOrder === 'asc' ? '▲' : '▼' }}@endif
                         </th>
-                    @endif
+                    @endforeach
+                    <th class="w-20 sticky right-0 z-20 bg-stone-200 dark:bg-slate-700 text-center px-3 py-2 text-label text-stone-600 dark:text-slate-300 cursor-pointer border-l border-stone-300 dark:border-slate-600"
+                        wire:click="sortBy('total')">
+                        Total @if ($dataField === 'total'){{ $dataOrder === 'asc' ? '▲' : '▼' }}@endif
+                    </th>
+                </tr>
+                <tr class="bg-stone-100 dark:bg-slate-800 border-b border-stone-200 dark:border-slate-700 text-stone-500 dark:text-slate-500">
+                    @foreach ($dates as $d)
+                        <th class="w-14 px-3 py-1.5 text-center font-normal border-l border-stone-200 dark:border-slate-700">alerts</th>
+                    @endforeach
+                    <th class="w-20 sticky right-0 z-20 bg-stone-200 dark:bg-slate-700 px-3 py-1.5 text-center font-normal text-stone-600 dark:text-slate-300 border-l border-stone-300 dark:border-slate-600">alerts</th>
                 </tr>
             </thead>
-            <tbody class="text-sm divide-y divide-stone-200 dark:divide-slate-700">
-                @foreach ($results as $row)
-                    <tr class="border-b border-stone-200 dark:border-slate-700">
-                        <td class="sticky left-0 bg-white dark:bg-slate-900 px-3 py-2 z-10">
-                            <a href="{{ url('/auditor-alert/'.$row['auditorId']) }}" class="text-green-700 dark:text-green-400 hover:underline transition-none">
+            <tbody class="divide-y divide-stone-200 dark:divide-slate-700">
+                @forelse ($results as $row)
+                    <tr class="group hover:bg-stone-50 dark:hover:bg-slate-800/60">
+                        <td class="w-52 min-w-52 sticky left-0 z-10 bg-white dark:bg-slate-900 group-hover:bg-stone-50 dark:group-hover:bg-slate-800 px-3 py-2 align-middle border-r border-stone-200 dark:border-slate-700">
+                            <a href="{{ url('/auditor-alert/'.$row['auditorId']) }}" class="block truncate font-medium text-green-700 dark:text-green-400 hover:underline">
                                 {{ $row['auditorName'] }}
                             </a>
                         </td>
-                        @foreach ($row as $key => $val)
-                            @if ($key !== 'auditorName' && $key !== 'auditorId' && $key !== 'Total')
-                                <td class="text-center px-3 py-2 text-stone-700 dark:text-slate-300">{{ $val }}</td>
-                            @endif
+
+                        @foreach ($dates as $d)
+                            @php $v = $row['daily'][$d] ?? 0; @endphp
+                            <td class="px-3 py-2 text-center tabular-nums border-l border-stone-200 dark:border-slate-700 {{ $v ? 'text-stone-700 dark:text-slate-300' : 'text-stone-300 dark:text-slate-600' }} {{ $dataField === $d ? 'bg-stone-50 dark:bg-slate-800/40' : '' }}">
+                                {{ $v }}
+                            </td>
                         @endforeach
-                        <td class="sticky right-0 bg-white dark:bg-slate-900 text-center px-3 py-2 font-bold text-stone-900 dark:text-slate-200 z-10">{{ $row['Total'] }}</td>
+
+                        <td class="sticky right-0 z-10 bg-stone-100 dark:bg-slate-800 text-center px-3 py-2 tabular-nums font-bold text-stone-900 dark:text-slate-100 border-l border-stone-300 dark:border-slate-600">
+                            {{ number_format($row['total']) }}
+                        </td>
                     </tr>
-                @endforeach
+                @empty
+                    <tr>
+                        <td colspan="{{ count($dates) + 2 }}" class="px-3 py-10 text-center">
+                            <div class="text-sm text-stone-500 dark:text-slate-400">No audits in this range</div>
+                            <div class="text-xs text-stone-400 dark:text-slate-500 mt-1">Drag the slider below to widen the range.</div>
+                        </td>
+                    </tr>
+                @endforelse
             </tbody>
         </table>
     </div>
+
+    @if (count($results) > 5)
+        <button type="button" @click="all = !all"
+                class="mt-2 text-xs text-stone-500 dark:text-slate-400 hover:text-stone-800 dark:hover:text-slate-200 cursor-pointer">
+            <span x-show="!all">Show all {{ count($results) }} auditors</span>
+            <span x-show="all" x-cloak>Show less</span>
+        </button>
+    @endif
 </div>

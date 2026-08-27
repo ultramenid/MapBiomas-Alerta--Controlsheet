@@ -12,8 +12,9 @@ use Livewire\Component;
 class WorkTrendChartComponent extends Component
 {
     use CachesAggregates;
-    // whole-log daily series, no filter state — a single shared cache key fits
-    private const CACHE_KEY = 'dashboard:work-trend:v1';
+    // admin: one shared key for the whole-log series; role 1/2: user-scoped key
+    private const CACHE_KEY_ADMIN = 'dashboard:work-trend:v1';
+    private const CACHE_KEY_USER = 'dashboard:work-trend:user:v1';
 
     // Daily totals over the whole log history. The client-side brush in the
     // card footer does the time-range selection, so there is no date state here.
@@ -29,25 +30,37 @@ class WorkTrendChartComponent extends Component
     public function refreshTrend(): void
     {
         // realtime events must show through the 60s cache window
-        $this->forgetCached(self::CACHE_KEY);
+        $role = session('role_id');
+        $key = ((int) $role === 0) ? self::CACHE_KEY_ADMIN : self::CACHE_KEY_USER . ':' . session('id');
+        $this->forgetCached($key);
         $this->loadTrend();
     }
 
     public function loadTrend(): void
     {
-        // admin-only card — never even query for other roles
-        if (! $this->isAdmin()) {
+        $role = session('role_id');
+
+        if ($role === null || ! in_array((int) $role, [0, 1, 2], true)) {
             $this->trend = ['dates' => [], 'auditor' => [], 'validator' => []];
             return;
         }
 
-        // one scan of auditorlog: 'auditing' rows are auditor work, the other
-        // five actions are validator work (same split as ValidatorTaskComponent)
-        $rows = $this->cached(self::CACHE_KEY, 60, function () {
-            return DB::table('auditorlog')
+        $isAdmin = (int) $role === 0;
+        $cacheKey = $isAdmin ? self::CACHE_KEY_ADMIN : self::CACHE_KEY_USER . ':' . session('id');
+        $userId = $isAdmin ? null : session('id');
+
+        $rows = $this->cached($cacheKey, 60, function () use ($isAdmin, $userId) {
+            $query = DB::table('auditorlog')
                 ->join('users', 'users.id', '=', 'auditorlog.auditorId')
                 ->where('users.is_active', 1)
-                ->whereIn('auditorlog.ngapain', ['auditing', 'Insert', 'Reject', 'reclassification', 'reexportimage', 'refined'])
+                ->whereIn('auditorlog.ngapain', ['auditing', 'Insert', 'Reject', 'reclassification', 'reexportimage', 'refined']);
+
+            // role 1/2: only their own work
+            if (! $isAdmin && $userId) {
+                $query->where('auditorlog.auditorId', $userId);
+            }
+
+            return $query
                 ->select(
                     DB::raw('DATE(auditorlog.created_at) as d'),
                     DB::raw("COUNT(DISTINCT CASE WHEN auditorlog.ngapain = 'auditing' THEN auditorlog.alertId END) as auditor"),
@@ -84,26 +97,14 @@ class WorkTrendChartComponent extends Component
         $this->trend = ['dates' => $dates, 'auditor' => $a, 'validator' => $v];
     }
 
-    private function isAdmin(): bool
-    {
-        // strict: null == 0 is true in PHP, so an unauthenticated Livewire
-        // render must not slip through a loose role comparison
-        return session('role_id') !== null && (int) session('role_id') === 0;
-    }
-
     public function render()
     {
-        $isAdmin = $this->isAdmin();
-        $payload = $isAdmin
-            ? $this->trend
-            : ['dates' => [], 'auditor' => [], 'validator' => []];
+        $role = session('role_id') === null ? null : (int) session('role_id');
 
         return view('livewire.work-trend-chart-component', [
-            'isAdmin' => $isAdmin,
-            'payload' => $payload,
-            // changing key makes Livewire swap the node, which re-runs the
-            // chart bootstrap in x-init with the fresh data-payload
-            'payloadKey' => md5(json_encode($payload)),
+            'role' => $role,
+            'payload' => $this->trend,
+            'payloadKey' => md5(json_encode($this->trend)),
         ]);
     }
 }

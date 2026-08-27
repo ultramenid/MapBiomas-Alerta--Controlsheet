@@ -1,194 +1,176 @@
-<div class="glass rounded-sm p-5 mb-5 z-20 relative dark:text-slate-400">
-    <div class="text-sm mb-6">
-        <a class="text-label text-stone-600 dark:text-slate-400 mb-1">Alert by Validator</a>
-        <div class="w-full mt-1 flex gap-2" wire:ignore x-init="
-        whenLib('flatpickr', '{{ asset('assets/vendor/flatpickr/flatpickr.min.js') }}', function () {
-        flatpickr('#rangeValidator', {
-            mode:'range',
-            dateFormat: 'Y-m-d',
-            {{-- locale: 'id', // ✅ Indonesian calendar labels, optional --}}
-            onChange: function(selectedDates) {
-                if (selectedDates.length === 2) {
-                    // Jakarta timezone formatter
-                    let options = { timeZone: 'Asia/Jakarta', year: 'numeric', month: '2-digit', day: '2-digit' };
-
-                    function formatDate(d) {
-                        let parts = new Intl.DateTimeFormat('id-ID', options).formatToParts(d);
-                        let y = parts.find(p => p.type === 'year').value;
-                        let m = parts.find(p => p.type === 'month').value;
-                        let day = parts.find(p => p.type === 'day').value;
-                        return `${y}-${m}-${day}`;
-                    }
-
-                    let startDateValidator = formatDate(selectedDates[0]);
-                    let endDateValidator   = formatDate(selectedDates[1]);
-
-                    console.log(['Start:', startDateValidator, 'End:', endDateValidator]);
-
-                    $wire.set('startDateValidator', startDateValidator);
-                    $wire.set('endDateValidator', endDateValidator);
-                }
-            }
-        });
-        });
-     "
-        ">
-            <input id="rangeValidator" type="text" class="bg-white dark:bg-slate-900 border border-stone-300 dark:border-slate-600 text-stone-900 dark:text-slate-100 w-52 rounded-sm px-3 py-2 text-sm focus:outline-none transition-none"  wire:model.defer='rangeValidator' placeholder="Please select">
-
-        </div>
+<div x-data="{ all: false }" class="dark:text-slate-400">
+    {{-- Section header --}}
+    <div class="flex flex-wrap items-center gap-x-4 gap-y-2 mb-4">
+        <div class="text-label text-stone-600 dark:text-slate-400">Alert by Validator</div>
+        <div class="flex-1"></div>
+        {{-- toggle only exists in the role-0 side-by-side grid (scopeUserId is null there) --}}
+        @if (!$scopeUserId)
+        <button type="button" @click="wide = wide === 'validator' ? null : 'validator'"
+                :title="wide === 'validator' ? 'Collapse' : 'Expand to full width'"
+                class="text-stone-500 dark:text-slate-400 rounded-sm border border-stone-200 dark:border-slate-600 p-1.5 hover:bg-stone-100 dark:hover:bg-slate-800 cursor-pointer">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      :d="wide === 'validator' ? 'M8 4v4H4M16 4v4h4M8 20v-4H4M16 20v-4h4' : 'M4 8V4h4M16 4h4v4M20 16v4h-4M8 20H4v-4'" />
+            </svg>
+        </button>
+        @endif
     </div>
 
     <div wire:loading.delay class="w-full bg-stone-900 dark:bg-slate-200 h-0.5 animate-pulse rounded-sm mb-2"></div>
 
-    <div>
-
-
-    <div class="overflow-hidden">
-        <div class="overflow-x-auto">
-
-            <table class="w-full min-w-max border border-stone-200 dark:border-slate-700 text-xs">
-
-                <thead class="text-xs">
-
-                    <!-- HEADER ROW 1 -->
-                    <tr class="border-b border-stone-200 dark:border-slate-700">
-
-                        <!-- Validator -->
-                        <th rowspan="2 "
-                            class="sticky left-0 bg-stone-100 dark:bg-slate-800 text-left px-3 py-2 text-label text-stone-500 dark:text-slate-400 z-10 border-b border-stone-200 dark:border-slate-700">
-                            Validator
+    {{-- Per-day matrix: task / approved per day, validator and totals stay pinned --}}
+    <div class="overflow-auto no-scrollbar border border-stone-200 dark:border-slate-700 rounded-sm transition-[max-height] duration-300 ease-out"
+         :class="all ? 'max-h-[70vh]' : 'max-h-[15rem]'">
+        <table class="w-full min-w-max text-xs border-collapse">
+            <thead class="sticky top-0 z-30">
+                <tr class="bg-stone-100 dark:bg-slate-800 border-b border-stone-200 dark:border-slate-700">
+                    <th rowspan="2" class="w-52 min-w-52 sticky left-0 z-30 bg-stone-100 dark:bg-slate-800 text-left px-3 py-2 text-label text-stone-500 dark:text-slate-400 border-r border-stone-200 dark:border-slate-700">
+                        Validator
+                    </th>
+                    @foreach ($report['dates'] as $date)
+                        <th colspan="2" class="px-3 py-2 text-center whitespace-nowrap text-label text-stone-500 dark:text-slate-400 border-l border-stone-200 dark:border-slate-700">
+                            {{ \Carbon\Carbon::parse($date)->format('d M') }}
                         </th>
-
-                        <!-- Loop tanggal -->
-                        @foreach($report['dates'] as $date)
-                            <th colspan="2"
-                                class="px-4 py-2 text-center whitespace-nowrap bg-stone-200 dark:bg-slate-700 dark:text-slate-400 border-r border-stone-300 dark:border-slate-700 border-l border-b border-t">
-                                {{ $date }}
-                            </th>
-                        @endforeach
-
-                        <!-- Total -->
-                        <th colspan="2"
-                            class="sticky right-0 bg-stone-100 dark:bg-slate-800 text-center px-3 py-2 text-label text-stone-500 dark:text-slate-400 z-10 border-b border-stone-200 dark:border-slate-700">
-                            Total
-                        </th>
-
-                    </tr>
-
-                    <!-- HEADER ROW 2 -->
-                    <tr class="border-b border-stone-200 dark:border-slate-700">
-
-                        @foreach($report['dates'] as $date)
-                            <th class="w-24 bg-stone-200 dark:bg-slate-700 dark:text-slate-300 border-stone-300 dark:border-slate-700 px-4 py-2 text-center border-l">
-                                task
-                            </th>
-
-                            <th class="w-24 border-stone-300 dark:border-slate-700 px-4 py-2 text-center bg-stone-300 dark:bg-slate-600 dark:text-slate-300 border-r">
-                                approved
-                            </th>
-                        @endforeach
-
-                        <th colspan="1" class="sticky right-[112px] bg-stone-100 dark:bg-slate-800 text-center px-3 py-2 text-stone-700 dark:text-slate-300 z-10 border-b border-stone-200 dark:border-slate-700">
-                            task
-                        </th>
-
-                        <th colspan="1" class="w-28 sticky right-0 bg-stone-400 dark:bg-slate-700 border-b border-stone-400 dark:border-slate-700 px-4 py-2 text-center z-20 dark:text-slate-300 border-r">
-                            approved
-                        </th>
-
-                    </tr>
-
-                </thead>
-
-
-                <tbody class="divide-y divide-stone-200 dark:divide-slate-700">
-
-                    @foreach($report['data'] as $row)
-
-                        <tbody x-data="{ open:false }" class="divide-y divide-stone-200 dark:divide-slate-700">
-
-                            <tr @click="open = !open"
-                                class=" cursor-pointer">
-
-                                <!-- Validator name (sticky left, collapse tetap) -->
-                                <td class="sticky left-0 bg-white dark:bg-slate-900 px-3 py-2 z-10 whitespace-nowrap font-medium border-b border-stone-200 dark:border-slate-700">
-
-                                    <div class="flex items-center gap-2">
-
-                                        {{ $row['validatorName'] }}
-
-                                        <svg class="w-3 h-3 text-stone-400 dark:text-slate-500 transition-none"
-                                            :class="{ 'rotate-90': open }"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            viewBox="0 0 24 24">
-
-                                            <path stroke-linecap="round"
-                                                stroke-linejoin="round"
-                                                stroke-width="2"
-                                                d="M9 5l7 7-7 7" />
-                                        </svg>
-
-                                    </div>
-
-                                    <!-- collapse content tetap -->
-                                    <div x-show="open" style="display: none;" class="mt-2 w-full bg-stone-100 dark:bg-slate-700 dark:text-slate-300 px-3 py-2 rounded-sm">
-
-                                        Insert: {{ $row['category']['Insert'] ?? 0 }} <br>
-                                        Reject: {{ $row['category']['Reject'] ?? 0 }} <br>
-                                        Reclassification: {{ $row['category']['reclassification'] ?? 0 }} <br>
-                                        Reexport Image: {{ $row['category']['reexportimage'] ?? 0 }} <br>
-                                        Refined: {{ $row['category']['refined'] ?? 0 }} <br>
-                                        Approved: {{ $row['category']['approved'] ?? 0 }}
-
-                                    </div>
-
-                                </td>
-
-
-                                <!-- Loop tanggal -->
-                                @foreach($report['dates'] as $date)
-
-                                    <td class="border-b border-stone-300 dark:border-slate-700 px-4 py-2 text-center bg-stone-200 dark:bg-slate-700 dark:text-slate-300 border-l">
-                                        {{ $row['dates'][$date]['task'] ?? 0 }}
-
-                                    </td>
-
-                                    <td class="border-b border-stone-300 dark:border-slate-700 px-4 py-2 text-center bg-stone-300 dark:bg-slate-600 dark:text-slate-300 border-r">
-                                        {{ $row['dates'][$date]['approved'] ?? 0 }}
-                                    </td>
-
-                                @endforeach
-
-
-                                <!-- total task -->
-                                <td class="w-28 sticky right-[112px] bg-stone-300 dark:bg-slate-600 border-b border-stone-300 dark:border-slate-700 px-4 py-2 text-center font-semibold z-10 dark:text-slate-300">
-                                    {{ $row['grandTotal'] ?? 0 }}
-                                </td>
-
-                                <!-- total approved -->
-                                <td class="w-28 sticky right-0 border-b border-stone-400 dark:border-slate-600 px-4 py-2 text-center font-semibold z-10 bg-stone-400 dark:bg-slate-700 dark:text-slate-300 border-r">
-                                    {{ $row['grandApproved'] ?? 0 }}
-                                </td>
-
-                            </tr>
-
-                        </tbody>
-
                     @endforeach
+                    <th colspan="2" class="sticky right-0 z-20 bg-stone-200 dark:bg-slate-700 text-center px-3 py-2 text-label text-stone-600 dark:text-slate-300 border-l border-stone-300 dark:border-slate-600">
+                        Total
+                    </th>
+                </tr>
+                <tr class="bg-stone-100 dark:bg-slate-800 border-b border-stone-200 dark:border-slate-700 text-stone-500 dark:text-slate-500">
+                    @foreach ($report['dates'] as $date)
+                        <th class="w-14 px-3 py-1.5 text-center font-normal border-l border-stone-200 dark:border-slate-700">task</th>
+                        <th class="w-14 px-3 py-1.5 text-center font-normal">appr.</th>
+                    @endforeach
+                    <th class="w-20 sticky right-20 z-20 bg-stone-200 dark:bg-slate-700 px-3 py-1.5 text-center font-normal text-stone-600 dark:text-slate-300 border-l border-stone-300 dark:border-slate-600">task</th>
+                    <th class="w-20 sticky right-0 z-20 bg-stone-200 dark:bg-slate-700 px-3 py-1.5 text-center font-normal text-green-700 dark:text-green-400">appr.</th>
+                </tr>
+            </thead>
+
+            @forelse ($report['data'] as $row)
+                <tbody x-data="{ open: false }" class="border-t border-stone-200 dark:border-slate-700">
+                    <tr @click="open = true" class="group cursor-pointer hover:bg-stone-50 dark:hover:bg-slate-800/60">
+                        <td class="w-52 min-w-52 sticky left-0 z-10 bg-white dark:bg-slate-900 group-hover:bg-stone-50 dark:group-hover:bg-slate-800 px-3 py-2 align-middle border-r border-stone-200 dark:border-slate-700">
+                            <div class="flex items-center gap-1.5 whitespace-nowrap font-medium text-green-700 dark:text-green-400">
+                                <svg class="w-3.5 h-3.5 shrink-0 text-stone-300 dark:text-slate-600 group-hover:text-stone-500 dark:group-hover:text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4h4M16 4h4v4M20 16v4h-4M8 20H4v-4" />
+                                </svg>
+                                <span class="truncate">{{ $row['validatorName'] }}</span>
+                            </div>
+
+                            {{-- breakdown modal; teleported out of the .glass card so `fixed` means the viewport --}}
+                            <template x-teleport="body">
+                                <div x-show="open" x-cloak class="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4"
+                                     @keydown.escape.window="open = false">
+                                    <div x-show="open" x-transition.opacity class="absolute inset-0 bg-stone-900/40 dark:bg-black/70" @click="open = false"></div>
+
+                                    @php
+                                        $cats = [
+                                            'Insert' => 'Inserted',
+                                            'reclassification' => 'Reclassified',
+                                            'reexportimage' => 'Re-exported',
+                                            'refined' => 'Refined',
+                                            'Reject' => 'Rejected',
+                                            'approved' => 'Approved',
+                                        ];
+                                        // bars are a share of the task total above them, not of the biggest
+                                        // category — otherwise the largest one always reads as a full bar
+                                        $den = max(1, (int) ($row['grandTotal'] ?? 0));
+                                        $rate = ($row['grandTotal'] ?? 0) ? round(($row['grandApproved'] ?? 0) / $row['grandTotal'] * 100) : 0;
+                                    @endphp
+
+                                    <div x-show="open" x-transition
+                                         class="relative w-full max-w-md rounded-sm border border-stone-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-xl">
+                                        <div class="flex items-start gap-4 px-5 py-4 border-b border-stone-200 dark:border-slate-700">
+                                            <div class="min-w-0">
+                                                <div class="text-sm font-semibold text-stone-900 dark:text-slate-100 truncate">{{ $row['validatorName'] }}</div>
+                                                <div class="text-xs text-stone-400 dark:text-slate-500 tabular-nums mt-0.5">{{ $rangeValidator }}</div>
+                                            </div>
+                                            <div class="flex-1"></div>
+                                            <button type="button" @click="open = false" aria-label="Close"
+                                                    class="shrink-0 text-stone-400 dark:text-slate-500 hover:text-stone-700 dark:hover:text-slate-300 cursor-pointer">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                                            </button>
+                                        </div>
+
+                                        <div class="grid grid-cols-2 divide-x divide-stone-200 dark:divide-slate-700 border-b border-stone-200 dark:border-slate-700">
+                                            <div class="px-5 py-3">
+                                                <div class="text-[10px] uppercase tracking-wide text-stone-400 dark:text-slate-500">Tasks</div>
+                                                <div class="text-xl font-semibold tabular-nums text-stone-900 dark:text-slate-100">{{ number_format($row['grandTotal'] ?? 0) }}</div>
+                                            </div>
+                                            <div class="px-5 py-3">
+                                                <div class="text-[10px] uppercase tracking-wide text-stone-400 dark:text-slate-500">Approved</div>
+                                                <div class="text-xl font-semibold tabular-nums text-green-700 dark:text-green-400">
+                                                    {{ number_format($row['grandApproved'] ?? 0) }}
+                                                    <span class="text-xs font-normal text-stone-400 dark:text-slate-500">{{ $rate }}%</span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="px-5 py-4 space-y-2">
+                                            {{-- column captions, aligned to the rows below --}}
+                                            <div class="flex items-center gap-3 pb-1.5 mb-1 border-b border-stone-200 dark:border-slate-700 text-[10px] uppercase tracking-wide text-stone-400 dark:text-slate-500">
+                                                <span class="w-24 shrink-0">Action</span>
+                                                <span class="flex-1 min-w-0 normal-case tracking-normal text-stone-400 dark:text-slate-500">share of {{ number_format($row['grandTotal'] ?? 0) }} tasks</span>
+                                                <span class="w-8 shrink-0 text-right">%</span>
+                                                <span class="w-10 shrink-0 text-right">Alerts</span>
+                                            </div>
+                                            @foreach ($cats as $key => $label)
+                                                @php
+                                                    $n = (int) ($row['category'][$key] ?? 0);
+                                                    $pct = min(100, round($n / $den * 100));
+                                                @endphp
+                                                <div class="flex items-center gap-3 text-xs">
+                                                    <span class="w-24 shrink-0 {{ $n ? 'text-stone-600 dark:text-slate-300' : 'text-stone-400 dark:text-slate-600' }}">{{ $label }}</span>
+                                                    <span class="flex-1 h-1.5 rounded-sm bg-stone-100 dark:bg-slate-800 overflow-hidden">
+                                                        <span class="block h-full rounded-sm {{ $key === 'approved' ? 'bg-green-600 dark:bg-green-500' : ($key === 'Reject' ? 'bg-red-400 dark:bg-red-500/80' : 'bg-stone-400 dark:bg-slate-400') }}"
+                                                              style="width: {{ $n ? max(2, $pct) : 0 }}%"></span>
+                                                    </span>
+                                                    <span class="w-8 shrink-0 text-right tabular-nums text-stone-400 dark:text-slate-500">{{ $n ? $pct.'%' : '' }}</span>
+                                                    <span class="w-10 shrink-0 text-right font-semibold tabular-nums {{ $key === 'approved' ? 'text-green-700 dark:text-green-400' : ($n ? 'text-stone-800 dark:text-slate-200' : 'text-stone-300 dark:text-slate-600') }}">{{ number_format($n) }}</span>
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+                        </td>
+
+                        @foreach ($report['dates'] as $date)
+                            @php
+                                $task = (int) ($row['dates'][$date]['task'] ?? 0);
+                                $appr = (int) ($row['dates'][$date]['approved'] ?? 0);
+                            @endphp
+                            <td class="px-3 py-2 text-center tabular-nums border-l border-stone-200 dark:border-slate-700 {{ $task ? 'text-stone-700 dark:text-slate-300' : 'text-stone-300 dark:text-slate-600' }}">{{ $task }}</td>
+                            <td class="px-3 py-2 text-center tabular-nums bg-green-50 dark:bg-green-900/20 {{ $appr ? 'text-green-800 dark:text-green-300' : 'text-stone-300 dark:text-slate-600' }}">{{ $appr }}</td>
+                        @endforeach
+
+                        <td class="w-20 sticky right-20 z-10 bg-stone-100 dark:bg-slate-800 px-3 py-2 text-center tabular-nums font-bold text-stone-900 dark:text-slate-100 border-l border-stone-300 dark:border-slate-600">
+                            {{ number_format($row['grandTotal'] ?? 0) }}
+                        </td>
+                        <td class="w-20 sticky right-0 z-10 bg-stone-200 dark:bg-slate-700 px-3 py-2 text-center tabular-nums font-bold text-green-800 dark:text-green-300">
+                            {{ number_format($row['grandApproved'] ?? 0) }}
+                        </td>
+                    </tr>
 
                 </tbody>
-
-            </table>
-
-
-
-        </div>
+            @empty
+                <tbody>
+                    <tr>
+                        <td colspan="{{ max(count($report['dates']) * 2 + 3, 2) }}" class="px-3 py-10 text-center">
+                            <div class="text-sm text-stone-500 dark:text-slate-400">No validator activity in this range</div>
+                            <div class="text-xs text-stone-400 dark:text-slate-500 mt-1">Drag the slider below to widen the range.</div>
+                        </td>
+                    </tr>
+                </tbody>
+            @endforelse
+        </table>
     </div>
 
-
-</div>
-
-
-
+    @if (count($report['data']) > 5)
+        <button type="button" @click="all = !all"
+                class="mt-2 text-xs text-stone-500 dark:text-slate-400 hover:text-stone-800 dark:hover:text-slate-200 cursor-pointer">
+            <span x-show="!all">Show all {{ count($report['data']) }} validators</span>
+            <span x-show="all" x-cloak>Show less</span>
+        </button>
+    @endif
 </div>

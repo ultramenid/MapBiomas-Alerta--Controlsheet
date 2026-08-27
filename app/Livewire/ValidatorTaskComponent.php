@@ -12,15 +12,12 @@ class ValidatorTaskComponent extends Component
 {
     use CachesAggregates;
     public $startDateValidator, $endDateValidator, $rangeValidator;
+    // null = all users; set to scope the report to a single user
+    public $scopeUserId = null;
     public $report = [
         "dates" => [],
         "data" => [],
     ];
-
-    public function updatedrangeValidator()
-    {
-        $this->generateReport();
-    }
 
     public function mount()
     {
@@ -35,9 +32,15 @@ class ValidatorTaskComponent extends Component
 
     #[On("echo:analis-data,UpdateAnalis")]
     #[On("echo:auditor-data,UpdateAuditor")]
-    public function refreshReport()
+    #[On("brush-changed")]
+    public function refreshReport($start = null, $end = null)
     {
-        // realtime events must show through the 60s cache window
+        // brush-changed: update date range from the chart slider, then regenerate
+        if ($start && $end) {
+            $this->startDateValidator = $start;
+            $this->endDateValidator = $end;
+            $this->rangeValidator = $start . " to " . $end;
+        }
         $this->forgetCached($this->tasksCacheKey());
         $this->forgetCached($this->approvedCacheKey());
         $this->generateReport();
@@ -45,12 +48,12 @@ class ValidatorTaskComponent extends Component
 
     private function tasksCacheKey()
     {
-        return "dashboard:validator-task:tasks:v1:" . $this->startDateValidator . ":" . $this->endDateValidator;
+        return "dashboard:validator-task:tasks:v2:" . $this->startDateValidator . ":" . $this->endDateValidator . ":" . ($this->scopeUserId ?? "all");
     }
 
     private function approvedCacheKey()
     {
-        return "dashboard:validator-task:approved:v1:" . $this->startDateValidator . ":" . $this->endDateValidator;
+        return "dashboard:validator-task:approved:v2:" . $this->startDateValidator . ":" . $this->endDateValidator . ":" . ($this->scopeUserId ?? "all");
     }
 
     public function generateReport()
@@ -68,8 +71,10 @@ class ValidatorTaskComponent extends Component
                     "users.id as auditorId",
                     DB::raw("DATE(auditorlog.created_at) as d"),
 
+                    // same definition as the chart's validator series, so the
+                    // card's two halves agree; the chips below break it down
                     DB::raw(
-                        "COUNT(DISTINCT CASE WHEN auditorlog.ngapain IN ('refined', 'Reject') THEN auditorlog.alertId END) as total",
+                        "COUNT(DISTINCT CASE WHEN auditorlog.ngapain IN ('Insert', 'Reject', 'reclassification', 'reexportimage', 'refined') THEN auditorlog.alertId END) as total",
                     ),
 
                     DB::raw(
@@ -93,6 +98,7 @@ class ValidatorTaskComponent extends Component
                     $this->endDateValidator . " 23:59:59",
                 ])
                 ->where("users.is_active", 1)
+                ->when($this->scopeUserId, fn($q) => $q->where("auditorlog.auditorId", $this->scopeUserId))
                 ->whereIn("auditorlog.ngapain", [
                     "Insert",
                     "Reject",
@@ -115,7 +121,7 @@ class ValidatorTaskComponent extends Component
     |--------------------------------------------------------------------------
     */
         $approvedRows = $this->cached($this->approvedCacheKey(), 60, function () {
-            return DB::table("alerts")
+            $q = DB::table("alerts")
                 ->select(
                     "alerts.analisId as auditorId",
                     DB::raw("DATE(alerts.updated_at) as d"),
@@ -126,8 +132,10 @@ class ValidatorTaskComponent extends Component
                     $this->endDateValidator . " 23:59:59",
                 ])
                 ->where("alerts.auditorStatus", "approved")
-                ->groupBy("alerts.analisId", DB::raw("DATE(alerts.updated_at)"))
+                ->when($this->scopeUserId, fn($q) => $q->where("alerts.analisId", $this->scopeUserId))
+                ->groupBy("alerts.analisId", DB::raw("DATE(alerts.updated_at)")) 
                 ->get();
+            return $q;
         });
 
         /*
@@ -137,7 +145,7 @@ class ValidatorTaskComponent extends Component
     */
         $approvedMap = [];
 
-        foreach ($approvedRows as $row) {
+        foreach (empty($approvedRows) ? [] : $approvedRows as $row) {
             $approvedMap[$row->auditorId][$row->d] = $row->approvedTotal;
         }
 
@@ -147,11 +155,10 @@ class ValidatorTaskComponent extends Component
     |--------------------------------------------------------------------------
     */
         $results = [];
-        $dates = [];
 
-        foreach ($rows as $row) {
-            $dates[$row->d] = $row->d;
-
+        // $rows can be null when the cache stores an empty result; normalise
+        // before iterating so an unanswered range doesn't fatal the page
+        foreach (empty($rows) ? [] : $rows as $row) {
             if (!isset($results[$row->auditorId])) {
                 $results[$row->auditorId] = [
                     "validatorName" => $row->validatorName,
@@ -213,20 +220,43 @@ class ValidatorTaskComponent extends Component
 
         /*
     |--------------------------------------------------------------------------
-    | SORT DATE
+    | FILL THE RANGE so every row has a cell per day, gaps included
     |--------------------------------------------------------------------------
     */
-        ksort($dates);
+        $allDates = $this->dates();
+        foreach ($results as &$row) {
+            $filled = [];
+            foreach ($allDates as $d) {
+                $filled[$d] = $row["dates"][$d] ?? ["task" => 0, "approved" => 0];
+            }
+            $row["dates"] = $filled;
+        }
+        unset($row);
 
-        /*
-    |--------------------------------------------------------------------------
-    | FINAL RESULT
-    |--------------------------------------------------------------------------
-    */
+        // busiest validators first — the ranked order the card reads top-down
+        uasort($results, fn($a, $b) => $b["grandTotal"] <=> $a["grandTotal"]);
+
         $this->report = [
-            "dates" => array_values($dates),
+            "dates" => $allDates,
             "data" => $results,
         ];
+    }
+
+    /** Every date in the selected range, ascending. */
+    private function dates(): array
+    {
+        $out = [];
+        foreach (
+            new \DatePeriod(
+                new \DateTime($this->startDateValidator),
+                new \DateInterval("P1D"),
+                (new \DateTime($this->endDateValidator))->modify("+1 day"),
+            )
+            as $dt
+        ) {
+            $out[] = $dt->format("Y-m-d");
+        }
+        return $out;
     }
 
     public function render()

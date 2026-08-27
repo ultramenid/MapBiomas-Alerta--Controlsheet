@@ -19,56 +19,41 @@ class AuditorTaskComponent extends Component
 
     #[On('echo:analis-data,UpdateAnalis')]
     #[On('echo:auditor-data,UpdateAuditor')]
-    public function filter(){
-        $rows = DB::table('auditorlog')
-            ->join('users', 'users.id', '=', 'auditorlog.auditorId')
-            ->select(
-                'users.name as auditorName',
-                'users.id as auditorId',
-                DB::raw("DATE(auditorlog.created_at) as d"),
-                DB::raw("COUNT(DISTINCT auditorlog.alertId) as total")
-            )
-            ->whereBetween(DB::raw("DATE(auditorlog.created_at)"), [$this->startDate, $this->endDate])
-            ->where('ngapain', '=' ,'auditing')
-            ->where('users.is_active', 1)
-            ->where('auditorlog.auditorId', '=', session('id'))
-            ->groupBy( 'users.name', 'users.id', DB::raw("DATE(auditorlog.created_at)"))
-            ->get();
-
-        $results = [];
-
-        foreach ($rows as $row) {
-
-            if (!isset($results[$row->auditorName])) {
-                $results[$row->auditorName]['auditorName'] = $row->auditorName;
-                $results[$row->auditorName]['auditorId'] = $row->auditorId;
-
-            }
-            $results[$row->auditorName][$row->d] = $row->total;
+    #[On('brush-changed')]
+    public function filter($start = null, $end = null){
+        // brush-changed: update date range from the chart slider
+        if ($start && $end) {
+            $this->startDate = $start;
+            $this->endDate = $end;
+            $this->rangeAuditor = $start . ' to ' . $end;
         }
 
-        $period = new \DatePeriod(
+        // [Y-m-d => alerts audited], newest first, zero-filled across the range
+        $counts = DB::table('auditorlog')
+            ->select(DB::raw("DATE(created_at) as d"), DB::raw("COUNT(DISTINCT alertId) as total"))
+            ->whereBetween(DB::raw("DATE(created_at)"), [$this->startDate, $this->endDate])
+            ->where('ngapain', 'auditing')
+            ->where('auditorId', session('id'))
+            ->groupBy(DB::raw("DATE(created_at)"))
+            ->pluck('total', 'd');
+
+        $results = [];
+        foreach (new \DatePeriod(
             new \DateTime($this->startDate),
             new \DateInterval('P1D'),
             (new \DateTime($this->endDate))->modify('+1 day')
-        );
-        foreach ($period as $dt) { $allDates[] = $dt->format('Y-m-d'); }
-        // fill missing dates with 0
-        foreach ($results as &$row) {
-            foreach ($allDates as $d) {
-                if (!isset($row[$d])) {
-                    $row[$d] = 0;
-                }
-            }
-            ksort($row); // keep auditorName first, then dates in order
+        ) as $dt) {
+            $d = $dt->format('Y-m-d');
+            $results[$d] = (int) ($counts[$d] ?? 0);
         }
-        unset($row);
-        return $results;
+
+        return array_reverse($results, true);
     }
 
     public function render()
     {
         $results = $this->filter();
+
         return view('livewire.auditor-task-component', compact('results'));
     }
 }

@@ -34,9 +34,9 @@ window.WorkTrendChart = function (root) {
         return { wrap, tip, series: wrap.dataset.series, style: STYLE[wrap.dataset.series], svg: null, hoverG: null };
     });
 
-    const brush = root.querySelector('[data-brush]');
-    const rangeLabel = root.querySelector('[data-range-label]');
-    const resetBtn = root.querySelector('[data-reset]');
+    const brush = (root.closest('[data-wt-root]') || root).querySelector('[data-brush]');
+    const rangeLabel = (root.closest('[data-wt-root]') || root).querySelector('[data-range-label]');
+    const resetBtn = (root.closest('[data-wt-root]') || root).querySelector('[data-reset]');
     const totalEls = {};
     root.querySelectorAll('[data-total]').forEach((el) => (totalEls[el.dataset.total] = el));
 
@@ -245,13 +245,26 @@ window.WorkTrendChart = function (root) {
         renderAll();
     });
 
-    const endDrag = () => (drag = null);
+    const endDrag = () => {
+        drag = null;
+        // notify Livewire tables of the new date range
+        dispatchRange();
+    };
     brush.addEventListener('pointerup', endDrag);
     brush.addEventListener('pointercancel', endDrag);
+
+    function dispatchRange() {
+        if (typeof Livewire === 'undefined') return;
+        Livewire.dispatch('brush-changed', {
+            start: data.dates[sel[0]],
+            end: data.dates[sel[1]],
+        });
+    }
 
     resetBtn.addEventListener('click', () => {
         sel = [Math.max(0, N - DEF_DAYS), N - 1];
         renderAll();
+        dispatchRange();
     });
 
     const ro = new ResizeObserver(() => {
@@ -262,4 +275,6 @@ window.WorkTrendChart = function (root) {
 
     buildBrush();
     renderAll();
+    // sync tables with the initial 30-day default
+    dispatchRange();
 };

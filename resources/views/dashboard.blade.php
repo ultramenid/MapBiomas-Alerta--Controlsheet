@@ -1,15 +1,5 @@
 @extends('layouts.dashboard')
 
-@push('vendor-styles')
-    <link rel="stylesheet" href="{{ asset('assets/vendor/flatpickr/flatpickr.min.css') }}">
-    <link rel="stylesheet" type="text/css" href="{{ asset('assets/vendor/flatpickr/themes/airbnb.css') }}">
-@endpush
-
-@push('vendor-scripts')
-    <script src="{{ asset('assets/vendor/flatpickr/flatpickr.min.js') }}"></script>
-@endpush
-
-
 @section('content')
     @include('partials.header')
     @include('partials.nav')
@@ -17,27 +7,22 @@
     <div class="max-w-7xl mx-auto px-6 py-6">
 
         @if (session('role_id') == 0)
-            <livewire:filter-dashboard-component>
             <livewire:work-trend-chart-component />
+            <livewire:filter-dashboard-component>
             <livewire:summary-alert-commponent />
-            <livewire:auditor-summary-component>
-            <livewire:validator-task-component />
             <livewire:check-alert-analis />
         @endif
 
         @if (session('role_id') == 1)
-
-            <livewire:auditor-task-component />
+            <livewire:work-trend-chart-component />
             <livewire:filter-dashboard-component>
-            <livewire:validator-task-component />
             <livewire:check-alert-analis />
-
         @endif
 
         @if (session('role_id') == 2)
+            <livewire:work-trend-chart-component />
             <livewire:filter-dashboard-component>
             <livewire:sumary-alert-analis />
-            <livewire:validator-task-component />
             <livewire:table-analisis />
         @endif
     </div>

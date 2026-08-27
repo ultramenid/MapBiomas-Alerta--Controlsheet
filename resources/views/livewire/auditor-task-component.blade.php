@@ -1,94 +1,32 @@
-<div class="glass rounded-sm p-5 mb-5 z-20 relative dark:text-slate-400">
-    <div class="text-sm mb-6">
-        <a class="text-label text-stone-600 dark:text-slate-400 mb-1">Alert by Auditor</a>
-        <div class="w-full mt-1 flex gap-2" wire:ignore x-init="
-        whenLib('flatpickr', '{{ asset('assets/vendor/flatpickr/flatpickr.min.js') }}', function () {
-        flatpickr('#rangeAuditor', {
-            mode:'range',
-            dateFormat: 'Y-m-d',
-            {{-- locale: 'id', // ✅ Indonesian calendar labels, optional --}}
-            onChange: function(selectedDates) {
-                if (selectedDates.length === 2) {
-                    // Jakarta timezone formatter
-                    let options = { timeZone: 'Asia/Jakarta', year: 'numeric', month: '2-digit', day: '2-digit' };
-
-                    function formatDate(d) {
-                        let parts = new Intl.DateTimeFormat('id-ID', options).formatToParts(d);
-                        let y = parts.find(p => p.type === 'year').value;
-                        let m = parts.find(p => p.type === 'month').value;
-                        let day = parts.find(p => p.type === 'day').value;
-                        return `${y}-${m}-${day}`;
-                    }
-
-                    let startDate = formatDate(selectedDates[0]);
-                    let endDate   = formatDate(selectedDates[1]);
-
-                    console.log(['Start:', startDate, 'End:', endDate]);
-
-                    $wire.set('startDate', startDate);
-                    $wire.set('endDate', endDate);
-                }
-            }
-        });
-        });
-     "
-        ">
-            <input id="rangeAuditor" type="text" class="bg-white dark:bg-slate-800 border border-stone-300 dark:border-slate-600 text-stone-900 dark:text-slate-100 w-52 rounded-sm px-3 py-2 text-sm focus:outline-none transition-none"  wire:model.defer='rangeAuditor' placeholder="Please select">
-
-        </div>
+<div class="dark:text-slate-400">
+    {{-- Section header with date badge --}}
+    <div class="mb-4">
+        <div class="text-label text-stone-600 dark:text-slate-400">My Audits</div>
     </div>
 
     <div wire:loading.delay class="w-full bg-stone-900 dark:bg-slate-200 h-0.5 animate-pulse rounded-sm mb-2"></div>
 
-    <div class="max-w-7xl mx-auto">
-        <div class="">
-            <div class="overflow-x-auto">
-    <table class="w-full border-collapse">
-        <thead class="text-xs">
-            <tr>
-                {{-- Sticky first column --}}
-                <th class="sticky left-0 bg-stone-100 dark:bg-slate-800 text-left px-3 py-2.5 text-label text-stone-500 dark:text-slate-400 z-10 border-b border-stone-200 dark:border-slate-700">
-                    Auditor
-                </th>
+    {{-- One row per day, newest first --}}
+    <div class="border border-stone-200 dark:border-slate-700 rounded-sm">
+        <div class="flex items-center gap-3 px-3 py-2 bg-stone-100 dark:bg-slate-800 border-b border-stone-200 dark:border-slate-700 text-label text-stone-500 dark:text-slate-400">
+            <span class="flex-1">Date</span>
+            <span class="w-24 shrink-0 text-right">Alerts audited</span>
+        </div>
 
-                {{-- Loop dynamic date columns --}}
-                @if (!empty($results))
-                    @foreach (array_keys($results[array_key_first($results)]) as $key)
-                        @if ($key !== 'auditorName' and $key !== 'auditorId')
-                            <th class="border-b border-stone-300 dark:border-slate-700 px-4 py-2 text-xs text-center whitespace-nowrap">
-                                {{ $key }}
-                            </th>
-                        @endif
-                    @endforeach
-                @endif
-            </tr>
-        </thead>
-        <tbody>
-            @foreach ($results as $row)
-                <tr class="hover:bg-stone-50 dark:hover:bg-slate-800 transition-none">
-                    {{-- Sticky first column --}}
-                    <td class="sticky left-0 bg-white dark:bg-slate-900 px-3 py-2.5 z-10 whitespace-nowrap border-b border-stone-200 dark:border-slate-700">
-                        <a href="{{ url('/auditor-alert/'.$row['auditorId']) }}">{{ $row['auditorName'] }}</a>
-                    </td>
-
-                    {{-- Show counts per date --}}
-                    @foreach ($row as $key => $val)
-                        @if ($key !== 'auditorName' and $key !== 'auditorId')
-                            {{-- Display 0 if no data for that date --}}
-                            <td class="border-b dark:bg-slate-700 border-b border-stone-300 dark:border-slate-700 dark:border-slate-800 border-stone-300 dark:border-slate-700 px-4 py-2 text-xs text-center">
-                                {{ $val }}
-                            </td>
-                        @endif
-                    @endforeach
-                </tr>
-            @endforeach
-        </tbody>
-    </table>
-</div>
-
-
-
+        <div class="divide-y divide-stone-200 dark:divide-slate-700 max-h-96 overflow-y-auto no-scrollbar">
+            @forelse ($results as $date => $count)
+                <div class="flex items-center gap-3 px-3 py-2 hover:bg-stone-50 dark:hover:bg-slate-800/60">
+                    <span class="flex-1 text-sm tabular-nums {{ $count ? 'text-stone-700 dark:text-slate-300' : 'text-stone-400 dark:text-slate-600' }}">
+                        {{ \Carbon\Carbon::parse($date)->format('d M Y') }}
+                    </span>
+                    <span class="w-24 shrink-0 text-right text-sm font-semibold tabular-nums {{ $count ? 'text-stone-900 dark:text-slate-100' : 'text-stone-300 dark:text-slate-600' }}">{{ $count }}</span>
+                </div>
+            @empty
+                <div class="px-3 py-10 text-center">
+                    <div class="text-sm text-stone-500 dark:text-slate-400">No audits in this range</div>
+                    <div class="text-xs text-stone-400 dark:text-slate-500 mt-1">Drag the slider below to widen the range.</div>
+                </div>
+            @endforelse
         </div>
     </div>
-
 </div>

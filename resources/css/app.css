@@ -11,6 +11,19 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+[x-cloak] {
+  display: none !important;
+}
+
+/* still scrollable (drag, wheel, trackpad) — just no visible bar eating layout */
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 .selection-bg ::selection {
   background-color: #79ffe1;
   color: #0f172a;

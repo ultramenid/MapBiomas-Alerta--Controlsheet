@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="bg-stone-50 dark:bg-slate-900">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -55,12 +55,12 @@
     @stack('vendor-styles')
     @stack('vendor-scripts')
 </head>
-<body class="dark:selection-bg selection-bg font-sans dark:bg-slate-900 bg-stone-50">
+<body class="dark:selection-bg selection-bg font-sans">
     @yield('content')
 
     <x-toaster-hub />
 
-    <img src="{{ asset('assets/watermark.png') }}" alt="" class="fixed sm:block hidden sm:-bottom-1/6 sm:-left-1/6 rotate-90 z-0 pointer-events-none">
+    <img src="{{ asset('assets/watermark.png') }}" alt="" class="fixed sm:block hidden sm:-bottom-1/6 sm:-left-1/6 rotate-90 -z-10 pointer-events-none">
     @livewireScripts
     @stack('scripts')
 
