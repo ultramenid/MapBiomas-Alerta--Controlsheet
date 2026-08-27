@@ -52,14 +52,19 @@ class AuditorSummaryComponent extends Component
     #[On('brush-changed')]
     public function refreshAuditorSummary($start = null, $end = null)
     {
-        // brush-changed event carries the chart's selected date range;
-        // echo events just invalidate the cache and re-render
+        // brush-changed carries the chart's selected date range; echo events
+        // arrive with no start/end. Only brush-changed moves the range.
         if ($start && $end) {
             $this->startDate = $start;
             $this->endDate = $end;
             $this->rangeAuditor = $start . ' to ' . $end;
-            $this->forgetCached($this->cacheKey());
         }
+
+        // Invalidate unconditionally: the echo pushes must still bust the 60s
+        // cache so the card reflects new audits immediately, not at TTL. Note
+        // cacheKey() is computed after the if-block above, so for brush-changed
+        // it forgets the NEW range key; render() then recomputes via filter().
+        $this->forgetCached($this->cacheKey());
     }
 
     /** One row per auditor: name, id, per-day counts, total. */

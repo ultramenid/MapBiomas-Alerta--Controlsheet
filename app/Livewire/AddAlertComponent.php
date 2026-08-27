@@ -2,6 +2,8 @@
 
 namespace App\Livewire;
 
+use App\Events\UpdateAnalis;
+use App\Events\UpdateAuditor;
 use App\Livewire\Concerns\CachesAggregates;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -154,6 +156,10 @@ class AddAlertComponent extends Component
                 'ngapain' =>  ($this->alertStatus == 'rejected') ? 'Reject' : 'Insert',
                 'created_at' => Carbon::now('Asia/Jakarta')
             ]);
+            // notify dashboard cards so the new Insert/Reject shows immediately
+            // instead of waiting up to the 60s aggregate cache TTL
+            event(new UpdateAnalis);
+            event(new UpdateAuditor);
             redirect()->to('/dashboard');
 
         }
