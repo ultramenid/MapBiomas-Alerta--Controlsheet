@@ -1,4 +1,4 @@
-<div class="dark:text-slate-400">
+<div x-data="{ all: false }" class="dark:text-slate-400">
     {{-- Section header --}}
     <div class="flex flex-wrap items-center gap-x-4 gap-y-2 mb-4">
         <div class="text-label text-stone-600 dark:text-slate-400">Alert by Auditor</div>
@@ -36,9 +36,10 @@
 
     {{-- Per-day matrix: auditor and total stay pinned, the days scroll between them --}}
     <div wire:loading.remove.delay>
-    {{-- No vertical cap: let the table show all rows at natural height so a short
-         list never forces a cramped hidden-scrollbar scroll. Horizontal scroll
-         (hidden) stays for the day columns; the sticky name/total columns pin. --}}
+    {{-- First 5 rows show by default; "Show all/less" reveals the rest. Slicing
+         rows (not a height cap) avoids a cramped scroll and keeps the side-by-side
+         auditor/validator cards the same height. Horizontal scroll (hidden) stays
+         for the day columns; the sticky name/total columns pin. --}}
     <div class="overflow-auto no-scrollbar border border-stone-200 dark:border-slate-700 rounded-sm">
         <table class="w-full min-w-max text-xs border-collapse">
             <thead class="sticky top-0 z-30">
@@ -68,7 +69,7 @@
             </thead>
             <tbody class="divide-y divide-stone-200 dark:divide-slate-700">
                 @forelse ($results as $row)
-                    <tr class="group hover:bg-stone-50 dark:hover:bg-slate-800/60">
+                    <tr x-show="all || {{ $loop->index }} < 5" class="group hover:bg-stone-50 dark:hover:bg-slate-800/60">
                         <td class="w-52 min-w-52 sticky left-0 z-10 bg-white dark:bg-slate-900 group-hover:bg-stone-50 dark:group-hover:bg-slate-800 px-3 py-2 align-middle border-r border-stone-200 dark:border-slate-700">
                             <a href="{{ url('/auditor-alert/'.$row['auditorId']) }}" class="block truncate font-medium text-green-700 dark:text-green-400 hover:underline">
                                 {{ $row['auditorName'] }}
@@ -97,5 +98,12 @@
             </tbody>
         </table>
     </div>
+    @if (count($results) > 5)
+        <button type="button" @click="all = !all"
+                class="mt-2 text-xs text-stone-500 dark:text-slate-400 hover:text-stone-800 dark:hover:text-slate-200 cursor-pointer">
+            <span x-show="!all">Show all {{ count($results) }} auditors</span>
+            <span x-show="all" x-cloak>Show less</span>
+        </button>
+    @endif
     </div>{{-- /wire:loading.remove --}}
 </div>
