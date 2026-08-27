@@ -41,7 +41,7 @@
         </div>
         <div class="sm:w-6/12 w-full">
             <h1 class="text-label text-stone-600 dark:text-slate-400 mb-1">Detection Date</h1>
-            <div class="w-full" wire:ignore x-init="flatpickr('#tglkejadian', { enableTime: false,dateFormat: 'Y-m-d', disableMobile: 'true'});">
+            <div class="w-full" wire:ignore x-init="whenLib('flatpickr', '{{ asset('assets/vendor/flatpickr/flatpickr.min.js') }}', function () { flatpickr('#tglkejadian', { enableTime: false,dateFormat: 'Y-m-d', disableMobile: 'true'}); })">
                 <input id="tglkejadian" type="text" class="bg-white dark:bg-slate-800 border border-stone-300 dark:border-slate-600 text-stone-900 dark:text-slate-100 w-full rounded-sm px-3 py-2 text-sm focus:outline-none transition-none"  wire:model.defer='detectionDate' placeholder="Please select ">
             </div>
         </div>
@@ -88,6 +88,9 @@
                 editor: null,
                 initEditor() {
                     const self = this;
+                    // whenLib: under wire:navigate the head script may not be
+                    // loaded yet when x-init runs — wait for it, then init.
+                    whenLib('tinymce', '{{ asset('tinymce/tinymce.min.js') }}', function () {
                     tinymce.init({
                         selector: '#alertNote',
                         height: '30vh',
@@ -128,9 +131,10 @@
                             });
                         }
                     });
+                    });
                 },
                 reinitEditor() {
-                    if (this.editor) {
+                    if (window.tinymce && this.editor) {
                         tinymce.remove('#alertNote');
                         this.editor = null;
                     }
