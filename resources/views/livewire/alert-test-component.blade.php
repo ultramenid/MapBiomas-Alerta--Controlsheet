@@ -48,7 +48,7 @@
 
 
     <div class="mt-4">
-        <div wire:loading.delay.200ms wire:target="searchId, selectStatus, yearAlert, sortingField, previousPage, nextPage, gotoPage" class="flex w-full justify-center text-center bg-red-400 dark:bg-red-900 py-2 animate-pulse text-xs px-4 text-white rounded-sm">
+        <div wire:loading.delay wire:target="searchId, selectStatus, yearAlert, sortingField, previousPage, nextPage, gotoPage" class="flex w-full justify-center text-center bg-red-400 dark:bg-red-900 py-2 animate-pulse text-xs px-4 text-white rounded-sm">
             Loading...
         </div>
         <table class="w-full border border-stone-200 dark:border-slate-700">

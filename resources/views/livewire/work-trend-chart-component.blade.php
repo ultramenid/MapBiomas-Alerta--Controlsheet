@@ -14,7 +14,7 @@
                     <div class="flex items-baseline justify-between mb-2">
                         <span class="text-label text-stone-600 dark:text-slate-400 flex items-center gap-2">
                             <span class="inline-block size-2 rounded-full bg-stone-800 dark:bg-slate-100"></span>
-                            Auditor / day
+                            Auditor tasks / day
                         </span>
                         <span class="text-xs tabular-nums text-stone-500 dark:text-slate-400" data-total="auditor"></span>
                     </div>
@@ -24,7 +24,7 @@
                     <div class="flex items-baseline justify-between mb-2">
                         <span class="text-label text-stone-600 dark:text-slate-400 flex items-center gap-2">
                             <span class="inline-block size-2 rounded-full bg-[#3F72AF] dark:bg-[#7BA3EE]"></span>
-                            Validator / day
+                            Validator tasks / day
                         </span>
                         <span class="text-xs tabular-nums text-stone-500 dark:text-slate-400" data-total="validator"></span>
                     </div>

@@ -10,7 +10,7 @@
                 <div x-show="open" x-transition:enter="ease-out duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100" x-transition:leave="ease-in duration-150" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95" @click.stop class="relative w-full sm:max-w-5xl bg-white dark:bg-slate-800 rounded-sm shadow-xl">
 
                     {{-- Loading bar --}}
-                    <div wire:loading.delay.200ms wire:target="auditing" class="absolute top-0 left-0 right-0 bg-red-400 dark:bg-red-900 py-1 animate-pulse text-xs text-white text-center rounded-t-sm">loading...</div>
+                    <div wire:loading.delay wire:target="auditing" class="absolute top-0 left-0 right-0 bg-red-400 dark:bg-red-900 py-1 animate-pulse text-xs text-white text-center rounded-t-sm">loading...</div>
 
                     <div class="px-5 py-5 max-h-[85vh] overflow-y-auto">
                         {{-- Header --}}
