@@ -155,8 +155,8 @@
                 editor: null,
                 initEditor() {
                     const self = this;
-                    // whenLib: under wire:navigate the head script may not be
-                    // loaded yet when x-init runs — wait for it, then init.
+                    // whenLib: no-op safety net — waits for the lib if its script
+                    // tag is ever missing or slow, inits immediately otherwise.
                     whenLib('tinymce', '{{ asset('tinymce/tinymce.min.js') }}', function () {
                     tinymce.init({
                         selector: '#alertNote',

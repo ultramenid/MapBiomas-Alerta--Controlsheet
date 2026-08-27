@@ -31,8 +31,7 @@
     </script>
     <script>
     // Ensures a vendor lib (tinymce/flatpickr) is present before running an init
-    // callback; needed after wire:navigate swaps the page when the lib script
-    // hasn't been loaded yet on the previous page.
+    // callback; passes through instantly when the script is already loaded.
     window.whenLib = (function () {
         var pending = {};
         return function (name, url, cb) {
