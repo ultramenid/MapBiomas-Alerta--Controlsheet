@@ -11,6 +11,26 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* Cursor-style warm dark neutral ramp. slate-900 is the app's dark page
+   background (full black) for maximum text contrast; cards/inputs float a
+   step lighter so surfaces still read as layers. Text-side shades (100-500)
+   sit lighter and less khaki than a strict warm mirror of Tailwind's slate
+   so body/muted text keeps contrast on black. Safe to remap globally: every
+   slate class in the codebase is dark:-only. */
+@theme {
+    --color-slate-50: #faf9f4;
+    --color-slate-100: #f2efe6;
+    --color-slate-200: #e8e2d2;
+    --color-slate-300: #c9c1ab;
+    --color-slate-400: #aaa28b;
+    --color-slate-500: #857d68;
+    --color-slate-600: #3a3220;
+    --color-slate-700: #1f1b10;
+    --color-slate-800: #0d0b06;
+    --color-slate-900: #000000;
+    --color-slate-950: #000000;
+}
+
 [x-cloak] {
   display: none !important;
 }
@@ -100,7 +120,7 @@
 }
 
 .dark .glass {
-    background: rgba(15, 23, 42, 0.75);
+    background: rgba(0, 0, 0, 0.75);
     border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
@@ -113,7 +133,7 @@
 }
 
 .dark .glass-dark-accent {
-    background: rgba(15, 23, 42, 0.9);
+    background: rgba(0, 0, 0, 0.9);
     border: 1px solid rgba(255, 255, 255, 0.12);
 }
 
@@ -123,13 +143,13 @@
         background: rgba(255, 255, 255, 0.9);
     }
     .dark .glass {
-        background: rgba(15, 23, 42, 0.95);
+        background: rgba(0, 0, 0, 0.95);
     }
     .glass-dark-accent {
         background: rgba(28, 25, 23, 0.95);
     }
     .dark .glass-dark-accent {
-        background: rgba(15, 23, 42, 0.95);
+        background: rgba(0, 0, 0, 0.95);
     }
 }
 
@@ -184,7 +204,7 @@
 }
 
 .dark .glass-sticky {
-    background: #0F172A;
+    background: #000000;
     border-bottom: 1px solid rgba(255, 255, 255, 0.10);
     box-shadow: 0 2px 8px -4px rgba(0, 0, 0, 0.5);
 }
@@ -216,4 +236,120 @@
 
 .dark .st-seg {
     box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14);
+}
+
+/* TinyMCE's oxide chrome — toolbar, status bar, outer border — is rendered outside
+   the content iframe, so the editor's content_style can't reach it. Keep it on the
+   same surface as the dashboard (html.bg-stone-50 / dark:bg-slate-900). !important
+   because the skin stylesheet is injected into <head> at runtime, after this file,
+   with equal-or-higher specificity. */
+.tox.tox-tinymce {
+  border-color: var(--color-stone-300) !important;
+}
+.tox .tox-editor-header,
+.tox .tox-toolbar,
+.tox .tox-toolbar__overflow,
+.tox .tox-toolbar__primary,
+.tox .tox-statusbar {
+  background-color: var(--color-stone-50) !important;
+  background-image: none !important;
+}
+.dark .tox.tox-tinymce {
+  border-color: var(--color-slate-600) !important;
+}
+.dark .tox .tox-editor-header,
+.dark .tox .tox-toolbar,
+.dark .tox .tox-toolbar__overflow,
+.dark .tox .tox-toolbar__primary,
+.dark .tox .tox-statusbar {
+  background-color: var(--color-slate-900) !important;
+}
+.dark .tox .tox-editor-header,
+.dark .tox .tox-statusbar {
+  border-color: var(--color-slate-600) !important;
+}
+
+/* Toolbar buttons ship their own #222f3e chip background; let them sit flat on
+   the surface above and only paint on hover/active. */
+.tox .tox-tbtn {
+  background: transparent !important;
+}
+.tox .tox-tbtn:hover,
+.tox .tox-tbtn--enabled {
+  background: var(--color-stone-200) !important;
+}
+.dark .tox .tox-tbtn:hover,
+.dark .tox .tox-tbtn--enabled {
+  background: var(--color-slate-700) !important;
+}
+
+/* Same for the dialog chrome (file manager popup, fullscreen prompts). The
+   dialog's own iframe content is a separate app and styles itself. */
+.tox .tox-dialog,
+.tox .tox-dialog__header,
+.tox .tox-dialog__footer {
+  background-color: var(--color-stone-50) !important;
+}
+.dark .tox .tox-dialog,
+.dark .tox .tox-dialog__header,
+.dark .tox .tox-dialog__footer {
+  background-color: var(--color-slate-900) !important;
+}
+.dark .tox .tox-dialog {
+  border: 1px solid var(--color-slate-600) !important;
+}
+
+/* Dialog form controls and buttons: oxide ships its own navy fields and a blue
+   primary. Match the app's inputs (bg + stone-300/slate-600 border) and its
+   stone-900/slate-200 primary button. */
+.tox .tox-textfield,
+.tox .tox-textarea,
+.tox .tox-toolbar-textfield,
+.tox .tox-selectfield select,
+.tox .tox-listboxfield .tox-listbox--select {
+  background-color: var(--color-stone-50) !important;
+  border-color: var(--color-stone-300) !important;
+  color: var(--color-stone-900) !important;
+  box-shadow: none !important;
+}
+.dark .tox .tox-textfield,
+.dark .tox .tox-textarea,
+.dark .tox .tox-toolbar-textfield,
+.dark .tox .tox-selectfield select,
+.dark .tox .tox-listboxfield .tox-listbox--select {
+  background-color: var(--color-slate-900) !important;
+  border-color: var(--color-slate-600) !important;
+  color: var(--color-slate-100) !important;
+}
+
+.tox .tox-button {
+  background-color: var(--color-stone-900) !important;
+  border-color: var(--color-stone-900) !important;
+  color: #fff !important;
+  border-radius: 2px !important;
+}
+.dark .tox .tox-button {
+  background-color: var(--color-slate-200) !important;
+  border-color: var(--color-slate-200) !important;
+  color: var(--color-stone-900) !important;
+}
+.tox .tox-button--secondary,
+.tox .tox-button--icon {
+  background-color: transparent !important;
+  border-color: var(--color-stone-300) !important;
+  color: var(--color-stone-900) !important;
+}
+.dark .tox .tox-button--secondary,
+.dark .tox .tox-button--icon {
+  border-color: var(--color-slate-600) !important;
+  color: var(--color-slate-200) !important;
+}
+/* Icon-only buttons (dialog close, browse) stay flat. */
+.tox .tox-button--naked {
+  background-color: transparent !important;
+  border-color: transparent !important;
+  color: var(--color-stone-900) !important;
+}
+.dark .tox .tox-button--naked {
+  color: var(--color-slate-200) !important;
 }

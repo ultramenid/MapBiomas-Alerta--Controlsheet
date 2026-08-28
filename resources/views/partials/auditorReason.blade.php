@@ -1,4 +1,7 @@
-<div x-data="reasonModal()" x-effect="document.body.classList.toggle('overflow-hidden', open)" @keydown.escape.window="if(open) close()">
+{{-- x-data + @open-…-modal.window resolve from Alpine.data registered in
+     resources/js/modal-components.js; see that file for why this must not be
+     an inline <script> function (wire:navigate breaks those). --}}
+<div x-data="reasonModal" @open-reason-modal.window="openReason($event.detail.id)" x-effect="document.body.classList.toggle('overflow-hidden', open)" @keydown.escape.window="if(open) close()">
     <template x-teleport="body">
         <div x-show="open" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4">
             {{-- Backdrop --}}
@@ -45,55 +48,3 @@
         </div>
     </template>
 </div>
-
-<script>
-function reasonModal() {
-    return {
-        open: false,
-        loading: false,
-        alertId: '',
-        alertStatus: '',
-        alertReason: '',
-
-        init() {
-            window.addEventListener('open-reason-modal', (e) => {
-                const id = e.detail.id;
-                this.open = true;
-                this.loading = true;
-
-                fetch(`/rest/fix/${id}`)
-                    .then(res => res.json())
-                    .then(data => {
-                        this.alertId = data.alertId;
-                        this.alertStatus = data.auditorStatus;
-                        this.alertReason = data.auditorReason ?? '-';
-                        this.$wire.set('alertId', this.alertId);
-                        this.$wire.set('alertStatus', this.alertStatus);
-                        this.$wire.set('alertReason', this.alertReason);
-                    })
-                    .catch(() => {
-                        this.alertReason = 'Failed to load';
-                    })
-                    .finally(() => {
-                        this.loading = false;
-                    });
-            });
-        },
-
-        close() {
-            this.alertId = null;
-            this.alertReason = null;
-            this.$wire.set('alertId', null);
-            this.$wire.set('alertReason', null);
-            this.open = false;
-        },
-
-        fixAlert() {
-            const id = this.alertId;
-            if (!id) return;
-            this.$wire.fixAlert(id);
-            this.close();
-        }
-    }
-}
-</script>

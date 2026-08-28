@@ -97,9 +97,12 @@
                                             'Reject' => 'Rejected',
                                             'approved' => 'Approved',
                                         ];
-                                        // bars are a share of the task total above them, not of the biggest
-                                        // category — otherwise the largest one always reads as a full bar
-                                        $den = max(1, (int) ($row['grandTotal'] ?? 0));
+                                        // an alert can pass through several actions, so the
+                                        // category counts sum above the task total — each
+                                        // row's share must be of the action total below,
+                                        // not of tasks, or the rows add up past 100%
+                                        $actionTotal = array_sum($row['category'] ?? []);
+                                        $den = max(1, (int) $actionTotal);
                                         $rate = ($row['grandTotal'] ?? 0) ? round(($row['grandApproved'] ?? 0) / $row['grandTotal'] * 100) : 0;
                                     @endphp
 
@@ -135,14 +138,14 @@
                                             {{-- column captions, aligned to the rows below --}}
                                             <div class="flex items-center gap-3 pb-1.5 mb-1 border-b border-stone-200 dark:border-slate-700 text-[10px] uppercase tracking-wide text-stone-400 dark:text-slate-500">
                                                 <span class="w-24 shrink-0">Action</span>
-                                                <span class="flex-1 min-w-0 normal-case tracking-normal text-stone-400 dark:text-slate-500">share of {{ number_format($row['grandTotal'] ?? 0) }} tasks</span>
+                                                <span class="flex-1 min-w-0 normal-case tracking-normal text-stone-400 dark:text-slate-500">share of {{ number_format($actionTotal) }} alerts</span>
                                                 <span class="w-8 shrink-0 text-right">%</span>
                                                 <span class="w-10 shrink-0 text-right">Alerts</span>
                                             </div>
                                             @foreach ($cats as $key => $label)
                                                 @php
                                                     $n = (int) ($row['category'][$key] ?? 0);
-                                                    $pct = min(100, round($n / $den * 100));
+                                                    $pct = round($n / $den * 100);
                                                 @endphp
                                                 <div class="flex items-center gap-3 text-xs">
                                                     <span class="w-24 shrink-0 {{ $n ? 'text-stone-600 dark:text-slate-300' : 'text-stone-400 dark:text-slate-600' }}">{{ $label }}</span>

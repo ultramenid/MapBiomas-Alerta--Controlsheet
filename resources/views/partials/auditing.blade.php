@@ -1,4 +1,8 @@
-<div x-data="auditModal()" x-effect="document.body.classList.toggle('overflow-hidden', open)" @keydown.escape.window="if(open) close()" @close-audit-modal.window="if(open) close()">
+{{-- x-data + @open-…-modal.window resolve from Alpine.data registered in
+     resources/js/modal-components.js; see that file for why this must not be
+     an inline <script> function (wire:navigate breaks those). The endpoint
+     rides on a data attribute instead of the old script-side AUDIT_ENDPOINT. --}}
+<div x-data="auditModal" data-audit-endpoint="{{ $auditEndpoint ?? '/rest/audit' }}" @open-audit-modal.window="openAudit($event.detail.id)" x-effect="document.body.classList.toggle('overflow-hidden', open)" @keydown.escape.window="if(open) close()" @close-audit-modal.window="if(open) close()">
     <template x-teleport="body">
         <div x-show="open" x-cloak class="fixed inset-0 z-50 overflow-y-auto">
             {{-- Backdrop --}}
@@ -53,7 +57,9 @@
                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="absolute pointer-events-none right-4 top-9 size-5 text-stone-500 dark:text-slate-400">
                                         <path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" />
                                     </svg>
-                                    <select wire:ignore wire:model='alertStatus' class="w-full appearance-none border border-stone-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-stone-900 dark:text-slate-100 px-4 py-2.5 text-sm rounded-sm focus:outline-none transition-none">
+                                    {{-- wire:ignore keeps the morph from resetting the picked option; the
+                                         value is pushed from JS in auditModal.fill() on every open. --}}
+                                    <select id="alertStatusSelect" wire:ignore wire:model='alertStatus' class="w-full appearance-none border border-stone-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-stone-900 dark:text-slate-100 px-4 py-2.5 text-sm rounded-sm focus:outline-none transition-none">
                                         <option value="pre-approved">Pre-Approved</option>
                                         <option value="refined">Refined</option>
                                         <option value="error">Error</option>
@@ -72,7 +78,8 @@
                                         x-data="{
                                             darkMode: document.documentElement.classList.contains('dark'),
                                             editor: null,
-                                            initEditor() {
+                                            observer: null,
+                                            initEditor(content) {
                                                 const self = this;
                                                 whenLib('tinymce', '{{ asset('tinymce/tinymce.min.js') }}', function () {
                                                 tinymce.init({
@@ -87,10 +94,12 @@
                                                     highlight_on_focus: false,
                                                     skin: self.darkMode ? 'oxide-dark' : 'oxide',
                                                     content_css: self.darkMode ? 'dark' : 'default',
-                                                    content_style: self.darkMode
-                                                        ? 'body { background-color: #1e293b; color: #cbd5e1; font-size: 14px; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }'
-                                                        : 'body { background-color: #f4f5f7; font-size: 14px; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }',
-                                                    plugins: 'lists advlist autolink link image charmap anchor pagebreak searchreplace wordcount visualblocks visualchars code fullscreen insertdatetime media nonbreaking table emoticons help',
+                                                    // Match the dashboard surface (html.bg-stone-50 / dark:bg-slate-900) instead
+                                                    // of hardcoding a shade that drifts when the theme ramp changes.
+                                                    content_style: 'body { background-color: ' + getComputedStyle(document.documentElement).backgroundColor
+                                                        + '; color: ' + (self.darkMode ? '#c9c1ab' : '#1c1917')
+                                                        + '; font-size: 14px; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }',
+                                                    plugins: 'lists autolink link image fullscreen',
                                                     toolbar: 'fullscreen image bullist numlist |',
                                                     menubar: false,
                                                     file_picker_callback: function(callback, value, meta) {
@@ -111,31 +120,28 @@
                                                     setup: function(editor) {
                                                         self.editor = editor;
                                                         editor.on('init', function() {
-                                                            setTimeout(function() {
-                                                                const content = document.getElementById('alertReason').dataset.content;
-                                                                if (content) editor.setContent(content);
-                                                            }, 300);
-                                                        });
-                                                        editor.on('change blur', function() {
-                                                            @this.set('alertReason', editor.getContent());
+                                                            editor.setContent(content ?? document.getElementById('alertReason').dataset.content ?? '');
                                                         });
                                                     }
                                                 });
                                                 });
                                             },
                                             reinitEditor() {
-                                                if (this.editor) {
-                                                    whenLib('tinymce', '{{ asset('tinymce/tinymce.min.js') }}', function () {
-                                                        tinymce.remove('#alertReason');
-                                                    });
-                                                    this.editor = null;
-                                                }
-                                                this.$nextTick(() => this.initEditor());
+                                                if (!this.editor) return;
+                                                const content = this.editor.getContent();
+                                                tinymce.remove('#alertReason');
+                                                this.editor = null;
+                                                this.$nextTick(() => this.initEditor(content));
+                                            },
+                                            destroy() {
+                                                if (this.observer) this.observer.disconnect();
+                                                if (window.tinymce) tinymce.remove('#alertReason');
+                                                this.editor = null;
                                             }
                                         }"
                                         x-init="
                                             initEditor();
-                                            const observer = new MutationObserver(() => {
+                                            observer = new MutationObserver(() => {
                                                 const isDark = document.documentElement.classList.contains('dark');
                                                 if (isDark !== darkMode) {
                                                     darkMode = isDark;
@@ -147,7 +153,9 @@
                                         wire:ignore
                                         class="w-full"
                                     >
-                                        <textarea id="alertReason" name="alertReason" rows="1" required data-content="{{ $alertReason }}"></textarea>
+                                        {{-- data-content is the handoff slot: auditModal.fill() writes the fetched
+                                             reason here (and calls setContent when the editor already exists). --}}
+                                        <textarea id="alertReason" name="alertReason" rows="1" data-content="{{ $alertReason }}"></textarea>
                                     </div>
                                 </div>
 
@@ -169,55 +177,3 @@
         </div>
     </template>
 </div>
-
-<script>
-// var (not const): Livewire re-executes this script on every morph, and a
-// re-declared const would throw; auditModal() below is fine to redeclare.
-var AUDIT_ENDPOINT = '{{ $auditEndpoint ?? "/rest/audit" }}';
-
-function auditModal() {
-    return {
-        open: false,
-        loading: false,
-        alertId: '',
-
-        init() {
-            window.addEventListener('open-audit-modal', (e) => {
-                const id = e.detail.id;
-                this.open = true;
-                this.loading = true;
-
-                fetch(`${AUDIT_ENDPOINT}/${id}`)
-                    .then(res => res.json())
-                    .then(data => this.fill(data))
-                    .catch(() => { this.alertReason = 'Failed to load'; })
-                    .finally(() => { this.loading = false; });
-            });
-        },
-
-        fill(data) {
-            this.alertId = data.alertId;
-            this.$wire.set('alertId', data.alertId);
-            this.$wire.set('alertStatus', data.auditorStatus);
-            this.$wire.set('statusAlert', data.alertStatus);
-            this.$wire.set('alertReason', data.auditorReason ?? null);
-            this.$wire.set('observation', data.observation);
-            this.$wire.set('analis', data.name);
-            this.$wire.set('alertNote', data.alertNote ?? null);
-        },
-
-        close() {
-            this.$wire.set('alertId', null);
-            this.$wire.set('observation', null);
-            this.$wire.set('analis', null);
-            this.open = false;
-        },
-
-        auditAlert() {
-            const id = this.alertId;
-            if (!id) return;
-            this.$wire.auditing(id);
-        }
-    }
-}
-</script>

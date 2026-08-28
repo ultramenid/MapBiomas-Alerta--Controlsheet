@@ -1,7 +1,8 @@
 <div class="w-full max-w-md">
     <div class="glass rounded-sm p-8 sm:p-10">
         <div class="text-center mb-8">
-            <img src="{{ asset('assets/logo-alerta.png') }}" alt="Alerta" class="w-36 mx-auto mb-4 dark:brightness-0 dark:invert">
+            <img src="{{ asset('assets/logo-alerta.png') }}" alt="Alerta" class="w-36 mx-auto mb-4 dark:hidden">
+            <img src="{{ asset('assets/logo-alerta-dark.png') }}" alt="Alerta" class="w-36 mx-auto mb-4 hidden dark:block">
         </div>
 
         <form wire:submit.prevent="login" class="space-y-5">
