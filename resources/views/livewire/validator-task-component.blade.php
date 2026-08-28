@@ -72,9 +72,17 @@
             </thead>
 
             @forelse ($report['data'] as $row)
-                <tbody x-data="{ open: false }" x-show="all || {{ $loop->index }} < 5" class="border-t border-stone-200 dark:border-slate-700">
-                    <tr @click="open = true" class="group cursor-pointer hover:bg-stone-50 dark:hover:bg-slate-800/60">
-                        <td class="w-52 min-w-52 sticky left-0 z-10 bg-white dark:bg-slate-900 group-hover:bg-stone-50 dark:group-hover:bg-slate-800 px-3 py-2 align-middle border-r border-stone-200 dark:border-slate-700">
+                {{-- wire:key lets the morph match rows by validator id when the resort
+                     shuffles them, so a row's tbody (and its teleported modal) is moved
+                     instead of destroyed and re-created — a re-created tbody mid-morph
+                     can orphan the visible clone and the popup can no longer be closed. --}}
+                <tbody wire:key="vrow-{{ $row['auditorId'] }}" x-data="{ open: false }" x-show="all || {{ $loop->index }} < 5"
+                       @brush-changed.window="open = false" class="border-t border-stone-200 dark:border-slate-700">
+                    <tr class="group hover:bg-stone-50 dark:hover:bg-slate-800/60">
+                        {{-- only the name opens the breakdown — a click on a day cell is
+                             almost never an intent to open a popup --}}
+                        <td @click="open = true" title="Show action breakdown"
+                            class="w-52 min-w-52 sticky left-0 z-10 bg-white dark:bg-slate-900 group-hover:bg-stone-50 dark:group-hover:bg-slate-800 px-3 py-2 align-middle border-r border-stone-200 dark:border-slate-700 cursor-pointer">
                             <div class="flex items-center gap-1.5 whitespace-nowrap font-medium text-green-700 dark:text-green-400">
                                 <svg class="w-3.5 h-3.5 shrink-0 text-stone-300 dark:text-slate-600 group-hover:text-stone-500 dark:group-hover:text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4h4M16 4h4v4M20 16v4h-4M8 20H4v-4" />
@@ -98,12 +106,13 @@
                                             'approved' => 'Approved',
                                         ];
                                         // an alert can pass through several actions, so the
-                                        // category counts sum above the task total — each
-                                        // row's share must be of the action total below,
-                                        // not of tasks, or the rows add up past 100%
+                                        // category counts sum above the task total — shares
+                                        // (each row and the header approved %) must be of
+                                        // the action total below, not of tasks, or the rows
+                                        // add up past 100%
                                         $actionTotal = array_sum($row['category'] ?? []);
                                         $den = max(1, (int) $actionTotal);
-                                        $rate = ($row['grandTotal'] ?? 0) ? round(($row['grandApproved'] ?? 0) / $row['grandTotal'] * 100) : 0;
+                                        $rate = round(($row['grandApproved'] ?? 0) / $den * 100);
                                     @endphp
 
                                     <div x-show="open" x-transition
