@@ -38,6 +38,24 @@ class AlertLookupComponent extends Component
             return;
         }
 
+        // alerts.alertId is int(11). MySQL casts a non-numeric needle to 0 for the
+        // comparison, so "qweqwe" silently matches whatever row has alertId = 0 and
+        // the headline then shows the typed text as if it were that alert's ID.
+        // Alert IDs are digits — anything else cannot match, so say so without asking
+        // the database.
+        if (! ctype_digit($code)) {
+            $this->lookup = [
+                'code' => $code,
+                'auditor' => null,
+                'validator' => null,
+                'status' => null,
+                'alert' => null,
+                'history' => [],
+                'found' => false,
+            ];
+            return;
+        }
+
         // ngapain='auditing' only — auditorlog also stores validator actions
         // (Insert/Reject/refined/reexportimage/reclassification), so without
         // this filter the latest row is often the validator, not the auditor.
