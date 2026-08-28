@@ -37,7 +37,7 @@
                     <div class="flex items-baseline justify-between mb-2">
                         <span class="text-label text-stone-600 dark:text-slate-400 flex items-center gap-2">
                             <span class="inline-block size-2 rounded-full @if ($role == 2) bg-[#3F72AF] dark:bg-[#7BA3EE] @else bg-stone-800 dark:bg-slate-100 @endif"></span>
-                            @if ($role == 0) Auditor tasks / day @elseif ($role == 1) My tasks / day @else My validations / day @endif
+                            @if ($role == 0) Auditor tasks / day @elseif ($role == 1) My audits / day @else My validations / day @endif
                         </span>
                         <span class="text-xs tabular-nums text-stone-500 dark:text-slate-400" data-total="{{ $role == 2 ? 'validator' : 'auditor' }}"></span>
                     </div>
