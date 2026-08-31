@@ -31,6 +31,7 @@ class CheckAlertAnalis extends Component
         'reclassification' => 'reclassification',
         'preapproved' => 'preapproved',
         'refined' => 'refined',
+        'error' => 'error',
         'total' => 'total',
     ];
 
@@ -47,7 +48,7 @@ class CheckAlertAnalis extends Component
 
     private function cacheKey(){
         // row set depends on the search term, the year/month filter and the sort
-        return 'dashboard:check-alert:v1:'.(string) $this->searchName.':'.$this->yearAlert.':'.$this->monthAlert.':'.$this->dataField.':'.$this->dataOrder;
+        return 'dashboard:check-alert:v2:'.(string) $this->searchName.':'.$this->yearAlert.':'.$this->monthAlert.':'.$this->dataField.':'.$this->dataOrder;
     }
 
     public function mount(){
@@ -98,8 +99,7 @@ class CheckAlertAnalis extends Component
                 SUM(CASE WHEN alerts.auditorStatus = 'reclassification' THEN 1 ELSE 0 END) AS reclassification,
                 SUM(CASE WHEN alerts.auditorStatus = 'pre-approved' THEN 1 ELSE 0 END) AS preapproved,
                 SUM(CASE WHEN alerts.auditorStatus = 'refined' THEN 1 ELSE 0 END) AS refined,
-                SUM(CASE WHEN alerts.platformStatus = 'sccon' THEN 1 ELSE 0 END) AS sccon,
-                SUM(CASE WHEN alerts.platformStatus = 'workspace' THEN 1 ELSE 0 END) AS workspace,
+                SUM(CASE WHEN alerts.auditorStatus = 'error' THEN 1 ELSE 0 END) AS error,
                 COUNT(alerts.alertId) AS total
             ")
             ->when(!empty($sc), function ($q) use ($sc) {

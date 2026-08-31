@@ -88,7 +88,9 @@
     @if (count($payload['dates']) > 0)
     {{-- sticky bottom: long tables push the brush off-screen, and it is the only
          way to change the range. Bleeds to the card edges over the p-5 padding. --}}
-    <div wire:ignore class="sticky bottom-0 z-40 mt-6 -mx-5 -mb-5 px-5 pt-4 pb-5 border-t border-stone-200 dark:border-slate-700 bg-white/85 dark:bg-slate-900/85 backdrop-blur-sm">
+    {{-- opaque bg, no backdrop-blur: a blurred sticky layer inside the .glass
+         card smears its own repaint down the page while scrolling (Chrome) --}}
+    <div wire:ignore class="sticky bottom-0 z-40 mt-6 -mx-5 -mb-5 px-5 pt-4 pb-5 border-t border-stone-200 dark:border-slate-700 bg-white dark:bg-slate-900">
         <div class="relative flex items-center justify-between mb-2">
             <button type="button"
                     class="inline-flex items-center gap-1.5 text-xs tabular-nums text-stone-700 dark:text-slate-300 rounded-sm border border-stone-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-2.5 py-1.5 shadow-sm hover:border-stone-400 dark:hover:border-slate-500 hover:bg-stone-50 dark:hover:bg-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-400 dark:focus-visible:ring-slate-500 cursor-pointer transition-colors"

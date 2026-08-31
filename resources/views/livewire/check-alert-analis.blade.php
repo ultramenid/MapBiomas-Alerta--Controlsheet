@@ -20,8 +20,7 @@
               <th wire:click='sortingField("duplicate")' class="cursor-pointer border-b border-stone-300 dark:border-slate-700 px-2 py-2 capitalize">Duplicate</th>
               <th wire:click='sortingField("preapproved")' class="cursor-pointer border-b border-stone-300 dark:border-slate-700 px-2 py-2 capitalize">pre-approved</th>
               <th wire:click='sortingField("refined")' class="cursor-pointer border-b border-stone-300 dark:border-slate-700 px-2 py-2 capitalize">refined</th>
-              <th class="cursor-pointer border-b border-stone-300 dark:border-slate-700 px-2 py-2 capitalize">Sccon</th>
-              <th class="cursor-pointer border-b border-stone-300 dark:border-slate-700 px-2 py-2 capitalize">Workspace</th>
+              <th wire:click='sortingField("error")' class="cursor-pointer border-b border-stone-300 dark:border-slate-700 px-2 py-2 capitalize">error</th>
               <th wire:click='sortingField("total")' class="cursor-pointer border-b border-stone-300 dark:border-slate-700 px-2 py-2 capitalize">TOTAL</th>
             </tr>
           </thead>
@@ -36,8 +35,7 @@
                     <td class="px-3 py-2.5 text-stone-700 dark:text-slate-300 border-b border-stone-200 dark:border-slate-700 bg-merah-alerta-table-full">{{$item->duplicate}}</td>
                     <td class="px-3 py-2.5 text-stone-700 dark:text-slate-300 border-b border-stone-200 dark:border-slate-700 bg-refined-alerta-table-full">{{$item->preapproved}}</td>
                     <td class="px-3 py-2.5 text-stone-700 dark:text-slate-300 border-b border-stone-200 dark:border-slate-700 bg-refined-alerta-table-full">{{$item->refined}}</td>
-                    <td class="px-3 py-2.5 text-stone-700 dark:text-slate-300 border-b border-stone-200 dark:border-slate-700 bg-gray-alerta-table-full">{{$item->sccon}}</td>
-                    <td class="px-3 py-2.5 text-stone-700 dark:text-slate-300 border-b border-stone-200 dark:border-slate-700 bg-gray-alerta-table-full">{{$item->workspace}}</td>
+                    <td class="px-3 py-2.5 text-stone-700 dark:text-slate-300 border-b border-stone-200 dark:border-slate-700 bg-gray-alerta-table-full">{{$item->error}}</td>
                     <td class="px-3 py-2.5 text-stone-700 dark:text-slate-300 border-b border-stone-200 dark:border-slate-700 bg-gray-alerta-table-full">{{$item->total}}</td>
                 </tr>
                 @empty
