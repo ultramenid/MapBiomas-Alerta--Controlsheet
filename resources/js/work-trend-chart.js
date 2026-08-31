@@ -40,6 +40,18 @@ window.WorkTrendChart = function (root) {
     const rangeTrigger = wtRoot.querySelector('[data-range-trigger]');
     const pickerInput = wtRoot.querySelector('[data-range-picker]');
     const resetBtn = wtRoot.querySelector('[data-reset]');
+
+    // An echo push changes payloadKey -> the chart div's wire:key -> Livewire
+    // replaces it and x-init runs us again. The footer below is wire:ignore'd, so
+    // brush/trigger/reset SURVIVE: without this teardown every push stacks another
+    // waveform svg in the brush and another set of live listeners on it.
+    wtRoot._wtStop?.abort();
+    wtRoot._wtPicker?.destroy();
+    const ac = new AbortController();
+    const sig = { signal: ac.signal };
+    wtRoot._wtStop = ac;
+    brush.replaceChildren();
+
     const totalEls = {};
     root.querySelectorAll('[data-total]').forEach((el) => (totalEls[el.dataset.total] = el));
 
@@ -233,7 +245,7 @@ window.WorkTrendChart = function (root) {
         brush.setPointerCapture(e.pointerId);
         e.preventDefault();
         renderAll();
-    });
+    }, sig);
 
     brush.addEventListener('pointermove', (e) => {
         if (!drag) return;
@@ -246,7 +258,7 @@ window.WorkTrendChart = function (root) {
             setEdge(drag.mode, idx);
         }
         renderAll();
-    });
+    }, sig);
 
     const endDrag = () => {
         drag = null;
@@ -255,8 +267,8 @@ window.WorkTrendChart = function (root) {
         // notify Livewire tables of the new date range
         dispatchRange();
     };
-    brush.addEventListener('pointerup', endDrag);
-    brush.addEventListener('pointercancel', endDrag);
+    brush.addEventListener('pointerup', endDrag, sig);
+    brush.addEventListener('pointercancel', endDrag, sig);
 
     function dispatchRange() {
         if (typeof Livewire === 'undefined') return;
@@ -311,6 +323,7 @@ window.WorkTrendChart = function (root) {
 
     if (pickerInput && typeof window.whenLib === 'function') {
         window.whenLib('flatpickr', wtRoot.dataset.flatpickrUrl, () => {
+            if (ac.signal.aborted) return; // a newer instance took over while the lib loaded
             picker = window.flatpickr(pickerInput, {
                 mode: 'range',
                 dateFormat: 'Y-m-d',
@@ -324,7 +337,8 @@ window.WorkTrendChart = function (root) {
                     if (dates.length === 2) applyPickerRange(dates[0], dates[1]);
                 },
             });
-            rangeTrigger.addEventListener('click', () => picker.open());
+            wtRoot._wtPicker = picker;
+            rangeTrigger.addEventListener('click', () => picker.open(), sig);
         });
     }
 
@@ -333,13 +347,14 @@ window.WorkTrendChart = function (root) {
         renderAll();
         syncPicker();
         dispatchRange();
-    });
+    }, sig);
 
     const ro = new ResizeObserver(() => {
         if (root.isConnected) renderAll();
         else ro.disconnect();
     });
     ro.observe(root);
+    ac.signal.addEventListener('abort', () => ro.disconnect());
 
     buildBrush();
     renderAll();
