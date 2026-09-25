@@ -10,7 +10,6 @@ use App\Http\Middleware\checkRole;
 use App\Http\Middleware\checkSession;
 use App\Http\Middleware\hasSession;
 use Illuminate\Support\Facades\Route;
-use SebastianBergmann\CodeCoverage\Report\Html\Dashboard;
 
 Route::middleware([checkSession::class])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index']);
@@ -50,6 +49,7 @@ Route::middleware([hasSession::class])->group(function () {
 
 
 Route::get('logout', function () {
-    session()->flush();
+    session()->invalidate();
+    session()->regenerateToken();
     return redirect('/');
 });

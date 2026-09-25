@@ -9,13 +9,15 @@ use Symfony\Component\HttpFoundation\Response;
 class checkLevel
 {
     /**
-     * Handle an incoming request.
+     * Admin only (role_id 0). Strict check: a missing role must not read as 0.
      *
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
     public function handle(Request $request, Closure $next): Response
     {
-
+        if (!session()->has('role_id') || (int) session('role_id') !== 0) {
+            return redirect('/dashboard');
+        }
         return $next($request);
     }
 }

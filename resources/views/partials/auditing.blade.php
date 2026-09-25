@@ -44,7 +44,7 @@
                                 </template>
                                 <template x-if="!loading">
                                     <div class="bg-stone-50 dark:bg-slate-900 rounded-sm p-4 border border-stone-200 dark:border-slate-600 prose prose-sm dark:text-slate-300 max-h-[50vh] overflow-y-auto">
-                                        {!! $alertNote !!}
+                                        {!! \App\Support\Html::clean($alertNote) !!}
                                     </div>
                                 </template>
                             </div>

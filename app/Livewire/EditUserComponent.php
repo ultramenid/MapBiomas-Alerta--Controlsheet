@@ -5,20 +5,21 @@ namespace App\Livewire;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
 use Masmerise\Toaster\Toaster;
 
 class EditUserComponent extends Component
 {
-    public $email, $name, $password, $contact, $level, $idUser, $is_active;
-    public $userPassword;
+    public $email, $name, $password, $contact, $level, $is_active;
+    #[Locked]
+    public $idUser;
 
     public function mount($id){
         $this->idUser = $id;
         $data = DB::table('users')->where('id', $id)->first();
         $this->email = $data->email;
         $this->name = $data->name;
-        $this->userPassword = $data->password;
         $this->contact = $data->contact;
         $this->level = $data->role_id;
         $this->is_active = $data->is_active;

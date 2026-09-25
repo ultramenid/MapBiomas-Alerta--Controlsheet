@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 
+use App\Support\Html;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -50,7 +51,7 @@ class AlertController extends Controller
     }
 
     public function fix($id){
-        return DB::table('alerts')
+        $data = DB::table('alerts')
         ->where('alertId', $id)
         ->where('isActive', 1)
         ->select(
@@ -59,6 +60,13 @@ class AlertController extends Controller
             'auditorReason'
         )
         ->first();
+
+        // rendered with x-html in partials/auditorReason
+        if ($data) {
+            $data->auditorReason = Html::clean($data->auditorReason);
+        }
+
+        return $data;
     }
 
     public function audit($id){

@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Lazy;
 use Livewire\Attributes\On;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -17,7 +18,9 @@ class TableAnalisis extends Component
     public $isReason = false;
     public $search = '';
     public $alertId, $alertStatus, $alertReason;
-    public $dataField = 'alertId', $dataOrder = 'asc', $paginate = 50;
+    #[Locked]
+    public $dataField = 'alertId';
+    public $dataOrder = 'asc', $paginate = 50;
     public $yearAlert;
     public $monthAlert;
 
@@ -33,6 +36,7 @@ class TableAnalisis extends Component
     }
 
     public function sortingField($field){
+        if (!in_array($field, ['alertId', 'created_at', 'auditorStatus'], true)) return;
         $this->dataField = $field;
         $this->dataOrder = $this->dataOrder == 'asc' ? 'desc' : 'asc';
     }

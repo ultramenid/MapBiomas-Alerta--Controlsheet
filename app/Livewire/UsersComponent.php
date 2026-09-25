@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use Illuminate\Support\Facades\DB;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Masmerise\Toaster\Toaster;
@@ -11,7 +12,9 @@ class UsersComponent extends Component
 {
     use WithPagination;
     public $deleteName, $deleteID, $deleter;
-    public $dataField = 'name', $dataOrder = 'asc', $paginate = 10, $search = '';
+    #[Locked]
+    public $dataField = 'name';
+    public $dataOrder = 'asc', $paginate = 10, $search = '';
 
     public function updatedSearch(){
         $this->resetPage();
@@ -38,6 +41,7 @@ class UsersComponent extends Component
         $this->closeDelete();
     }
     public function sortingField($field){
+        if (!in_array($field, ['name'], true)) return;
         $this->dataField = $field;
         $this->dataOrder = $this->dataOrder == 'asc' ? 'desc' : 'asc';
     }
