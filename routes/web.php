@@ -9,6 +9,8 @@ use App\Http\Middleware\checkLevel;
 use App\Http\Middleware\checkRole;
 use App\Http\Middleware\checkSession;
 use App\Http\Middleware\hasSession;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Broadcast;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware([checkSession::class])->group(function () {
@@ -21,6 +23,14 @@ Route::middleware([checkSession::class])->group(function () {
     route::get('/rest/audit/{id}', [AlertController::class, 'audit']);
     route::get('/rest/audit-test/{id}', [AlertController::class, 'auditTest']);
     route::get('/alerts-test', [AlertController::class, 'alertsTest']);
+
+    // Signs the header's "online users" presence subscription. Login here is a plain
+    // session (no Auth guard), so Laravel's own /broadcasting/auth always 403s.
+    // The channel name is fixed, so this can't be used to sign any other channel.
+    Route::post('/online/auth', fn (Request $request) => json_decode(
+        Broadcast::connection('reverb')->getPusher()->authorizePresenceChannel('presence-online', (string) $request->input('socket_id'), (string) session('id'), ['name' => session('name')]),
+        true
+    ));
 
     Route::middleware([checkLevel::class])->group(function(){
         Route::get('/users', [UsersController::class, 'index']);

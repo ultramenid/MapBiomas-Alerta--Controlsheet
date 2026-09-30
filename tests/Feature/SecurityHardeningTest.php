@@ -43,3 +43,14 @@ it('re-applies route guards to livewire actions', function () {
         ]])
         ->assertRedirect('/dashboard');
 });
+
+it('signs the online presence channel only for logged-in users, as themselves', function () {
+    ['key' => $key, 'secret' => $secret] = config('broadcasting.connections.reverb');
+
+    $this->post('/online/auth', ['socket_id' => '1.1'])->assertRedirect('/');
+
+    $data = '{"user_id":"5","user_info":{"name":"Ani"}}';
+    $this->withSession(['id' => 5, 'name' => 'Ani'])->post('/online/auth', ['socket_id' => '1.1', 'channel_name' => 'private-other'])
+        ->assertOk()
+        ->assertExactJson(['auth' => $key.':'.hash_hmac('sha256', "1.1:presence-online:$data", $secret), 'channel_data' => $data]);
+});

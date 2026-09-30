@@ -10,6 +10,30 @@
 // destroyed (the old init() leaked one window listener per re-init).
 
 document.addEventListener('alpine:init', () => {
+    // Header "online users" button + dropdown (partials/header). The list is the
+    // Reverb presence channel's own member map: live with no polling, and a user
+    // with several tabs open appears once.
+    Alpine.data('onlineUsers', () => ({
+        open: false,
+        users: [],
+
+        init() {
+            const channel = window.Echo.join('online');
+            const sync = () => {
+                const { members, myID } = channel.subscription.members;
+                this.users = Object.entries(members)
+                    .map(([id, info]) => {
+                        const name = String(info?.name ?? '?').trim();
+                        const initials = name.split(/\s+/, 2).map((word) => word[0] ?? '').join('').toUpperCase();
+                        return { id, name, initials, me: id === String(myID) };
+                    })
+                    .sort((a, b) => b.me - a.me || a.name.localeCompare(b.name));
+            };
+            channel.here(sync).joining(sync).leaving(sync);
+            sync();
+        },
+    }));
+
     Alpine.data('reasonModal', () => ({
         open: false,
         loading: false,
