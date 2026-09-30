@@ -52,5 +52,5 @@ it('signs the online presence channel only for logged-in users, as themselves', 
     $data = '{"user_id":"5","user_info":{"name":"Ani"}}';
     $this->withSession(['id' => 5, 'name' => 'Ani'])->post('/online/auth', ['socket_id' => '1.1', 'channel_name' => 'private-other'])
         ->assertOk()
-        ->assertExactJson(['auth' => $key.':'.hash_hmac('sha256', "1.1:presence-online:$data", $secret), 'channel_data' => $data]);
+        ->assertExactJson(['auth' => $key.':'.hash_hmac('sha256', "1.1:presence-online.localhost:$data", $secret), 'channel_data' => $data]);
 });

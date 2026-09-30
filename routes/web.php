@@ -26,9 +26,10 @@ Route::middleware([checkSession::class])->group(function () {
 
     // Signs the header's "online users" presence subscription. Login here is a plain
     // session (no Auth guard), so Laravel's own /broadcasting/auth always 403s.
-    // The channel name is fixed, so this can't be used to sign any other channel.
+    // The channel name is built here (one per host, so dev and production don't
+    // share a list), never taken from the request, so it can't sign other channels.
     Route::post('/online/auth', fn (Request $request) => json_decode(
-        Broadcast::connection('reverb')->getPusher()->authorizePresenceChannel('presence-online', (string) $request->input('socket_id'), (string) session('id'), ['name' => session('name')]),
+        Broadcast::connection('reverb')->getPusher()->authorizePresenceChannel('presence-online.'.$request->getHost(), (string) $request->input('socket_id'), (string) session('id'), ['name' => session('name')]),
         true
     ));
 

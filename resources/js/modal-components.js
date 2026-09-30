@@ -13,12 +13,12 @@ document.addEventListener('alpine:init', () => {
     // Header "online users" button + dropdown (partials/header). The list is the
     // Reverb presence channel's own member map: live with no polling, and a user
     // with several tabs open appears once.
-    Alpine.data('onlineUsers', () => ({
+    Alpine.data('onlineUsers', (channelName) => ({
         open: false,
         users: [],
 
         init() {
-            const channel = window.Echo.join('online');
+            const channel = window.Echo.join(channelName);
             const sync = () => {
                 const { members, myID } = channel.subscription.members;
                 this.users = Object.entries(members)
