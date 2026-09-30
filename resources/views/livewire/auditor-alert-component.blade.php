@@ -164,7 +164,7 @@
                         >
                             <span class="text-xs text-stone-600 dark:text-slate-400">{{ $v > 0 ? number_format($v) : '' }}</span>
                             <div
-                                class="w-full rounded-sm group-hover:opacity-70 transition-none {{ $active ? 'bg-green-700 dark:bg-green-400' : 'bg-stone-900 dark:bg-slate-200' }}"
+                                class="w-full rounded-sm group-hover:opacity-70 transition-none {{ $active ? 'bg-green-700 dark:bg-accent' : 'bg-stone-900 dark:bg-slate-200' }}"
                                 style="height: {{ max(2, (int) round($v / $chartMax * 100)) }}%"
                             ></div>
                         </button>

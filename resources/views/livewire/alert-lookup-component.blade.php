@@ -88,7 +88,7 @@
                             <div class="text-[10px] uppercase tracking-wide text-stone-400 dark:text-slate-500 mb-1">{{ $p['role'] }}</div>
                             @if ($p['who'])
                                 <a href="{{ url($p['url'].$p['who']['id']) }}"
-                                   class="text-sm font-medium text-green-700 dark:text-green-400 underline decoration-green-700/40 dark:decoration-green-400/40 underline-offset-4 hover:decoration-current">{{ $p['who']['name'] }}</a>
+                                   class="text-sm font-medium text-green-700 dark:text-accent underline decoration-green-700/40 dark:decoration-accent/40 underline-offset-4 hover:decoration-current">{{ $p['who']['name'] }}</a>
                             @else
                                 <div class="text-sm text-stone-400 dark:text-slate-500 italic">{{ $p['empty'] }}</div>
                             @endif

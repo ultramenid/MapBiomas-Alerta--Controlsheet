@@ -83,7 +83,7 @@
                              almost never an intent to open a popup --}}
                         <td @click="open = true" title="Show action breakdown"
                             class="w-52 min-w-52 sticky left-0 z-10 bg-white dark:bg-slate-900 group-hover:bg-stone-50 dark:group-hover:bg-slate-800 px-3 py-2 align-middle border-r border-stone-200 dark:border-slate-700 cursor-pointer">
-                            <div class="flex items-center gap-1.5 whitespace-nowrap font-medium text-green-700 dark:text-green-400">
+                            <div class="flex items-center gap-1.5 whitespace-nowrap font-medium text-green-700 dark:text-accent">
                                 <svg class="w-3.5 h-3.5 shrink-0 text-stone-300 dark:text-slate-600 group-hover:text-stone-500 dark:group-hover:text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4h4M16 4h4v4M20 16v4h-4M8 20H4v-4" />
                                 </svg>

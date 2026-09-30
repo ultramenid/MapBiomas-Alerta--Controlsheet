@@ -70,7 +70,7 @@
                 @forelse ($results as $row)
                     <tr x-show="all || {{ $loop->index }} < 5" class="group hover:bg-stone-50 dark:hover:bg-slate-800/60">
                         <td class="w-52 min-w-52 sticky left-0 z-10 bg-white dark:bg-slate-900 group-hover:bg-stone-50 dark:group-hover:bg-slate-800 px-3 py-2 align-middle border-r border-stone-200 dark:border-slate-700">
-                            <a href="{{ url('/auditor-alert/'.$row['auditorId']) }}" class="block truncate font-medium text-green-700 dark:text-green-400 hover:underline">
+                            <a href="{{ url('/auditor-alert/'.$row['auditorId']) }}" class="block truncate font-medium text-green-700 dark:text-accent hover:underline">
                                 {{ $row['auditorName'] }}
                             </a>
                         </td>
