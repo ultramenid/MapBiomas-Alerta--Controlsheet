@@ -11,7 +11,7 @@
              Reverb presence channel (one user in several tabs is listed once). The channel
              is per host: dev machines share production's Reverb app, and without the
              host in the name their users showed up in production's list. --}}
-        <div class="relative z-30" x-data="onlineUsers('online.{{ request()->getHost() }}')" @click.outside="open = false" @keydown.escape.window="open = false">
+        <div class="relative z-[45]" x-data="onlineUsers('online.{{ request()->getHost() }}')" @click.outside="open = false" @keydown.escape.window="open = false">
             <button title="Online users" aria-label="Online users" aria-haspopup="true" :aria-expanded="open"
                 @click="open = !open"
                 class="relative p-2 rounded-sm bg-stone-900 hover:bg-stone-700 dark:bg-slate-700 dark:hover:bg-slate-600 cursor-pointer transition-none">

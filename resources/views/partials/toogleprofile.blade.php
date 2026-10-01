@@ -1,4 +1,4 @@
-<div class="relative z-30" x-data="{ isProfileMenuOpen: false }" @click.outside="isProfileMenuOpen = false" @keydown.escape.window="isProfileMenuOpen = false">
+<div class="relative z-[45]" x-data="{ isProfileMenuOpen: false }" @click.outside="isProfileMenuOpen = false" @keydown.escape.window="isProfileMenuOpen = false">
     <button title="Profile" aria-label="Account" aria-haspopup="true" :aria-expanded="isProfileMenuOpen"
         @click="isProfileMenuOpen = !isProfileMenuOpen"
         class="block cursor-pointer rounded-full focus:outline-none">
