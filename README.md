@@ -16,7 +16,7 @@
 - composer install & npm install
 - cp .env.example .env
 - php artisan key:generate
-- php artisan migrate
+- php artisan migrate (also run on every deploy — e.g. `users.last_seen_at`, which backs the users list "Last active")
 - php artisan storage:link
 - create user using `php artisan tinker`
 
@@ -29,6 +29,6 @@
 
 ## Screenshot
 
-|                   Light Mode                   |                   Dark Mode                   |
-| :--------------------------------------------: | :-------------------------------------------: |
-| ![Light Mode](https://i.imgur.com/86fG7g0.png) | ![Dark Mode](https://i.imgur.com/xKYXofG.png) |
+|                       Light Mode                       |                      Dark Mode                       |
+| :----------------------------------------------------: | :--------------------------------------------------: |
+| ![Light Mode](.github/screenshots/dashboard-light.png) | ![Dark Mode](.github/screenshots/dashboard-dark.png) |
