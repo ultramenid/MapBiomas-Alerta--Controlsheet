@@ -37,7 +37,6 @@ class LoginComponent extends Component
          if($user and Hash::check($this->password, $user->password ) and $this->email == $user->email) {
             RateLimiter::clear($key);
             session()->regenerate();
-            DB::table('users')->where('id', $user->id)->update(['last_login_at' => now('Asia/Jakarta')]);
             session([
                 'id' => $user->id,
                 'role_id'=> $user->role_id,
