@@ -23,11 +23,7 @@
                     <tr class="border-b border-stone-200 dark:border-slate-800">
                         <td class="px-3 py-2.5 font-semibold 
                             @if($item['auditorStatus'] === 'Grand Total') text-stone-900 dark:text-slate-200 bg-stone-100 dark:bg-slate-800
-                            @elseif($item['auditorStatus'] === 'approved') text-green-700 dark:text-green-400
-                            @elseif($item['auditorStatus'] === 'rejected' || $item['auditorStatus'] === 'duplicate') text-red-700 dark:text-red-400
-                            @elseif($item['auditorStatus'] === 'pre-approved') text-stone-600 dark:text-slate-400
-                            @elseif($item['auditorStatus'] === 'refined') text-sky-700 dark:text-sky-400
-                            @elseif($item['auditorStatus'] === 'reexportimage' || $item['auditorStatus'] === 'reclassification') text-amber-700 dark:text-amber-400
+                            @else st-text st-{{ $item['auditorStatus'] }}
                             @endif">
                             {{$item['auditorStatus']}}
                         </td>

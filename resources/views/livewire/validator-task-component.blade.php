@@ -67,7 +67,7 @@
                         <th class="w-14 px-3 py-1.5 text-center font-normal">appr.</th>
                     @endforeach
                     <th class="w-20 sticky right-20 z-20 bg-stone-200 dark:bg-slate-700 px-3 py-1.5 text-center font-normal text-stone-600 dark:text-slate-300 border-l border-stone-300 dark:border-slate-600">task</th>
-                    <th class="w-20 sticky right-0 z-20 bg-stone-200 dark:bg-slate-700 px-3 py-1.5 text-center font-normal text-green-700 dark:text-green-400">appr.</th>
+                    <th class="w-20 sticky right-0 z-20 bg-stone-200 dark:bg-slate-700 px-3 py-1.5 text-center font-normal st-text st-approved">appr.</th>
                 </tr>
             </thead>
 
@@ -105,6 +105,7 @@
                                             'Reject' => 'Rejected',
                                             'approved' => 'Approved',
                                         ];
+                                        $catStatus = ['reclassification' => 'reclassification', 'reexportimage' => 'reexportimage', 'refined' => 'refined', 'Reject' => 'rejected', 'approved' => 'approved'];
                                         // an alert can pass through several actions, so the
                                         // category counts sum above the task total — shares
                                         // (each row and the header approved %) must be of
@@ -136,7 +137,7 @@
                                             </div>
                                             <div class="px-5 py-3">
                                                 <div class="text-[10px] uppercase tracking-wide text-stone-400 dark:text-slate-500">Approved</div>
-                                                <div class="text-xl font-semibold tabular-nums text-green-700 dark:text-green-400">
+                                                <div class="text-xl font-semibold tabular-nums st-text st-approved">
                                                     {{ number_format($row['grandApproved'] ?? 0) }}
                                                     <span class="text-xs font-normal text-stone-400 dark:text-slate-500">{{ $rate }}%</span>
                                                 </div>
@@ -159,11 +160,12 @@
                                                 <div class="flex items-center gap-3 text-xs">
                                                     <span class="w-24 shrink-0 {{ $n ? 'text-stone-600 dark:text-slate-300' : 'text-stone-400 dark:text-slate-600' }}">{{ $label }}</span>
                                                     <span class="flex-1 h-1.5 rounded-sm bg-stone-100 dark:bg-slate-800 overflow-hidden">
-                                                        <span class="block h-full rounded-sm {{ $key === 'approved' ? 'bg-green-600 dark:bg-green-500' : ($key === 'Reject' ? 'bg-red-400 dark:bg-red-500/80' : 'bg-stone-400 dark:bg-slate-400') }}"
-                                                              style="width: {{ $n ? max(2, $pct) : 0 }}%"></span>
+                                                        {{-- each category is a status, so its bar wears that status's colour; Insert has none --}}
+                                                        <span class="block h-full rounded-sm {{ isset($catStatus[$key]) ? 'st-seg' : 'bg-stone-400 dark:bg-slate-400' }}"
+                                                              style="width: {{ $n ? max(2, $pct) : 0 }}%;{{ isset($catStatus[$key]) ? ' background: var(--st-'.$catStatus[$key].');' : '' }}"></span>
                                                     </span>
                                                     <span class="w-8 shrink-0 text-right tabular-nums text-stone-400 dark:text-slate-500">{{ $n ? $pct.'%' : '' }}</span>
-                                                    <span class="w-10 shrink-0 text-right font-semibold tabular-nums {{ $key === 'approved' ? 'text-green-700 dark:text-green-400' : ($n ? 'text-stone-800 dark:text-slate-200' : 'text-stone-300 dark:text-slate-600') }}">{{ number_format($n) }}</span>
+                                                    <span class="w-10 shrink-0 text-right font-semibold tabular-nums {{ $key === 'approved' ? 'st-text st-approved' : ($n ? 'text-stone-800 dark:text-slate-200' : 'text-stone-300 dark:text-slate-600') }}">{{ number_format($n) }}</span>
                                                 </div>
                                             @endforeach
                                         </div>
@@ -178,13 +180,13 @@
                                 $appr = (int) ($row['dates'][$date]['approved'] ?? 0);
                             @endphp
                             <td class="px-3 py-2 text-center tabular-nums border-l border-stone-200 dark:border-slate-700 {{ $task ? 'text-stone-700 dark:text-slate-300' : 'text-stone-300 dark:text-slate-600' }}">{{ $task }}</td>
-                            <td class="px-3 py-2 text-center tabular-nums bg-green-50 dark:bg-green-900/20 {{ $appr ? 'text-green-800 dark:text-green-300' : 'text-stone-300 dark:text-slate-600' }}">{{ $appr }}</td>
+                            <td class="px-3 py-2 text-center tabular-nums st-cell st-approved {{ $appr ? 'st-text' : 'text-stone-300 dark:text-slate-600' }}">{{ $appr }}</td>
                         @endforeach
 
                         <td class="w-20 sticky right-20 z-10 bg-stone-100 dark:bg-slate-800 px-3 py-2 text-center tabular-nums font-bold text-stone-900 dark:text-slate-100 border-l border-stone-300 dark:border-slate-600">
                             {{ number_format($row['grandTotal'] ?? 0) }}
                         </td>
-                        <td class="w-20 sticky right-0 z-10 bg-stone-200 dark:bg-slate-700 px-3 py-2 text-center tabular-nums font-bold text-green-800 dark:text-green-300">
+                        <td class="w-20 sticky right-0 z-10 bg-stone-200 dark:bg-slate-700 px-3 py-2 text-center tabular-nums font-bold st-text st-approved">
                             {{ number_format($row['grandApproved'] ?? 0) }}
                         </td>
                     </tr>

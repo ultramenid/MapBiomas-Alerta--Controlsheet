@@ -14,7 +14,7 @@
                     <div class="flex items-center justify-between mb-5 pb-4 border-b border-stone-200 dark:border-slate-600">
                         <div>
                             <h2 class="text-lg font-bold text-stone-900 dark:text-slate-100" x-text="alertId"></h2>
-                            <span class="inline-flex items-center mt-2 rounded-sm text-xs font-semibold uppercase tracking-wider bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-700 px-3 py-1.5" x-text="alertStatus"></span>
+                            <span class="inline-flex items-center mt-2 rounded-sm text-xs font-semibold uppercase tracking-wider border st-pill px-3 py-1.5" :class="'st-' + (alertStatus || 'pending').toLowerCase()" x-text="alertStatus"></span>
                         </div>
                         <button @click="close()" class="text-stone-400 hover:text-stone-600 dark:text-slate-400 dark:hover:text-slate-200 cursor-pointer">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">

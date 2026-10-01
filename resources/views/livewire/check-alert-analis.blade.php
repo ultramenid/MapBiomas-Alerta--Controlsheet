@@ -28,15 +28,15 @@
             @forelse ($alerts as $item )
                 <tr class="border-t border-stone-200 dark:border-slate-700 hover:bg-stone-50 dark:hover:bg-slate-800 transition-none">
                     <td class="px-3 py-2.5 text-stone-700 dark:text-slate-300 border-b border-stone-200 dark:border-slate-700"><a href="{{ url('/alertanalis/'.$item->userId) }}" class="hover:underline">{{$item->name}}</a></td>
-                    <td class="px-3 py-2.5 text-stone-700 dark:text-slate-300 border-b border-stone-200 dark:border-slate-700 bg-green-alerta-table-full">{{$item->approved}}</td>
-                    <td class="px-3 py-2.5 text-stone-700 dark:text-slate-300 border-b border-stone-200 dark:border-slate-700 bg-yellow-alerta-table-full">{{$item->reexportimage}}</td>
-                    <td class="px-3 py-2.5 text-stone-700 dark:text-slate-300 border-b border-stone-200 dark:border-slate-700 bg-yellow-alerta-table-full">{{$item->reclassification}}</td>
-                    <td class="px-3 py-2.5 text-stone-700 dark:text-slate-300 border-b border-stone-200 dark:border-slate-700 bg-merah-alerta-table-full">{{$item->rejected}}</td>
-                    <td class="px-3 py-2.5 text-stone-700 dark:text-slate-300 border-b border-stone-200 dark:border-slate-700 bg-merah-alerta-table-full">{{$item->duplicate}}</td>
-                    <td class="px-3 py-2.5 text-stone-700 dark:text-slate-300 border-b border-stone-200 dark:border-slate-700 bg-refined-alerta-table-full">{{$item->preapproved}}</td>
-                    <td class="px-3 py-2.5 text-stone-700 dark:text-slate-300 border-b border-stone-200 dark:border-slate-700 bg-refined-alerta-table-full">{{$item->refined}}</td>
-                    <td class="px-3 py-2.5 text-stone-700 dark:text-slate-300 border-b border-stone-200 dark:border-slate-700 bg-gray-alerta-table-full">{{$item->error}}</td>
-                    <td class="px-3 py-2.5 text-stone-700 dark:text-slate-300 border-b border-stone-200 dark:border-slate-700 bg-gray-alerta-table-full">{{$item->total}}</td>
+                    <td class="px-3 py-2.5 text-stone-700 dark:text-slate-300 border-b border-stone-200 dark:border-slate-700 st-cell st-approved">{{$item->approved}}</td>
+                    <td class="px-3 py-2.5 text-stone-700 dark:text-slate-300 border-b border-stone-200 dark:border-slate-700 st-cell st-reexportimage">{{$item->reexportimage}}</td>
+                    <td class="px-3 py-2.5 text-stone-700 dark:text-slate-300 border-b border-stone-200 dark:border-slate-700 st-cell st-reclassification">{{$item->reclassification}}</td>
+                    <td class="px-3 py-2.5 text-stone-700 dark:text-slate-300 border-b border-stone-200 dark:border-slate-700 st-cell st-rejected">{{$item->rejected}}</td>
+                    <td class="px-3 py-2.5 text-stone-700 dark:text-slate-300 border-b border-stone-200 dark:border-slate-700 st-cell st-duplicate">{{$item->duplicate}}</td>
+                    <td class="px-3 py-2.5 text-stone-700 dark:text-slate-300 border-b border-stone-200 dark:border-slate-700 st-cell st-pre-approved">{{$item->preapproved}}</td>
+                    <td class="px-3 py-2.5 text-stone-700 dark:text-slate-300 border-b border-stone-200 dark:border-slate-700 st-cell st-refined">{{$item->refined}}</td>
+                    <td class="px-3 py-2.5 text-stone-700 dark:text-slate-300 border-b border-stone-200 dark:border-slate-700 st-cell st-error">{{$item->error}}</td>
+                    <td class="px-3 py-2.5 text-stone-700 dark:text-slate-300 border-b border-stone-200 dark:border-slate-700">{{$item->total}}</td>
                 </tr>
                 @empty
                 <tr>

@@ -40,22 +40,6 @@
         $chevron = 'absolute pointer-events-none right-3 top-2 size-4 text-stone-500';
         $ghostBtn = 'border border-stone-300 dark:border-slate-600 text-stone-700 dark:text-slate-300 py-1.5 px-3 text-sm font-semibold rounded-sm cursor-pointer hover:bg-stone-100 dark:hover:bg-slate-800 transition-none';
         $pill = 'inline-flex items-center justify-center text-center w-[10rem] whitespace-nowrap rounded-sm text-xs font-semibold uppercase tracking-wider px-2 py-1 border';
-        $pillColor = [
-            'green' => 'bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300 border-green-200 dark:border-green-700',
-            'red'   => 'bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-300 border-red-200 dark:border-red-700',
-            'amber' => 'bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-700',
-            'blue'  => 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-700',
-            'sky'   => 'bg-sky-50 dark:bg-sky-900/30 text-sky-700 dark:text-sky-300 border-sky-200 dark:border-sky-700',
-            'stone' => 'bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 border-stone-300 dark:border-stone-600',
-        ];
-        $statusTone = [
-            'green' => 'text-green-700 dark:text-green-400',
-            'red'   => 'text-red-700 dark:text-red-400',
-            'amber' => 'text-amber-700 dark:text-amber-400',
-            'sky'   => 'text-sky-700 dark:text-sky-400',
-            'blue'  => 'text-blue-700 dark:text-blue-400',
-            'stone' => 'text-stone-600 dark:text-slate-400',
-        ];
     @endphp
 
     {{-- ===== HEADER + FILTER (sticks to the top while the panels scroll under it) ===== --}}
@@ -149,9 +133,9 @@
             <div class="grid grid-cols-2 gap-x-4 gap-y-4">
                 @foreach ([
                     ['Total', number_format($total), 'text-stone-900 dark:text-slate-100', 'alerts'],
-                    ['Approved', number_format($approved), 'text-green-700 dark:text-green-400', $approvalRate . '% of total'],
-                    ['Awaiting Audit', number_format($awaitingAudit), $awaitingAudit > 0 ? 'text-amber-700 dark:text-amber-400' : 'text-stone-900 dark:text-slate-100', 'pre-approved + refined'],
-                    ['Needs Rework', number_format($rework), 'text-sky-700 dark:text-sky-400', 're-export + re-classification'],
+                    ['Approved', number_format($approved), 'st-text st-approved', $approvalRate . '% of total'],
+                    ['Awaiting Audit', number_format($awaitingAudit), $awaitingAudit > 0 ? 'st-text st-pre-approved' : 'text-stone-900 dark:text-slate-100', 'pre-approved + refined'],
+                    ['Needs Rework', number_format($rework), 'st-text st-reexportimage', 're-export + re-classification'],
                 ] as [$label, $value, $tone, $note])
                     <div class="border-l-2 border-stone-300 dark:border-slate-700 pl-3">
                         <div class="text-label text-stone-500 dark:text-slate-400 mb-1">{{ $label }}</div>
@@ -377,7 +361,7 @@
                     @forelse ($databases as $item)
                         @php
                             $key = strtolower($item->auditorStatus ?: 'pending');
-                            [$label, $color] = $statuses[$key] ?? [ucfirst($key), 'stone'];
+                            $label = $statuses[$key][0] ?? ucfirst($key);
                             $actionable = in_array($key, ['pre-approved', 'refined', 'error']);
                         @endphp
                         <tr wire:key="alert-{{ $item->alertId }}">
@@ -391,10 +375,10 @@
                                 @if ($actionable)
                                     <div
                                         onclick="window.dispatchEvent(new CustomEvent('open-audit-modal', { detail: { id: {{ $item->id }} } }))"
-                                        class="{{ $pill }} {{ $pillColor[$color] }} cursor-pointer"
+                                        class="{{ $pill }} st-pill st-{{ $key }} cursor-pointer"
                                     >{{ $label }}</div>
                                 @else
-                                    <div class="{{ $pill }} {{ $pillColor[$color] }}">{{ $label }}</div>
+                                    <div class="{{ $pill }} st-pill st-{{ $key }}">{{ $label }}</div>
                                 @endif
                             </td>
                             <td class="px-3 py-1.5 text-right">

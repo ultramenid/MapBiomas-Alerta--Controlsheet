@@ -51,6 +51,7 @@ class AuditorDatabaseComponent extends Component
     // sortable headers -> table-qualified columns; orderBy allowlist only, never raw input
     private array $sortColumns = [
         'alertId' => 'alerts.alertId',
+        'detectionDate' => 'alerts.detectionDate',
         'created_at' => 'alerts.created_at',
         'auditorStatus' => 'alerts.auditorStatus',
     ];
@@ -59,8 +60,27 @@ class AuditorDatabaseComponent extends Component
     {
         //cek if session selectstatus exist if not set to 'all'
         session()->has('selectStatus') ? $this->selectStatus = session('selectStatus') : $this->selectStatus = 'all';
-        $this->yearAlert = session('yearAlert');
-        $this->selectOwner = session()->has('selectOwner') ? session('selectOwner') : 'all';
+        $this->yearAlert = session('yearAlert', 'all');
+        $this->selectOwner = session('selectOwner', 'all');
+    }
+
+    // auditorStatus is nullable and blank means the same as 'pending' (the insert default)
+    private const STATUS_SQL = "LOWER(COALESCE(NULLIF(alerts.auditorStatus, ''), 'pending'))";
+
+    public function filterStatus($status)
+    {
+        $this->selectStatus = $this->selectStatus === $status ? 'all' : $status;
+        $this->updatedSelectStatus($this->selectStatus);
+    }
+
+    public function resetScope()
+    {
+        $this->searchId = '';
+        $this->selectStatus = 'all';
+        $this->yearAlert = 'all';
+        $this->selectOwner = 'all';
+        session(['selectStatus' => 'all', 'yearAlert' => 'all', 'selectOwner' => 'all']);
+        $this->resetPage();
     }
 
     public function updatedYearAlert($value)
@@ -144,8 +164,9 @@ class AuditorDatabaseComponent extends Component
 
     public function sortingField($field)
     {
+        // same column flips direction; a new column starts ascending
+        $this->dataOrder = $this->dataField === $field && $this->dataOrder === 'asc' ? 'desc' : 'asc';
         $this->dataField = $field;
-        $this->dataOrder = $this->dataOrder == 'asc' ? 'desc' : 'asc';
         $this->resetPage();
     }
 
@@ -263,14 +284,35 @@ class AuditorDatabaseComponent extends Component
 
     }
 
+    // everything except the status filter, so the status chips count within the same scope
+    protected function scopedQuery()
+    {
+        $query = DB::table('alerts')
+            ->join('users', 'users.id', '=', 'alerts.analisId')
+            ->where('alerts.isActive', 1)
+            ->where('users.is_active', 1);
+
+        if (filled($this->searchId)) {
+            $query->where('alerts.alertId', $this->searchId);
+        }
+
+        if ($this->selectOwner === 'mine') {
+            $query->where('alerts.analisId', session('id'));
+        }
+
+        if ($this->yearAlert && $this->yearAlert !== 'all') {
+            $query->whereYear('alerts.detectionDate', $this->yearAlert);
+        }
+
+        return $query;
+    }
+
     #[On('echo:analis-data,UpdateAnalis')]
     #[On('echo:auditor-data,UpdateAuditor')]
     public function getAlerts()
     {
-        $sc = '%'.$this->searchId.'%';
         try {
-            $query = DB::table('alerts')
-            ->select(
+            $query = $this->scopedQuery()->select(
                 'alerts.id',
                 'alerts.alertId',
                 'alerts.detectionDate',
@@ -278,27 +320,14 @@ class AuditorDatabaseComponent extends Component
                 'alerts.province',
                 'alerts.auditorStatus',
                 'alerts.created_at',
-                'alerts.platformStatus',
-                'alerts.analisId'
-            )
-            ->join('users', 'users.id', '=', 'alerts.analisId')
-            ->where('alerts.isActive', 1)
-            ->where('users.is_active', 1);
+                'alerts.analisId',
+                'users.name as validator'
+            );
 
-            if (!empty($this->searchId)) {
-                $query->where('alerts.alertId', $this->searchId);
-            }
-
-            if ($this->selectOwner === 'mine') {
-                $query->where('alerts.analisId', session('id'));
-            }
-
-            if ($this->selectStatus !== 'all') {
+            if ($this->selectStatus === 'pending') {
+                $query->whereRaw(self::STATUS_SQL." = 'pending'");
+            } elseif ($this->selectStatus !== 'all') {
                 $query->where('alerts.auditorStatus', $this->selectStatus);
-            }
-
-            if ($this->yearAlert !== 'all') {
-                $query->whereYear('alerts.detectionDate', $this->yearAlert);
             }
 
             // column comes from the allowlist above only — never raw input
@@ -318,8 +347,12 @@ class AuditorDatabaseComponent extends Component
     {
         $databases = $this->getAlerts();
 
-        // dd($databases);
-        return view('livewire.auditor-database-component', compact('databases'));
+        $statusStats = $this->scopedQuery()
+            ->selectRaw(self::STATUS_SQL.' as status, COUNT(*) as total')
+            ->groupByRaw(self::STATUS_SQL)
+            ->pluck('total', 'status');
+
+        return view('livewire.auditor-database-component', compact('databases', 'statusStats'));
     }
 
     public function manualValidation()

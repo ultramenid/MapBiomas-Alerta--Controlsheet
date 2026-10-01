@@ -40,14 +40,7 @@
         $chevron = 'absolute pointer-events-none right-3 top-2 size-4 text-stone-500';
         $ghostBtn = 'border border-stone-300 dark:border-slate-600 text-stone-700 dark:text-slate-300 py-1.5 px-3 text-sm font-semibold rounded-sm cursor-pointer hover:bg-stone-100 dark:hover:bg-slate-800 transition-none';
         $pill = 'inline-flex items-center justify-center text-center w-[9.5rem] whitespace-nowrap rounded-sm text-xs font-semibold uppercase tracking-wider px-2 py-1 border';
-        $pillColor = [
-            'green' => 'bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300 border-green-200 dark:border-green-700',
-            'red'   => 'bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-300 border-red-200 dark:border-red-700',
-            'amber' => 'bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-700',
-            'blue'  => 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-700',
-            'sky'   => 'bg-sky-50 dark:bg-sky-900/30 text-sky-700 dark:text-sky-300 border-sky-200 dark:border-sky-700',
-            'stone' => 'bg-stone-100 dark:bg-slate-800 text-stone-700 dark:text-stone-300 border-stone-300 dark:border-stone-600',
-        ];
+        $neutralPill = 'bg-stone-100 dark:bg-slate-800 text-stone-700 dark:text-stone-300 border-stone-300 dark:border-stone-600';
     @endphp
 
     {{-- ===== HEADER + FILTER (sticks to the top while the panels scroll under it) ===== --}}
@@ -128,7 +121,7 @@
                     ['Total actions', number_format($figures->actions), 'text-stone-900 dark:text-slate-100', 'log entries'],
                     ['Alerts touched', number_format($figures->alerts), 'text-stone-900 dark:text-slate-100', 'distinct alert IDs'],
                     ['Audits', number_format($figures->audits), 'text-green-700 dark:text-green-400', 'ngapain auditing'],
-                    ['Rework requests', number_format($figures->rework), 'text-sky-700 dark:text-sky-400', 're-export + re-classification'],
+                    ['Rework requests', number_format($figures->rework), 'st-text st-reexportimage', 're-export + re-classification'],
                 ] as [$label, $value, $tone, $note])
                     <div class="border-l-2 border-stone-300 dark:border-slate-700 pl-3">
                         <div class="text-label text-stone-500 dark:text-slate-400 mb-1">{{ $label }}</div>
@@ -352,7 +345,7 @@
                     @forelse ($logs as $item)
                         @php
                             $key = strtolower($item->auditorStatus ?: 'pending');
-                            [$label, $color] = $statuses[$key] ?? [ucfirst($key), 'stone'];
+                            $label = $statuses[$key][0] ?? ucfirst($key);
                         @endphp
                         <tr wire:key="log-{{ $item->alertId }}-{{ $item->auditedAt }}">
                             <td class="px-3 py-1.5 text-stone-700 dark:text-slate-300 whitespace-nowrap">{{ \Carbon\Carbon::parse($item->auditedAt)->format('d-m-Y H:i') }}</td>
@@ -361,10 +354,10 @@
                             <td class="px-3 py-1.5 text-stone-700 dark:text-slate-300 hidden sm:table-cell">{{ $item->region }}</td>
                             <td class="px-3 py-1.5 text-stone-700 dark:text-slate-300 hidden sm:table-cell">{{ $item->province }}</td>
                             <td class="px-3 py-1.5 text-center">
-                                <div class="{{ $pill }} {{ $pillColor['stone'] }}">{{ ucfirst($item->ngapain) }}</div>
+                                <div class="{{ $pill }} {{ $neutralPill }}">{{ ucfirst($item->ngapain) }}</div>
                             </td>
                             <td class="px-3 py-1.5 text-center">
-                                <div class="{{ $pill }} {{ $pillColor[$color] }}">{{ $label }}</div>
+                                <div class="{{ $pill }} st-pill st-{{ $key }}">{{ $label }}</div>
                             </td>
                         </tr>
                     @empty

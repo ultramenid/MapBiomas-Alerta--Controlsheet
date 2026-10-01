@@ -121,20 +121,17 @@
                                 new CustomEvent('open-audit-modal',
                                 { detail: { id: {{ $item->id }} } })
                                 )" @click.away="open = false" class="inline-flex items-center justify-center text-center w-[10rem] appearance-none rounded-sm text-xs font-semibold uppercase tracking-wider
-                                @if($item->auditorStatus == 'pre-approved') bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-700 cursor-pointer
-                                @elseif($item->auditorStatus == 'refined') bg-[#87bed3]/20 dark:bg-[#87bed3]/30 text-[rgb(70,130,150)] dark:text-[rgb(180,220,235)] border border-[#87bed3]/40 dark:border-[#87bed3]/50 cursor-pointer
-                                @elseif($item->auditorStatus == 'error') bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-700 cursor-pointer
-                                @endif
+                                border st-pill st-{{ strtolower($item->auditorStatus ?: 'pending') }} cursor-pointer
                                 px-3 py-1.5">{{ $item->auditorStatus }}
                     </button>
                         @elseif ($item->auditorStatus == 'approved')
-                            <span class="inline-flex items-center justify-center text-center w-[10rem] appearance-none rounded-sm text-xs font-semibold uppercase tracking-wider bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300 border border-green-200 dark:border-green-700 px-3 py-1.5">{{$item->auditorStatus}}</span>
+                            <span class="inline-flex items-center justify-center text-center w-[10rem] appearance-none rounded-sm text-xs font-semibold uppercase tracking-wider border st-pill st-{{ strtolower($item->auditorStatus ?: 'pending') }} px-3 py-1.5">{{$item->auditorStatus}}</span>
                         @elseif ($item->auditorStatus == 'pending')
-                            <span class="inline-flex items-center justify-center text-center w-[10rem] appearance-none rounded-sm text-xs font-semibold uppercase tracking-wider bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 border border-stone-300 dark:border-stone-600 px-3 py-1.5">{{$item->auditorStatus}}</span>
+                            <span class="inline-flex items-center justify-center text-center w-[10rem] appearance-none rounded-sm text-xs font-semibold uppercase tracking-wider border st-pill st-{{ strtolower($item->auditorStatus ?: 'pending') }} px-3 py-1.5">{{$item->auditorStatus}}</span>
                         @elseif ($item->auditorStatus == 'duplicate' or $item->auditorStatus == 'rejected')
-                            <span class="inline-flex items-center justify-center text-center w-[10rem] appearance-none rounded-sm text-xs font-semibold uppercase tracking-wider bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-700 px-3 py-1.5">{{$item->auditorStatus}}</span>
+                            <span class="inline-flex items-center justify-center text-center w-[10rem] appearance-none rounded-sm text-xs font-semibold uppercase tracking-wider border st-pill st-{{ strtolower($item->auditorStatus ?: 'pending') }} px-3 py-1.5">{{$item->auditorStatus}}</span>
                         @else
-                            <span class="inline-flex items-center justify-center text-center w-[10rem] appearance-none rounded-sm text-xs font-semibold uppercase tracking-wider bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-700 px-3 py-1.5">{{$item->auditorStatus}}</span>
+                            <span class="inline-flex items-center justify-center text-center w-[10rem] appearance-none rounded-sm text-xs font-semibold uppercase tracking-wider border st-pill st-{{ strtolower($item->auditorStatus ?: 'pending') }} px-3 py-1.5">{{$item->auditorStatus}}</span>
                         @endif
                     </td>
 

@@ -80,17 +80,17 @@
                     </td>
                     <td class="px-3 py-2 break-words text-xs  text-stone-700 dark:text-slate-300">
                         @if (!$item->auditorStatus)
-                            <span class="inline-flex items-center justify-center text-center w-[10rem] appearance-none rounded-sm text-xs font-semibold uppercase tracking-wider bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-700 px-3 py-1.5">Pending</span>
+                            <span class="inline-flex items-center justify-center text-center w-[10rem] appearance-none rounded-sm text-xs font-semibold uppercase tracking-wider border st-pill st-{{ strtolower($item->auditorStatus ?: 'pending') }} px-3 py-1.5">Pending</span>
                         @elseif ($item->auditorStatus == 'approved')
-                            <span class="inline-flex items-center justify-center text-center w-[10rem] appearance-none rounded-sm text-xs font-semibold uppercase tracking-wider bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300 border border-green-200 dark:border-green-700 px-3 py-1.5">{{$item->auditorStatus}}</span>
+                            <span class="inline-flex items-center justify-center text-center w-[10rem] appearance-none rounded-sm text-xs font-semibold uppercase tracking-wider border st-pill st-{{ strtolower($item->auditorStatus ?: 'pending') }} px-3 py-1.5">{{$item->auditorStatus}}</span>
                         @elseif ($item->auditorStatus == 'duplicate' or $item->auditorStatus == 'rejected')
-                            <span class="inline-flex items-center justify-center text-center w-[10rem] appearance-none rounded-sm text-xs font-semibold uppercase tracking-wider bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-700 px-3 py-1.5">{{$item->auditorStatus}}</span>
+                            <span class="inline-flex items-center justify-center text-center w-[10rem] appearance-none rounded-sm text-xs font-semibold uppercase tracking-wider border st-pill st-{{ strtolower($item->auditorStatus ?: 'pending') }} px-3 py-1.5">{{$item->auditorStatus}}</span>
                         @else
                             <span onclick="window.dispatchEvent(
                                 new CustomEvent('open-reason-modal', {
                                     detail: { id: {{ $item->alertId}} }
                                 })
-                            )" @click.away="open = false" class="inline-flex items-center justify-center text-center w-[10rem] appearance-none rounded-sm text-xs font-semibold uppercase tracking-wider bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-700 px-3 py-1.5 cursor-pointer transition-none">{{$item->auditorStatus}}</span>
+                            )" @click.away="open = false" class="inline-flex items-center justify-center text-center w-[10rem] appearance-none rounded-sm text-xs font-semibold uppercase tracking-wider border st-pill st-{{ strtolower($item->auditorStatus ?: 'pending') }} px-3 py-1.5 cursor-pointer transition-none">{{$item->auditorStatus}}</span>
                         @endif
                     </td>
 

@@ -52,13 +52,7 @@
             @else
                 @php
                     $st = $lookup['status'];
-                    $tone = match ($st) {
-                        'approved' => 'text-green-700 dark:text-green-400 border-green-300 dark:border-green-700',
-                        'rejected', 'error' => 'text-red-700 dark:text-red-400 border-red-300 dark:border-red-800',
-                        'pre-approved', 'refined' => 'text-amber-700 dark:text-amber-400 border-amber-300 dark:border-amber-700',
-                        'reexportimage', 'reclassification' => 'text-blue-700 dark:text-blue-400 border-blue-300 dark:border-blue-800',
-                        default => 'text-stone-600 dark:text-slate-400 border-stone-300 dark:border-slate-600',
-                    };
+                    $tone = 'st-pill st-'.strtolower($st);
                 @endphp
 
                 {{-- headline: id + status + where it is --}}

@@ -60,61 +60,6 @@
 
 
 
-.bg-green-alerta{
-    background-color: #86B897;
-}
-
-.bg-green-alerta-table{
-    border-bottom-color: rgba(134, 184, 151); /* 20% opacity */
-}
-
-.bg-yellow-alerta-table{
-    border-bottom-color: rgba(196, 196, 119); /* 20% opacity */
-}
-
-.bg-merah-alerta-table{
-    border-bottom-color: rgba(121, 45, 32); /* 20% opacity */
-}
-
-.bg-refined-alerta-table{
-    border-bottom-color: rgb(135, 190, 211);
-}
-
-.bg-gray-alerta-table{
-    border-bottom-color: rgba(156, 163, 175); /* 20% opacity */
-}
-
-.bg-green-alerta-table-full{
-    background-color: rgba(134, 184, 151, 0.3); /* 20% opacity */
-}
-
-.bg-yellow-alerta-table-full{
-    background-color: rgba(196, 196, 119, 0.2); /* 20% opacity */
-}
-
-.bg-merah-alerta-table-full{
-    background-color: rgba(121, 45, 32, 0.2); /* 20% opacity */
-}
-
-.bg-refined-alerta-table-full{
-    background-color: rgb(135, 190, 211, 0.2);
-}
-
-.bg-gray-alerta-table-full{
-    background-color: rgba(156, 163, 175, 0.2); /* 20% opacity */
-}
-
-.bg-merah-alerta{
-    background-color: rgb(121, 45, 32);
-}
-.bg-yellow-alerta{
-    background-color: rgb(196, 196, 119);
-}
-
-.text-green-alerta{
-    color: #86B897;
-}
-
 /* Glassmorphism Utilities */
 .glass {
     background: rgba(255, 255, 255, 0.6);
@@ -231,6 +176,46 @@
     --st-approved: #9BDCAE;
     --st-rejected: #D96662;
     --st-duplicate: #6BCBBD;
+}
+
+/* One status colour everywhere: .st-<status> picks the ramp entry, then
+   .st-pill (badge), .st-text (number/label) or .st-cell (table cell tint)
+   render it. Unknown statuses fall back to pending's neutral. */
+.st-pending { --st: var(--st-pending); }
+.st-pre-approved { --st: var(--st-pre-approved); }
+.st-refined { --st: var(--st-refined); }
+.st-error { --st: var(--st-error); }
+.st-reexportimage { --st: var(--st-reexportimage); }
+.st-reclassification { --st: var(--st-reclassification); }
+.st-approved { --st: var(--st-approved); }
+.st-rejected { --st: var(--st-rejected); }
+.st-duplicate { --st: var(--st-duplicate); }
+
+.st-pill {
+    background: color-mix(in srgb, var(--st, var(--st-pending)) 18%, transparent);
+    border-color: color-mix(in srgb, var(--st, var(--st-pending)) 65%, transparent);
+}
+
+.st-cell {
+    background: color-mix(in srgb, var(--st, var(--st-pending)) 22%, transparent);
+}
+
+/* pastels are too light for text on white, so light mode darkens them */
+.st-pill, .st-text {
+    color: color-mix(in srgb, var(--st, var(--st-pending)) 45%, #1c1917);
+}
+
+.dark .st-pill {
+    background: color-mix(in srgb, var(--st, var(--st-pending)) 14%, transparent);
+    border-color: color-mix(in srgb, var(--st, var(--st-pending)) 55%, transparent);
+}
+
+.dark .st-cell {
+    background: color-mix(in srgb, var(--st, var(--st-pending)) 14%, transparent);
+}
+
+.dark .st-pill, .dark .st-text {
+    color: var(--st, var(--st-pending));
 }
 
 /* pale fills need an edge so they do not dissolve into the card surface */
