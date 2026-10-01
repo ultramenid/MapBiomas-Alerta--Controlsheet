@@ -255,7 +255,7 @@ class ValidatorTaskComponent extends Component
         ];
     }
 
-    /** Every date in the selected range, ascending. */
+    /** Every date in the selected range, newest first. */
     private function dates(): array
     {
         $out = [];
@@ -269,7 +269,7 @@ class ValidatorTaskComponent extends Component
         ) {
             $out[] = $dt->format("Y-m-d");
         }
-        return $out;
+        return array_reverse($out);
     }
 
     public function render()

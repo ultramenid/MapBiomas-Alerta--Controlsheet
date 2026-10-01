@@ -117,7 +117,7 @@ class AuditorSummaryComponent extends Component
         return $results;
     }
 
-    /** Every date in the selected range, ascending. */
+    /** Every date in the selected range, newest first. */
     private function dates(): array
     {
         $out = [];
@@ -128,7 +128,7 @@ class AuditorSummaryComponent extends Component
         ) as $dt) {
             $out[] = $dt->format('Y-m-d');
         }
-        return $out;
+        return array_reverse($out);
     }
 
     public function render()
