@@ -70,7 +70,8 @@
                     <legend class="{{ $label }}">Role</legend>
                     <div class="grid sm:grid-cols-3 gap-2">
                         @foreach ($roles as $value => [$roleName, $roleNote])
-                            @php $picked = (string) $level === $value; @endphp
+                            {{-- numeric-string keys become ints in PHP arrays, so compare as strings --}}
+                            @php $picked = (string) $level === (string) $value; @endphp
                             <label class="relative flex flex-col gap-0.5 rounded-sm border px-3 py-2.5 transition-none
                                 {{ $isSelf ? 'cursor-not-allowed' : 'cursor-pointer hover:border-stone-500 dark:hover:border-slate-400' }}
                                 {{ $picked ? 'border-stone-900 dark:border-slate-200 bg-white dark:bg-slate-800' : ($errors->has('level') ? $bad : $ok) }}
