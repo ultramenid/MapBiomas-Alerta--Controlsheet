@@ -2,7 +2,7 @@ import './bootstrap';
 import '../../vendor/masmerise/livewire-toaster/resources/js';
 import './work-trend-chart';
 import './modal-components';
-import { initTheme, toggleTheme } from './theme';
+import { initTheme, setTheme, toggleTheme } from './theme';
 
 initTheme();
 
@@ -12,5 +12,6 @@ initTheme();
 document.addEventListener('livewire:navigated', () => initTheme());
 
 window.toggleTheme = toggleTheme;
+window.setTheme = setTheme;
 
 

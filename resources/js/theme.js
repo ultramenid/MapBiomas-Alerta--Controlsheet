@@ -28,6 +28,18 @@ export function initTheme() {
     }
 }
 
+// Pick 'light', 'dark' or 'system' (forget the choice and follow the device)
+export function setTheme(mode) {
+    try {
+        if (mode === 'system') {
+            localStorage.removeItem(STORAGE_KEY);
+        } else {
+            localStorage.setItem(STORAGE_KEY, mode);
+        }
+    } catch (e) {}
+    applyTheme(mode === 'system' ? getSystemTheme() : mode);
+}
+
 // Toggle theme manually (temporary)
 export function toggleTheme() {
     const isDark = document.documentElement.classList.contains('dark');
