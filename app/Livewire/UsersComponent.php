@@ -145,10 +145,15 @@ class UsersComponent extends Component
     public function getDatabase()
     {
         $query = $this->searchedQuery()
-            ->select('users.id', 'users.name', 'users.email', 'users.contact', 'users.role_id', 'users.is_active', 'users.created_at')
+            ->select('users.id', 'users.name', 'users.email', 'users.contact', 'users.role_id', 'users.is_active', 'users.created_at', 'users.last_login_at')
             ->selectSub(DB::table('alerts')->selectRaw('COUNT(*)')->whereColumn('alerts.analisId', 'users.id')->where('alerts.isActive', 1), 'alerts_count')
             ->selectSub(DB::table('auditorlog')->selectRaw('COUNT(*)')->whereColumn('auditorlog.auditorId', 'users.id')->where('auditorlog.ngapain', 'auditing'), 'audits_count')
-            ->selectSub(DB::table('auditorlog')->selectRaw('MAX(created_at)')->whereColumn('auditorlog.auditorId', 'users.id'), 'last_active');
+            ->selectSub(DB::table('auditorlog')->selectRaw('MAX(created_at)')->whereColumn('auditorlog.auditorId', 'users.id'), 'last_work');
+
+        // latest of sign-in and logged work; GREATEST() returns NULL if either side is NULL
+        $query = DB::query()->fromSub($query, 'users')
+            ->select('*')
+            ->selectRaw('GREATEST(COALESCE(last_login_at, last_work), COALESCE(last_work, last_login_at)) as last_active');
 
         if ($this->selectRole !== 'all') {
             $query->where('users.role_id', (int) $this->selectRole);

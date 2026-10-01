@@ -140,7 +140,7 @@
                             $active = (int) $item->is_active === 1;
                             $initials = collect(preg_split('/\s+/', trim($item->name)))->filter()->take(2)->map(fn ($w) => mb_strtoupper(mb_substr($w, 0, 1)))->implode('');
                             // server re-checks every row the user owns; this only decides whether to offer it
-                            $deletable = ! $isMe && (int) $item->alerts_count === 0 && $item->last_active === null;
+                            $deletable = ! $isMe && (int) $item->alerts_count === 0 && $item->last_work === null;
                         @endphp
                         <tr wire:key="user-{{ $item->id }}" class="hover:bg-stone-50 dark:hover:bg-slate-800/60 {{ $active ? '' : 'opacity-60' }}">
                             <td class="{{ $td }}">
