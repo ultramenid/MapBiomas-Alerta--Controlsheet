@@ -33,6 +33,7 @@ class CheckAlertAnalis extends Component
         'refined' => 'refined',
         'error' => 'error',
         'total' => 'total',
+        'percent' => 'percent',
     ];
 
     public static function placeholder()
@@ -48,7 +49,7 @@ class CheckAlertAnalis extends Component
 
     private function cacheKey(){
         // row set depends on the search term, the year/month filter and the sort
-        return 'dashboard:check-alert:v2:'.(string) $this->searchName.':'.$this->yearAlert.':'.$this->monthAlert.':'.$this->dataField.':'.$this->dataOrder;
+        return 'dashboard:check-alert:v3:'.(string) $this->searchName.':'.$this->yearAlert.':'.$this->monthAlert.':'.$this->dataField.':'.$this->dataOrder;
     }
 
     public function mount(){
@@ -100,7 +101,10 @@ class CheckAlertAnalis extends Component
                 SUM(CASE WHEN alerts.auditorStatus = 'pre-approved' THEN 1 ELSE 0 END) AS preapproved,
                 SUM(CASE WHEN alerts.auditorStatus = 'refined' THEN 1 ELSE 0 END) AS refined,
                 SUM(CASE WHEN alerts.auditorStatus = 'error' THEN 1 ELSE 0 END) AS error,
-                COUNT(alerts.alertId) AS total
+                COUNT(alerts.alertId) AS total,
+                -- approved / (total - rejected) * 100; NULL when everything was rejected
+                SUM(CASE WHEN alerts.auditorStatus = 'approved' THEN 1 ELSE 0 END) * 100
+                    / NULLIF(COUNT(alerts.alertId) - SUM(CASE WHEN alerts.auditorStatus = 'rejected' THEN 1 ELSE 0 END), 0) AS percent
             ")
             ->when(!empty($sc), function ($q) use ($sc) {
                 return $q->where('users.name', 'like', $sc);

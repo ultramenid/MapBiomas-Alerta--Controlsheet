@@ -13,7 +13,7 @@
           <thead class="text-xs font-semibold">
             <tr class="text-left">
               <th wire:click='sortingField("name")' class="text-left px-3 py-2.5 text-label text-stone-500 dark:text-slate-400 cursor-pointer capitalize border-b border-stone-200 dark:border-slate-700">Validator</th>
-              <th wire:click='sortingField("approved")' class="cursor-pointer border-b border-stone-300 dark:border-slate-700 px-2 py-2 capitalize ">Aprroved</th>
+              <th wire:click='sortingField("approved")' class="cursor-pointer border-b border-stone-300 dark:border-slate-700 px-2 py-2 capitalize ">Approved</th>
               <th wire:click='sortingField("reexportimage")' class="cursor-pointer border-b border-stone-300 dark:border-slate-700 px-2 py-2 capitalize">reexportimage</th>
               <th wire:click='sortingField("reclassification")' class="cursor-pointer border-b border-stone-300 dark:border-slate-700 px-2 py-2 capitalize">reclassification</th>
               <th wire:click='sortingField("rejected")' class="cursor-pointer border-b border-stone-300 dark:border-slate-700 px-2 py-2 capitalize">Rejected</th>
@@ -22,6 +22,7 @@
               <th wire:click='sortingField("refined")' class="cursor-pointer border-b border-stone-300 dark:border-slate-700 px-2 py-2 capitalize">refined</th>
               <th wire:click='sortingField("error")' class="cursor-pointer border-b border-stone-300 dark:border-slate-700 px-2 py-2 capitalize">error</th>
               <th wire:click='sortingField("total")' class="cursor-pointer border-b border-stone-300 dark:border-slate-700 px-2 py-2 capitalize">TOTAL</th>
+              <th wire:click='sortingField("percent")' class="cursor-pointer border-b border-stone-300 dark:border-slate-700 px-3 py-2 text-right whitespace-nowrap" title="Approved / (Total − Rejected) × 100">Approval %</th>
             </tr>
           </thead>
           <tbody class="text-label text-stone-500 dark:text-slate-400">
@@ -37,6 +38,19 @@
                     <td class="px-3 py-2.5 text-stone-700 dark:text-slate-300 border-b border-stone-200 dark:border-slate-700 st-cell st-refined">{{$item->refined}}</td>
                     <td class="px-3 py-2.5 text-stone-700 dark:text-slate-300 border-b border-stone-200 dark:border-slate-700 st-cell st-error">{{$item->error}}</td>
                     <td class="px-3 py-2.5 text-stone-700 dark:text-slate-300 border-b border-stone-200 dark:border-slate-700">{{$item->total}}</td>
+                    <td class="px-3 py-2.5 border-b border-stone-200 dark:border-slate-700" title="{{ $item->approved }} / ({{ $item->total }} − {{ $item->rejected }})">
+                        @if ($item->percent === null)
+                            <div class="text-right text-stone-400 dark:text-slate-500">—</div>
+                        @else
+                            {{-- value over a thin approved-coloured bar, scaled 0–100% --}}
+                            <div class="w-24 ml-auto">
+                                <div class="text-right font-semibold tabular-nums text-stone-900 dark:text-slate-200">{{ number_format($item->percent, 1) }}%</div>
+                                <div class="mt-1 h-1 w-full rounded-sm bg-stone-200 dark:bg-slate-700 overflow-hidden">
+                                    <div class="h-full rounded-sm" style="width: {{ min(100, max(0, $item->percent)) }}%; background: var(--st-approved)"></div>
+                                </div>
+                            </div>
+                        @endif
+                    </td>
                 </tr>
                 @empty
                 <tr>
