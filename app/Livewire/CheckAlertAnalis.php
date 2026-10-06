@@ -49,7 +49,7 @@ class CheckAlertAnalis extends Component
 
     private function cacheKey(){
         // row set depends on the search term, the year/month filter and the sort
-        return 'dashboard:check-alert:v3:'.(string) $this->searchName.':'.$this->yearAlert.':'.$this->monthAlert.':'.$this->dataField.':'.$this->dataOrder;
+        return 'dashboard:check-alert:v4:'.(string) $this->searchName.':'.$this->yearAlert.':'.$this->monthAlert.':'.$this->dataField.':'.$this->dataOrder;
     }
 
     public function mount(){
@@ -93,6 +93,7 @@ class CheckAlertAnalis extends Component
                 users.name,
                 users.id as userId,
                 alerts.analisId,
+                MAX(users.is_monitored) AS is_monitored,
                 SUM(CASE WHEN alerts.auditorStatus = 'approved' THEN 1 ELSE 0 END) AS approved,
                 SUM(CASE WHEN alerts.auditorStatus = 'rejected' THEN 1 ELSE 0 END) AS rejected,
                 SUM(CASE WHEN alerts.auditorStatus = 'duplicate' THEN 1 ELSE 0 END) AS duplicate,

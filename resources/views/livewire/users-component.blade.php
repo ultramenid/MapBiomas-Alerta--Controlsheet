@@ -7,7 +7,7 @@
         ];
         $total = (int) $roleStats->sum('total');
         $hasSearch = $search !== null && $search !== '';
-        $isScoped = $hasSearch || $selectRole !== 'all' || $selectActive !== 'all';
+        $isScoped = $hasSearch || $selectRole !== 'all' || $selectActive !== 'all' || $onlyMonitored;
 
         $th = 'px-3 py-1.5 text-label text-stone-500 dark:text-slate-400 whitespace-nowrap';
         $td = 'px-3 py-2 text-stone-700 dark:text-slate-300';
@@ -92,6 +92,13 @@
                     @endif
                 </button>
             @endforeach
+
+            <button type="button" wire:click="$toggle('onlyMonitored')" aria-pressed="{{ $onlyMonitored ? 'true' : 'false' }}"
+                class="{{ $chip }} sm:ml-auto {{ $onlyMonitored ? 'bg-stone-100 dark:bg-slate-800' : '' }}">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="size-3.5 text-green-700 dark:text-green-400"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /></svg>
+                <span class="text-xs {{ $onlyMonitored ? 'font-semibold text-stone-900 dark:text-slate-100' : 'text-stone-600 dark:text-slate-400' }}">Monitored</span>
+                <span class="text-xs font-semibold text-stone-900 dark:text-slate-200 tabular-nums">{{ number_format($monitoredCount) }}</span>
+            </button>
         </div>
     </div>
 
@@ -138,19 +145,26 @@
                         @php
                             $isMe = (int) $item->id === (int) session('id');
                             $active = (int) $item->is_active === 1;
+                            $isValidator = (int) $item->role_id === 2;
+                            $monitored = $isValidator && (int) $item->is_monitored === 1;
                             $initials = collect(preg_split('/\s+/', trim($item->name)))->filter()->take(2)->map(fn ($w) => mb_strtoupper(mb_substr($w, 0, 1)))->implode('');
                             // server re-checks every row the user owns; this only decides whether to offer it
                             $deletable = ! $isMe && (int) $item->alerts_count === 0 && $item->last_work === null;
                         @endphp
-                        <tr wire:key="user-{{ $item->id }}" class="hover:bg-stone-50 dark:hover:bg-slate-800/60 {{ $active ? '' : 'opacity-60' }}">
-                            <td class="{{ $td }}">
+                        <tr wire:key="user-{{ $item->id }}" class="hover:bg-stone-50 dark:hover:bg-slate-800/60 {{ $active ? '' : 'opacity-60' }} {{ $monitored ? 'bg-green-50/70 dark:bg-green-900/15' : '' }}">
+                            <td class="{{ $td }} {{ $monitored ? 'border-l-2 border-green-700 dark:border-green-400' : '' }}">
                                 <div class="flex items-center gap-2.5 min-w-0">
-                                    <span class="shrink-0 size-7 rounded-full bg-stone-200 dark:bg-slate-600 flex items-center justify-center text-[10px] font-semibold text-stone-700 dark:text-slate-300">{{ $initials }}</span>
+                                    <span class="shrink-0 size-7 rounded-full {{ $monitored ? 'ring-2 ring-green-700 dark:ring-green-400' : '' }} bg-stone-200 dark:bg-slate-600 flex items-center justify-center text-[10px] font-semibold text-stone-700 dark:text-slate-300">{{ $initials }}</span>
                                     <div class="min-w-0">
                                         <a href="{{ url('/edituser/'.$item->id) }}" class="block truncate font-semibold text-stone-900 dark:text-slate-100 hover:underline">
                                             {{ $item->name }}
                                             @if ($isMe)
                                                 <span class="ml-1 text-label text-stone-400 dark:text-slate-500 font-semibold">You</span>
+                                            @endif
+                                            @if ($monitored)
+                                                <span class="ml-1 inline-flex items-center gap-1 text-label font-semibold text-green-700 dark:text-green-400">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="size-3"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /></svg>Monitored
+                                                </span>
                                             @endif
                                         </a>
                                         <div class="truncate text-stone-500 dark:text-slate-400">{{ $item->email }}</div>
@@ -190,6 +204,15 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
                                         </svg>
                                     </a>
+                                    @if ($isValidator)
+                                        <button type="button" wire:click="toggleMonitored({{ $item->id }})"
+                                            title="{{ $monitored ? 'Stop monitoring' : 'Monitor' }}" aria-pressed="{{ $monitored ? 'true' : 'false' }}" aria-label="{{ $monitored ? 'Stop monitoring' : 'Monitor' }} {{ $item->name }}"
+                                            class="{{ $monitored ? str_replace('text-stone-600 dark:text-slate-400', 'text-green-700 dark:text-green-400', $iconBtn) : $iconBtn }}">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                                            </svg>
+                                        </button>
+                                    @endif
                                     @unless ($isMe)
                                         <button type="button" wire:click="toggleActive({{ $item->id }})"
                                             @if ($active) wire:confirm="Deactivate {{ $item->name }}? They will no longer be able to sign in, and their alerts drop out of the alert lists until reactivated." @endif

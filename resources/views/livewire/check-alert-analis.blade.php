@@ -27,8 +27,15 @@
           </thead>
           <tbody class="text-label text-stone-500 dark:text-slate-400">
             @forelse ($alerts as $item )
-                <tr class="border-t border-stone-200 dark:border-slate-700 hover:bg-stone-50 dark:hover:bg-slate-800 transition-none">
-                    <td class="px-3 py-2.5 text-stone-700 dark:text-slate-300 border-b border-stone-200 dark:border-slate-700"><a href="{{ url('/alertanalis/'.$item->userId) }}" class="hover:underline">{{$item->name}}</a></td>
+                <tr class="border-t border-stone-200 dark:border-slate-700 hover:bg-stone-50 dark:hover:bg-slate-800 transition-none {{ $item->is_monitored ? 'bg-green-50/70 dark:bg-green-900/15' : '' }}">
+                    <td class="px-3 py-2.5 text-stone-700 dark:text-slate-300 border-b border-stone-200 dark:border-slate-700 {{ $item->is_monitored ? 'border-l-2 border-l-green-700 dark:border-l-green-400' : '' }}">
+                        <a href="{{ url('/alertanalis/'.$item->userId) }}" class="hover:underline inline-flex items-center gap-1.5">
+                            @if ($item->is_monitored)
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="size-3.5 text-green-700 dark:text-green-400" aria-label="Monitored"><title>Monitored</title><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /></svg>
+                            @endif
+                            {{$item->name}}
+                        </a>
+                    </td>
                     <td class="px-3 py-2.5 text-stone-700 dark:text-slate-300 border-b border-stone-200 dark:border-slate-700 st-cell st-approved">{{$item->approved}}</td>
                     <td class="px-3 py-2.5 text-stone-700 dark:text-slate-300 border-b border-stone-200 dark:border-slate-700 st-cell st-reexportimage">{{$item->reexportimage}}</td>
                     <td class="px-3 py-2.5 text-stone-700 dark:text-slate-300 border-b border-stone-200 dark:border-slate-700 st-cell st-reclassification">{{$item->reclassification}}</td>

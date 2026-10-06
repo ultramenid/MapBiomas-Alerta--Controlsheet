@@ -25,6 +25,9 @@ class UsersComponent extends Component
     // 'all', '1' active, '0' inactive
     public $selectActive = 'all';
 
+    // only validators the admin flagged for monitoring
+    public $onlyMonitored = false;
+
     private array $sortColumns = ['name', 'email', 'role_id', 'last_active'];
 
     public function mount()
@@ -53,11 +56,17 @@ class UsersComponent extends Component
         $this->resetPage();
     }
 
+    public function updatedOnlyMonitored()
+    {
+        $this->resetPage();
+    }
+
     public function resetScope()
     {
         $this->search = '';
         $this->selectRole = 'all';
         $this->selectActive = 'all';
+        $this->onlyMonitored = false;
         $this->resetPage();
     }
 
@@ -95,6 +104,19 @@ class UsersComponent extends Component
         $active = (int) $user->is_active === 1 ? 0 : 1;
         DB::table('users')->where('id', $id)->update(['is_active' => $active, 'updated_at' => now('Asia/Jakarta')]);
         Toaster::success($user->name.($active ? ' activated' : ' deactivated'));
+    }
+
+    public function toggleMonitored($id)
+    {
+        $this->guard();
+        $user = DB::table('users')->where('id', $id)->where('role_id', 2)->first(['name', 'is_monitored']);
+        if (! $user) {
+            return;
+        }
+
+        $monitored = $user->is_monitored ? 0 : 1;
+        DB::table('users')->where('id', $id)->update(['is_monitored' => $monitored]);
+        Toaster::success($user->name.($monitored ? ' is now monitored' : ' is no longer monitored'));
     }
 
     public function closeDelete()
@@ -145,7 +167,7 @@ class UsersComponent extends Component
     public function getDatabase()
     {
         $query = $this->searchedQuery()
-            ->select('users.id', 'users.name', 'users.email', 'users.contact', 'users.role_id', 'users.is_active', 'users.created_at', 'users.last_seen_at')
+            ->select('users.id', 'users.name', 'users.email', 'users.contact', 'users.role_id', 'users.is_active', 'users.is_monitored', 'users.created_at', 'users.last_seen_at')
             ->selectSub(DB::table('alerts')->selectRaw('COUNT(*)')->whereColumn('alerts.analisId', 'users.id')->where('alerts.isActive', 1), 'alerts_count')
             ->selectSub(DB::table('auditorlog')->selectRaw('COUNT(*)')->whereColumn('auditorlog.auditorId', 'users.id')->where('auditorlog.ngapain', 'auditing'), 'audits_count')
             ->selectSub(DB::table('auditorlog')->selectRaw('MAX(created_at)')->whereColumn('auditorlog.auditorId', 'users.id'), 'last_work');
@@ -160,6 +182,9 @@ class UsersComponent extends Component
         }
         if ($this->selectActive !== 'all') {
             $query->where('users.is_active', (int) $this->selectActive);
+        }
+        if ($this->onlyMonitored) {
+            $query->where('users.is_monitored', 1);
         }
 
         $field = in_array($this->dataField, $this->sortColumns, true) ? $this->dataField : 'name';
@@ -178,6 +203,8 @@ class UsersComponent extends Component
             ->get()
             ->keyBy('role_id');
 
-        return view('livewire.users-component', compact('databases', 'roleStats'));
+        $monitoredCount = $this->searchedQuery()->where('is_monitored', 1)->count();
+
+        return view('livewire.users-component', compact('databases', 'roleStats', 'monitoredCount'));
     }
 }
